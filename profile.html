@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <title>Shop Profile</title>
+</head>
+<body>
+<div class="page-transition">
+    <div class="page">
+
+    <!-- PROFILE HEADER -->
+    <section class="profile-header">
+
+    <!-- Banner -->
+    <div class="profile-banner">
+        <img src="images/profile-banner.jpg" class="profile-banner-image" alt="">
+    </div>
+
+    <!-- Info row -->
+    <div class="profile-info-row">
+        
+        <!-- Avatar LEFT -->
+        <div class="profile-avatar-wrapper profile-avatar-left">
+        <img src="images/profile.jpg" class="profile-avatar" alt="Shop owner">
+        </div>
+
+        <!-- Text RIGHT -->
+        <div class="profile-info-text">
+        <h1 class="profile-shop-name">Urban Streetwear</h1>
+        <p class="profile-name">@isa_closet</p>
+        <p class="profile-location">Based in Houston, TX</p>
+        </div>
+
+    </div>
+
+    </section>
+
+
+
+    <!-- PROFILE TABS -->
+    <div class="profile-tabs">
+        <button class="profile-tab is-active" data-tab="products">Products</button>
+        <button class="profile-tab" data-tab="about">About</button>
+    </div>
+
+    <!-- TAB PANELS -->
+    <section class="profile-tab-panel is-active" id="tab-products">
+        <div class="product-grid">
+        <!-- Product 1 -->
+        <article class="product-card">
+            <img src="images/shoes.jpg" class="product-image" alt="Running Shoes">
+            <div class="product-info">
+            <h3>Running Shoes</h3>
+            <p class="price">$49.99</p>
+            <p class="details">In Stock • Seller: Urban Streetwear</p>
+            </div>
+        </article>
+
+        <!-- Product 2 -->
+        <article class="product-card">
+            <img src="images/shirt.jpg" class="product-image" alt="Oversized Tee">
+            <div class="product-info">
+            <h3>Oversized Tee</h3>
+            <p class="price">$29.99</p>
+            <p class="details">In Stock • Seller: Urban Streetwear</p>
+            </div>
+        </article>
+
+        <!-- Product 3 -->
+        <article class="product-card">
+            <img src="images/hat.jpg" class="product-image" alt="Bucket Hat">
+            <div class="product-info">
+            <h3>Bucket Hat</h3>
+            <p class="price">$19.99</p>
+            <p class="details">In Stock • Seller: Urban Streetwear</p>
+            </div>
+        </article>
+        </div>
+    </section>
+
+    <section class="profile-tab-panel" id="tab-about">
+        <div class="profile-about">
+        <h2>About this shop</h2>
+        <p>
+            Urban Streetwear is a small, independent shop focused on comfy everyday pieces:
+            sneakers, tees, hats and more. Every item is curated with students and young
+            creators in mind.
+        </p>
+        <p>
+            Orders ship within 3–5 business days. Local pickup is available in Houston, TX.
+        </p>
+        </div>
+    </section>
+
+    </div>
+</div>
+<!-- TAB SWITCHING SCRIPT -->
+<script>
+  const tabs = document.querySelectorAll('.profile-tab');
+  const panels = document.querySelectorAll('.profile-tab-panel');
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const target = tab.getAttribute('data-tab');
+
+      // deactivate all tabs
+      tabs.forEach(t => t.classList.remove('is-active'));
+      // hide all panels
+      panels.forEach(p => p.classList.remove('is-active'));
+
+      // activate clicked tab
+      tab.classList.add('is-active');
+      // show matching panel
+      document.getElementById('tab-' + target).classList.add('is-active');
+    });
+  });
+</script>
+
+<footer class="footer">
+  <div class="footer-section">
+    <h3>Vendors Market</h3>
+    <p>Shop local. Support small businesses.</p>
+  </div>
+
+  <div class="footer-links">
+    <a href="#">About</a>
+    <a href="#">Terms</a>
+    <a href="#">Privacy</a>
+    <a href="#">Help</a>
+  </div>
+
+  <p class="footer-copy">© 2025 Vendors Market</p>
+</footer>
+
+
+<nav class="bottom-nav">
+
+  <a href="homepage.html" class="nav-item">
+    <img src="icons/home.png" class="nav-icon" alt="">
+    <span>Home</span>
+  </a>
+
+  <a href="search.html" class="nav-item">
+    <img src="icons/search.png" class="nav-icon" alt="">
+    <span>Search</span>
+  </a>
+
+  <a href="profile.html" class="nav-item active">
+  <span class="nav-icon-wrapper">
+  <img src="icons/profile.png" class="nav-icon" alt="">
+  </span>
+  <span>Profile</span>
+  </a>
+
+</nav>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const savedTheme = localStorage.getItem("activeTheme");
+
+  if (savedTheme === "food") {
+    document.body.classList.add("theme-food");
+  } else if (savedTheme === "clothing") {
+    document.body.classList.add("theme-clothing");
+  }
+});
+</script>
+<script>
+  // Smooth fade-out when clicking nav links
+  const navLinks = document.querySelectorAll('.bottom-nav .nav-item');
+
+  navLinks.forEach(link => {
+    link.addEventListener('click', function (e) {
+      const targetUrl = this.getAttribute('href');
+
+      // if already on this page, do nothing
+      if (!targetUrl || window.location.pathname.endsWith(targetUrl)) return;
+
+      e.preventDefault();
+      document.querySelector('.page-transition').classList.add('page-exit');
+
+
+      setTimeout(() => {
+        window.location.href = targetUrl;
+      }, 180); // match CSS transition
+    });
+  });
+</script>
+
+
+</body>
+</html>

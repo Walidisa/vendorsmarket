@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <title>Shop Products</title>
+</head>
+
+<body>
+
+  <!-- PAGE CONTENT WITH TRANSITION WRAPPER -->
+  <div class="page-transition">
+    <div class="page">
+
+      <!-- CATEGORY ICON TOGGLE -->
+      <div class="category-toggle-icons">
+
+        <button class="category-icon-btn active" data-category="food">
+          <div class="category-icon-wrapper">
+            <img src="icons/food.png" class="category-icon-large" alt="">
+          </div>
+          <span class="category-label">Food & snacks</span>
+        </button>
+
+        <button class="category-icon-btn" data-category="clothing">
+          <div class="category-icon-wrapper">
+            <img src="icons/clothes.png" class="category-icon-large" alt="">
+          </div>
+          <span class="category-label">Clothing</span>
+        </button>
+
+      </div>
+
+      <!-- PRODUCTS -->
+      <section class="product-grid">
+
+        <!-- FOOD PRODUCTS -->
+        <article class="product-card" data-category="food">
+          <img src="images/meatpie.jpg" class="product-image" alt="Meat Pie">
+          <div class="product-info">
+            <h3>Meat Pie</h3>
+            <p class="price">$4.99</p>
+            <p class="details">In Stock • Seller: Savory Bites</p>
+          </div>
+        </article>
+
+        <article class="product-card" data-category="food">
+          <img src="images/suya.jpg" class="product-image" alt="Suya">
+          <div class="product-info">
+            <h3>Spicy Grilled Suya</h3>
+            <p class="price">$12.99</p>
+            <p class="details">In Stock • Seller: Grilled Goodness</p>
+          </div>
+        </article>
+
+        <!-- CLOTHING PRODUCTS -->
+        <article class="product-card" data-category="clothing">
+          <img src="images/shoes.jpg" class="product-image" alt="Shoes">
+          <div class="product-info">
+            <h3>Running Shoes</h3>
+            <p class="price">$49.99</p>
+            <p class="details">In Stock • Seller: FitGear</p>
+          </div>
+        </article>
+
+        <article class="product-card" data-category="clothing">
+          <img src="images/hat.jpg" class="product-image" alt="Hat">
+          <div class="product-info">
+            <h3>Casual Hat</h3>
+            <p class="price">$19.99</p>
+            <p class="details">In Stock • Seller: StreetStyle</p>
+          </div>
+        </article>
+
+        <article class="product-card" data-category="clothing">
+          <img src="images/shirt.jpg" class="product-image" alt="Shirt">
+          <div class="product-info">
+            <h3>Graphic T-Shirt</h3>
+            <p class="price">$24.99</p>
+            <p class="details">In Stock • Seller: PrintHub</p>
+          </div>
+        </article>
+
+      </section>
+
+    </div> <!-- END .page -->
+  </div> <!-- END .page-transition -->
+
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-section">
+      <h3>Vendors Market</h3>
+      <p>Shop local. Support small businesses.</p>
+    </div>
+
+    <div class="footer-links">
+      <a href="#">About</a>
+      <a href="#">Terms</a>
+      <a href="#">Privacy</a>
+      <a href="#">Help</a>
+    </div>
+
+    <p class="footer-copy">© 2025 Vendors Market</p>
+  </footer>
+
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <a href="homepage.html" class="nav-item active">
+      <span class="nav-icon-wrapper">
+        <img src="icons/home.png" class="nav-icon" alt="">
+      </span>
+      <span>Home</span>
+    </a>
+
+    <a href="search.html" class="nav-item">
+      <span class="nav-icon-wrapper">
+        <img src="icons/search.png" class="nav-icon" alt="">
+      </span>
+      <span>Search</span>
+    </a>
+
+    <a href="profile.html" class="nav-item">
+      <span class="nav-icon-wrapper">
+        <img src="icons/profile.png" class="nav-icon" alt="">
+      </span>
+      <span>Profile</span>
+    </a>
+  </nav>
+
+
+  <!-- NAV FADE-OUT -->
+  <script>
+    const navLinks = document.querySelectorAll('.bottom-nav .nav-item');
+    navLinks.forEach(link => {
+      link.addEventListener('click', function (e) {
+        const targetUrl = this.getAttribute('href');
+        if (!targetUrl || window.location.pathname.endsWith(targetUrl)) return;
+
+        const transition = document.querySelector('.page-transition');
+        if (!transition) return;
+
+        e.preventDefault();
+        transition.classList.add('page-exit');
+
+        setTimeout(() => {
+          window.location.href = targetUrl;
+        }, 180);
+      });
+    });
+  </script>
+
+
+  <!-- CATEGORY SWITCH + THEME SAVING -->
+  <script>
+    const pills = document.querySelectorAll('.category-icon-btn');
+    const products = document.querySelectorAll('.product-card');
+    const body = document.body;
+
+    function switchCategory(category) {
+      pills.forEach(pill =>
+        pill.classList.toggle("active", pill.dataset.category === category)
+      );
+
+      products.forEach(card => {
+        card.style.display = (card.dataset.category === category) ? "block" : "none";
+      });
+
+      body.classList.remove("theme-food", "theme-clothing");
+
+      if (category === "food") {
+        body.classList.add("theme-food");
+        localStorage.setItem("activeTheme", "food");
+      } else {
+        body.classList.add("theme-clothing");
+        localStorage.setItem("activeTheme", "clothing");
+      }
+    }
+
+    const saved = localStorage.getItem("activeTheme") || "food";
+    switchCategory(saved);
+  </script>
+
+</body>
+</html>
