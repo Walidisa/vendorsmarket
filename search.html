@@ -11,59 +11,58 @@
 
     <!-- SEARCH HERO -->
     <div class="search-hero">
-  <h1>Search Products</h1>
-  <p>Find items across all vendors.</p>
-</div>
+      <h1>Search Products</h1>
+      <p>Find items across all vendors.</p>
+    </div>
 
-<form class="search-form">
-  <input type="text" class="search-input" placeholder="Search for anything...">
-  <button type="submit" class="search-btn">Search</button>
-</form>
+    <form class="search-form">
+      <input type="text" class="search-input" placeholder="Search for anything...">
+      <button type="submit" class="search-btn">Search</button>
+    </form>
 
+    <div class="search-chips">
+      <button class="search-chip">Shoes</button>
+      <button class="search-chip">Hats</button>
+      <button class="search-chip">Shirts</button>
+      <button class="search-chip">Bags</button>
+    </div>
 
-        <div class="search-chips">
-        <button class="search-chip">Shoes</button>
-        <button class="search-chip">Hats</button>
-        <button class="search-chip">Shirts</button>
-        <button class="search-chip">Bags</button>
-        </div>
-    </header>
-
-    <!-- SEARCH RESULTS (sample) -->
+    <!-- SEARCH RESULTS -->
     <section class="product-grid">
 
-        <article class="product-card">
+      <article class="product-card">
         <img src="images/shoes.jpg" class="product-image" alt="Running Shoes">
         <div class="product-info">
-            <h3>Running Shoes</h3>
-            <p class="price">$49.99</p>
-            <p class="details">In Stock • Seller: FitGear</p>
+          <h3>Running Shoes</h3>
+          <p class="price">$49.99</p>
+          <p class="details">In Stock • Seller: FitGear</p>
         </div>
-        </article>
+      </article>
 
-        <article class="product-card">
+      <article class="product-card">
         <img src="images/hat.jpg" class="product-image" alt="Casual Hat">
         <div class="product-info">
-            <h3>Casual Hat</h3>
-            <p class="price">$19.99</p>
-            <p class="details">In Stock • Seller: StreetStyle</p>
+          <h3>Casual Hat</h3>
+          <p class="price">$19.99</p>
+          <p class="details">In Stock • Seller: StreetStyle</p>
         </div>
-        </article>
+      </article>
 
-        <article class="product-card">
+      <article class="product-card">
         <img src="images/shirt.jpg" class="product-image" alt="Graphic T-Shirt">
         <div class="product-info">
-            <h3>Graphic T-Shirt</h3>
-            <p class="price">$24.99</p>
-            <p class="details">In Stock • Seller: PrintHub</p>
+          <h3>Graphic T-Shirt</h3>
+          <p class="price">$24.99</p>
+          <p class="details">In Stock • Seller: PrintHub</p>
         </div>
-        </article>
+      </article>
 
     </section>
 
     </div>
 </div>
 
+<!-- FOOTER -->
 <footer class="footer">
   <div class="footer-section">
     <h3>Vendors Market</h3>
@@ -80,62 +79,95 @@
   <p class="footer-copy">© 2025 Vendors Market</p>
 </footer>
 
-
+<!-- BOTTOM NAV -->
 <nav class="bottom-nav">
+
   <a href="homepage.html" class="nav-item">
-    <img src="icons/home.png" class="nav-icon" alt="">
+    <span class="nav-icon-wrapper">
+      <img 
+        src="icons/home.png"
+        class="nav-icon"
+        data-blue="icons/home.png"
+        data-brown="icons/home-lightbrown.png"
+      >
+    </span>
     <span>Home</span>
   </a>
 
   <a href="search.html" class="nav-item active">
-  <span class="nav-icon-wrapper">
-  <img src="icons/search.png" class="nav-icon" alt="">
-  </span>
-  <span>Search</span>
+    <span class="nav-icon-wrapper">
+      <img 
+        src="icons/search.png"
+        class="nav-icon"
+        data-blue="icons/search.png"
+        data-brown="icons/search-lightbrown.png"
+      >
+    </span>
+    <span>Search</span>
   </a>
 
   <a href="profile.html" class="nav-item">
-    <img src="icons/profile.png" class="nav-icon" alt="">
+    <span class="nav-icon-wrapper">
+      <img 
+        src="icons/profile.png"
+        class="nav-icon"
+        data-blue="icons/profile.png"
+        data-brown="icons/profile-lightbrown.png"
+      >
+    </span>
     <span>Profile</span>
   </a>
 
-
-
 </nav>
+
+<!-- APPLY SAVED THEME -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   const savedTheme = localStorage.getItem("activeTheme");
 
   if (savedTheme === "food") {
     document.body.classList.add("theme-food");
-  } else if (savedTheme === "clothing") {
+  } else {
     document.body.classList.add("theme-clothing");
   }
 });
 </script>
+
+<!-- PAGE TRANSITION -->
 <script>
-  // Smooth fade-out when clicking nav links
-  const navLinks = document.querySelectorAll('.bottom-nav .nav-item');
+const navLinks = document.querySelectorAll('.bottom-nav .nav-item');
 
-  navLinks.forEach(link => {
-    link.addEventListener('click', function (e) {
-      const targetUrl = this.getAttribute('href');
+navLinks.forEach(link => {
+  link.addEventListener('click', function (e) {
+    const targetUrl = this.getAttribute('href');
 
-      // if already on this page, do nothing
-      if (!targetUrl || window.location.pathname.endsWith(targetUrl)) return;
+    if (!targetUrl || window.location.pathname.endsWith(targetUrl)) return;
 
-      e.preventDefault();
-      document.querySelector('.page-transition').classList.add('page-exit');
+    e.preventDefault();
+    document.querySelector('.page-transition').classList.add('page-exit');
 
-
-      setTimeout(() => {
-        window.location.href = targetUrl;
-      }, 180); // match CSS transition
-    });
+    setTimeout(() => {
+      window.location.href = targetUrl;
+    }, 180);
   });
+});
 </script>
 
+<!-- NEW: UPDATE NAV ICONS BY THEME -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const savedTheme = localStorage.getItem("activeTheme");
+  const icons = document.querySelectorAll(".nav-icon");
 
+  icons.forEach(icon => {
+    if (savedTheme === "food") {
+      icon.src = icon.dataset.brown;
+    } else {
+      icon.src = icon.dataset.blue;
+    }
+  });
+});
+</script>
 
 </body>
 </html>

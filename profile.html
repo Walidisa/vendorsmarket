@@ -95,6 +95,7 @@
 
     </div>
 </div>
+
 <!-- TAB SWITCHING SCRIPT -->
 <script>
   const tabs = document.querySelectorAll('.profile-tab');
@@ -137,56 +138,90 @@
 <nav class="bottom-nav">
 
   <a href="homepage.html" class="nav-item">
-    <img src="icons/home.png" class="nav-icon" alt="">
+    <span class="nav-icon-wrapper">
+      <img 
+        src="icons/home.png"
+        class="nav-icon"
+        data-blue="icons/home.png"
+        data-brown="icons/home-lightbrown.png"
+      >
+    </span>
     <span>Home</span>
   </a>
 
   <a href="search.html" class="nav-item">
-    <img src="icons/search.png" class="nav-icon" alt="">
+    <span class="nav-icon-wrapper">
+      <img 
+        src="icons/search.png"
+        class="nav-icon"
+        data-blue="icons/search.png"
+        data-brown="icons/search-lightbrown.png"
+      >
+    </span>
     <span>Search</span>
   </a>
 
   <a href="profile.html" class="nav-item active">
-  <span class="nav-icon-wrapper">
-  <img src="icons/profile.png" class="nav-icon" alt="">
-  </span>
-  <span>Profile</span>
+    <span class="nav-icon-wrapper">
+      <img 
+        src="icons/profile.png"
+        class="nav-icon"
+        data-blue="icons/profile.png"
+        data-brown="icons/profile-lightbrown.png"
+      >
+    </span>
+    <span>Profile</span>
   </a>
 
 </nav>
+
+<!-- Apply saved theme -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   const savedTheme = localStorage.getItem("activeTheme");
 
   if (savedTheme === "food") {
     document.body.classList.add("theme-food");
-  } else if (savedTheme === "clothing") {
+  } else {
     document.body.classList.add("theme-clothing");
   }
 });
 </script>
+
+<!-- Smooth fade-out -->
 <script>
-  // Smooth fade-out when clicking nav links
   const navLinks = document.querySelectorAll('.bottom-nav .nav-item');
 
   navLinks.forEach(link => {
     link.addEventListener('click', function (e) {
       const targetUrl = this.getAttribute('href');
-
-      // if already on this page, do nothing
       if (!targetUrl || window.location.pathname.endsWith(targetUrl)) return;
 
       e.preventDefault();
       document.querySelector('.page-transition').classList.add('page-exit');
 
-
       setTimeout(() => {
         window.location.href = targetUrl;
-      }, 180); // match CSS transition
+      }, 180);
     });
   });
 </script>
 
+<!-- NEW: Update nav icons based on theme -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const savedTheme = localStorage.getItem("activeTheme");
+  const icons = document.querySelectorAll(".nav-icon");
+
+  icons.forEach(icon => {
+    if (savedTheme === "food") {
+      icon.src = icon.dataset.brown;
+    } else {
+      icon.src = icon.dataset.blue;
+    }
+  });
+});
+</script>
 
 </body>
 </html>
