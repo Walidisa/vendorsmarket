@@ -136,12 +136,15 @@
   border: 1px solid rgba(0,0,0,0.06);
   overflow: hidden;
   max-width: 120px;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Image wrapper */
 .product-image-wrapper {
   padding: 4px 6px;
   text-align: center;              /* center the inline-block box */
+  flex: 1 0 auto;                  /* take up remaining space above text */
 }
 
 /* Picture box: rounded white container with internal blur */
@@ -190,6 +193,7 @@
 /* Product Info */
 .product-info {
   padding: 0.08rem 0.4rem 0.1rem;
+  flex: 0 0 auto;                  /* keep text block at the bottom */
 }
 
 .product-info h3 {
