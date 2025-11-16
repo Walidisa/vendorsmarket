@@ -2,7 +2,11 @@
 <html>
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages.css">
+  <link rel="stylesheet" href="css/themes.css">
+  <script src="main.js" defer></script>
   <title>Search</title>
 </head>
 <body>
@@ -63,21 +67,7 @@
 </div>
 
 <!-- FOOTER -->
-<footer class="footer">
-  <div class="footer-section">
-    <h3>Vendors Market</h3>
-    <p>Shop local. Support small businesses.</p>
-  </div>
-
-  <div class="footer-links">
-    <a href="#">About</a>
-    <a href="#">Terms</a>
-    <a href="#">Privacy</a>
-    <a href="#">Help</a>
-  </div>
-
-  <p class="footer-copy">© 2025 Vendors Market</p>
-</footer>
+<div id="site-footer"></div>
 
 <!-- BOTTOM NAV -->
 <nav class="bottom-nav">
@@ -119,55 +109,6 @@
   </a>
 
 </nav>
-
-<!-- APPLY SAVED THEME -->
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const savedTheme = localStorage.getItem("activeTheme");
-
-  if (savedTheme === "food") {
-    document.body.classList.add("theme-food");
-  } else {
-    document.body.classList.add("theme-clothing");
-  }
-});
-</script>
-
-<!-- PAGE TRANSITION -->
-<script>
-const navLinks = document.querySelectorAll('.bottom-nav .nav-item');
-
-navLinks.forEach(link => {
-  link.addEventListener('click', function (e) {
-    const targetUrl = this.getAttribute('href');
-
-    if (!targetUrl || window.location.pathname.endsWith(targetUrl)) return;
-
-    e.preventDefault();
-    document.querySelector('.page-transition').classList.add('page-exit');
-
-    setTimeout(() => {
-      window.location.href = targetUrl;
-    }, 180);
-  });
-});
-</script>
-
-<!-- NEW: UPDATE NAV ICONS BY THEME -->
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const savedTheme = localStorage.getItem("activeTheme");
-  const icons = document.querySelectorAll(".nav-icon");
-
-  icons.forEach(icon => {
-    if (savedTheme === "food") {
-      icon.src = icon.dataset.brown;
-    } else {
-      icon.src = icon.dataset.blue;
-    }
-  });
-});
-</script>
 
 </body>
 </html>

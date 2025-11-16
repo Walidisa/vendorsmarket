@@ -1,0 +1,88 @@
+:root {
+  --color-primary: #0d3b66;
+  --color-primary-lightbrown: #8A624A;
+  --color-primary-light: #144a82;
+  --color-text: #1d1d1d;
+  --color-muted: #4b5563;
+
+  --card-bg: #ffffff;
+  --page-bg: #faf7f2;
+
+  --radius-pill: 999px;
+  --radius-card: 20px;
+  --shadow-card: 0 6px 20px rgba(0,0,0,0.06);
+
+  --font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+html {
+  overflow-x: hidden;
+}
+
+body {
+  overflow-x: hidden;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 16px; /* safe mobile padding */
+}
+
+.page {
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+/* HERO */
+.page-hero h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.page-hero p {
+  font-size: 1rem;
+  color: var(--color-muted);
+  margin-bottom: 20px;
+  line-height: 1.4;
+}
+
+.hero-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ACCESSIBILITY + TAP FEEL */
+button:focus-visible {
+  outline: 3px solid rgba(13, 59, 102, 0.35);
+  outline-offset: 3px;
+  border-radius: var(--radius-pill);
+}
+
+/* Remove tap highlight (mobile) */
+button,
+button:focus,
+button:active {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Remove focus ring on mobile */
+button:focus {
+  outline: none !important;
+}
+
+/* Remove Firefox inner border */
+button::-moz-focus-inner {
+  border: 0;
+}
+
+/* Soft press effect */
+button {
+  transition: transform 0.12s ease-out, box-shadow 0.12s ease-out;
+}
+
+button:active {
+  transform: scale(0.96);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}

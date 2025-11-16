@@ -1,61 +1,3 @@
-:root {
-  --color-primary: #0d3b66;
-  --color-primary-lightbrown: #8A624A;
-  --color-primary-light: #144a82;
-  --color-text: #1d1d1d;
-  --color-muted: #4b5563;
-
-  --card-bg: #ffffff;
-  --page-bg: #faf7f2;
-
-
-  --radius-pill: 999px;
-  --radius-card: 20px;
-  --shadow-card: 0 6px 20px rgba(0,0,0,0.06);
-
-  --font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-}
-
-html {
-  overflow-x: hidden;
-}
-
-body {
-  overflow-x: hidden;
-  max-width: 480px;
-  margin-left: auto;
-  margin-right: auto;
-  padding: 0 16px; /* safe mobile padding */
-}
-
-
-
-.page {
-  width: 100%;
-  max-width: 480px;
-  margin: 0 auto;
-}
-
-/* HERO */
-.page-hero h1 {
-  font-size: 2rem;
-  font-weight: 800;
-  margin-bottom: 10px;
-}
-
-.page-hero p {
-  font-size: 1rem;
-  color: var(--color-muted);
-  margin-bottom: 20px;
-  line-height: 1.4;
-}
-
-.hero-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
 /* BUTTONS */
 .btn-primary,
 .btn-secondary {
@@ -176,63 +118,6 @@ body {
   bottom: 15px;
   left: 15px;
   opacity: 0.95;
-}
-
-/* MOBILE HERO IMAGE */
-.hero-image-container {
-  width: 100%;
-  height: 180px;               /* smaller mobile size */
-  border-radius: 16px;         /* round like the cards */
-  overflow: hidden;
-  margin-bottom: 15px;         /* space before text */
-}
-
-.hero-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 1;
-  transition: opacity 0.35s ease-out, transform 0.35s ease-out;
-  border-radius: inherit;
-}
-
-body.scrolled .hero-image {
-  opacity: 0.35;               /* softer fade for mobile */
-  transform: scale(1.02);      /* tiny zoom for smooth effect */
-}
-
-/* ACCESSIBILITY + TAP FEEL */
-button:focus-visible {
-  outline: 3px solid rgba(13, 59, 102, 0.35);
-  outline-offset: 3px;
-  border-radius: var(--radius-pill);
-}
-
-/* Remove tap highlight (mobile) */
-button,
-button:focus,
-button:active {
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* Remove focus ring on mobile */
-button:focus {
-  outline: none !important;
-}
-
-/* Remove Firefox inner border */
-button::-moz-focus-inner {
-  border: 0;
-}
-
-/* Soft press effect */
-button {
-  transition: transform 0.12s ease-out, box-shadow 0.12s ease-out;
-}
-
-button:active {
-  transform: scale(0.96);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 /* PRODUCT GRID */
@@ -363,174 +248,6 @@ button:active {
   text-decoration: underline;
 }
 
-/* SEARCH PAGE */
-.search-hero {
-  margin-bottom: 14px;
-}
-
-.search-hero h1 {
-  font-size: 1.8rem;
-}
-
-.search-hero p {
-  font-size: 0.95rem;
-  color: var(--color-muted);
-}
-
-/* Search form */
-.search-form {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  margin-top: 0.6rem;
-}
-
-/* Chips row */
-.search-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  margin-top: 0.8rem;
-}
-
-/* Individual chip */
-.search-chip {
-  padding: 0.35rem 0.8rem;
-  border-radius: 999px;
-  border: 1px solid rgba(0,0,0,0.1);
-  background: #ffffff;
-  font-size: 0.8rem;
-  color: var(--color-muted);
-  cursor: pointer;
-}
-
-/* Reuse soft press effect */
-.search-chip:active {
-  transform: scale(0.96);
-  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-}
-
-/* PROFILE PAGE - NEW LAYOUT */
-
-.profile-header {
-  margin-bottom: 1.4rem;
-}
-
-/* Banner */
-.profile-banner {
-  width: 100%;
-  height: 140px;
-  border-radius: 18px;
-  overflow: hidden;
-}
-
-.profile-banner-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* Info row under banner */
-.profile-info-row {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-top: 15px;
-}
-
-/* Avatar on the left */
-.profile-avatar-left {
-  width: 75px;
-  height: 75px;
-  border-radius: 50%;
-  background: #ffffff;
-  border: 3px solid #ffffff;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.15);
-  overflow: hidden;
-  flex-shrink: 0;
-}
-
-.profile-avatar {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* Text on right */
-.profile-info-text {
-  display: flex;
-  flex-direction: column;
-}
-
-.profile-shop-name {
-  font-size: 1.3rem;
-  font-weight: 800;
-  margin: 0;
-}
-
-.profile-name,
-.profile-location {
-  font-size: 0.9rem;
-  color: var(--color-muted);
-  margin: 2px 0;
-}
-
-/* TABS */
-.profile-tabs {
-  display: flex;
-  gap: 0.4rem;
-  background: transparent;
-  margin-bottom: 0.8rem;
-}
-
-.profile-tab {
-  flex: 1;
-  padding: 0.55rem 0.8rem;
-  border-radius: 999px;
-  border: 1px solid rgba(0,0,0,0.12);
-  background: #ffffff;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--color-muted);
-  cursor: pointer;
-}
-
-/* active tab */
-.profile-tab.is-active {
-  background: var(--color-primary);
-  color: #ffffff;
-  border-color: var(--color-primary);
-}
-
-/* Panels */
-.profile-tab-panel {
-  display: none;
-}
-
-.profile-tab-panel.is-active {
-  display: block;
-}
-
-/* About section */
-.profile-about {
-  background: var(--card-bg);
-  border-radius: var(--radius-card);
-  box-shadow: var(--shadow-card);
-  border: 1px solid rgba(0,0,0,0.08);
-  padding: 1.3rem 1.2rem 1.4rem;
-}
-
-.profile-about h2 {
-  font-size: 1.05rem;
-  margin-bottom: 0.5rem;
-}
-
-.profile-about p {
-  font-size: 0.9rem;
-  color: var(--color-muted);
-  line-height: 1.5;
-}
-
 /* BOTTOM NAVIGATION BAR */
 .bottom-nav {
   position: fixed;
@@ -619,58 +336,6 @@ button:active {
   outline: none;
   background: transparent;
 }
-
-/* PAGE TRANSITIONS */
-.page-transition {
-  opacity: 0;
-  transform: translateY(4px);
-  animation: page-fade-in 0.22s ease-out forwards;
-}
-
-@keyframes page-fade-in {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-
-/* Fade out before navigating away */
-.page-transition.page-exit {
-  opacity: 0;
-  transform: translateY(4px);
-  transition: opacity 0.18s ease-out, transform 0.18s ease-out;
-}
-
-/* THEME – FOOD & SNACKS (Caramel) */
-.theme-food {
-  --color-primary: #8A624A;       /* Caramel brown */
-  --color-primary-light: #A98163; /* Lighter baked tone */
-  --page-bg: #f1f1f1;             /* Cream flour background */
-}
-
-
-/* THEME – CLOTHING (Dark Blue) */
-.theme-clothing {
-  --color-primary: #0d3b66;        /* Your original dark blue */
-  --color-primary-light: #144a82;
-  --page-bg: #f1f1f1;              /* faint blue background */
-}
-
-/* THEME – FOOD (Caramel) */
-.theme-food {
-  --nav-active-color: #8A624A;
-  --nav-active-glow: rgba(138, 98, 74, 0.15);
-  --nav-active-glow-strong: rgba(138, 98, 74, 0.25);
-}
-
-/* THEME – CLOTHING (Blue) */
-.theme-clothing {
-  --nav-active-color: #0d3b66;
-  --nav-active-glow: rgba(13, 59, 102, 0.15);
-  --nav-active-glow-strong: rgba(13, 59, 102, 0.25);
-}
-
 
 /* CATEGORY TOGGLE BAR */
 .category-toggle {
@@ -817,7 +482,6 @@ button:active {
   border: none !important;
 }
 
-
 /* ---------------------------------------------------------
    SEARCH CHIPS (restored)
 --------------------------------------------------------- */
@@ -905,8 +569,6 @@ button:active {
   background: var(--color-primary-light);
 }
 
-
-
 /* Remove outline ONLY from homepage category icons */
 .category-icon-btn:focus,
 .category-icon-btn:focus-visible,
@@ -915,14 +577,98 @@ button:active {
   box-shadow: none !important;
 }
 
-/* THEME – CLOTHING (Blue) */
-.theme-clothing {
-  --color-primary: #0d3b66;
-  --color-primary-light: #144a82;
-  --page-bg: #f1f1f1;
+/* FEEDBACK POPUP OVERLAY */
+.feedback-overlay {
+  position: fixed;
+  inset: 0;
+  display: none;                  /* hidden by default */
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;                  /* above bottom-nav */
+}
 
-  /* You were missing these three: */
-  --nav-active-color: #0d3b66;
-  --nav-active-glow: rgba(13, 59, 102, 0.15);
-  --nav-active-glow-strong: rgba(13, 59, 102, 0.25);
+.feedback-overlay.is-open {
+  display: flex;
+}
+
+/* Dim background */
+.feedback-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.28);
+}
+
+/* Modal card */
+.feedback-modal {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 420px;
+  margin: 0 16px;                  /* safe mobile margin */
+  background: var(--card-bg);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  padding: 1.2rem 1.1rem 1.3rem;
+}
+
+/* Close button */
+.feedback-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  border: none;
+  background: transparent;
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.feedback-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0 0 4px;
+}
+
+.feedback-subtitle {
+  font-size: 0.9rem;
+  color: var(--color-muted);
+  margin: 0 0 0.9rem;
+}
+
+/* Reuse input-field styles, just tweak textarea */
+.feedback-textarea {
+  resize: vertical;
+  min-height: 90px;
+}
+
+/* Button spacing */
+.feedback-submit {
+  margin-top: 0.6rem;
+}
+
+/* Footer feedback button (small pill style) */
+.footer-feedback-btn {
+  margin: 8px auto 4px;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,0.12);
+  background: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-muted);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.12s ease-out, box-shadow 0.12s ease-out,
+              background 0.15s ease-out;
+}
+
+.footer-feedback-btn:hover {
+  background: #f4f4f4;
+}
+
+.footer-feedback-btn:active {
+  transform: scale(0.97);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
 }

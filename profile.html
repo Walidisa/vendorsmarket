@@ -2,7 +2,11 @@
 <html>
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages.css">
+  <link rel="stylesheet" href="css/themes.css">
+  <script src="main.js" defer></script>
   <title>Shop Profile</title>
 </head>
 <body>
@@ -96,43 +100,8 @@
     </div>
 </div>
 
-<!-- TAB SWITCHING SCRIPT -->
-<script>
-  const tabs = document.querySelectorAll('.profile-tab');
-  const panels = document.querySelectorAll('.profile-tab-panel');
 
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      const target = tab.getAttribute('data-tab');
-
-      // deactivate all tabs
-      tabs.forEach(t => t.classList.remove('is-active'));
-      // hide all panels
-      panels.forEach(p => p.classList.remove('is-active'));
-
-      // activate clicked tab
-      tab.classList.add('is-active');
-      // show matching panel
-      document.getElementById('tab-' + target).classList.add('is-active');
-    });
-  });
-</script>
-
-<footer class="footer">
-  <div class="footer-section">
-    <h3>Vendors Market</h3>
-    <p>Shop local. Support small businesses.</p>
-  </div>
-
-  <div class="footer-links">
-    <a href="#">About</a>
-    <a href="#">Terms</a>
-    <a href="#">Privacy</a>
-    <a href="#">Help</a>
-  </div>
-
-  <p class="footer-copy">© 2025 Vendors Market</p>
-</footer>
+<div id="site-footer"></div>
 
 
 <nav class="bottom-nav">
@@ -174,54 +143,6 @@
   </a>
 
 </nav>
-
-<!-- Apply saved theme -->
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const savedTheme = localStorage.getItem("activeTheme");
-
-  if (savedTheme === "food") {
-    document.body.classList.add("theme-food");
-  } else {
-    document.body.classList.add("theme-clothing");
-  }
-});
-</script>
-
-<!-- Smooth fade-out -->
-<script>
-  const navLinks = document.querySelectorAll('.bottom-nav .nav-item');
-
-  navLinks.forEach(link => {
-    link.addEventListener('click', function (e) {
-      const targetUrl = this.getAttribute('href');
-      if (!targetUrl || window.location.pathname.endsWith(targetUrl)) return;
-
-      e.preventDefault();
-      document.querySelector('.page-transition').classList.add('page-exit');
-
-      setTimeout(() => {
-        window.location.href = targetUrl;
-      }, 180);
-    });
-  });
-</script>
-
-<!-- NEW: Update nav icons based on theme -->
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const savedTheme = localStorage.getItem("activeTheme");
-  const icons = document.querySelectorAll(".nav-icon");
-
-  icons.forEach(icon => {
-    if (savedTheme === "food") {
-      icon.src = icon.dataset.brown;
-    } else {
-      icon.src = icon.dataset.blue;
-    }
-  });
-});
-</script>
 
 </body>
 </html>
