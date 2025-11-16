@@ -56,7 +56,7 @@ function updateNavIconsByTheme() {
 // ------------------------------------------------------
 function initHomepageCategorySwitch() {
   const pills = document.querySelectorAll('.category-icon-btn');
-  const products = document.querySelectorAll('.product-card');
+  const rows = document.querySelectorAll('.subcategory-row');
   if (!pills.length) return;
 
   function setTheme(theme) {
@@ -68,11 +68,15 @@ function initHomepageCategorySwitch() {
 
   function switchCategory(category) {
     pills.forEach(p => p.classList.toggle('active', p.dataset.category === category));
-    products.forEach(card => {
-      card.style.display = card.dataset.category === category ? 'block' : 'none';
+    rows.forEach(row => {
+      row.style.display = row.dataset.category === category ? 'block' : 'none';
     });
 
     setTheme(category);
+    // ensure products for this main category are rendered
+    if (typeof renderProducts === 'function') {
+      renderProducts(category);
+    }
   }
 
   const saved = localStorage.getItem('activeTheme') || 'food';
@@ -155,6 +159,109 @@ function initFeedbackModal() {
 
 
 // ------------------------------------------------------
+// PRODUCT CARDS – EXTENDED BLUR BACKGROUND
+// ------------------------------------------------------
+function initProductCardBackgrounds() {
+  const cards = document.querySelectorAll('.product-card');
+  if (!cards.length) return;
+
+  cards.forEach(card => {
+    const img = card.querySelector('.product-image');
+    const bg = card.querySelector('.image-bg-extend');
+    if (!img || !bg) return;
+
+    // Prefer a custom background source if provided, otherwise mirror main image
+    const src = img.getAttribute('data-bg') || img.getAttribute('src');
+    if (!src) return;
+
+    bg.style.backgroundImage = `url(${src})`;
+  });
+}
+
+
+// ------------------------------------------------------
+// PRODUCTS DATA + RENDERING
+// ------------------------------------------------------
+let ALL_PRODUCTS = [];
+
+async function loadProducts() {
+  if (ALL_PRODUCTS.length) return ALL_PRODUCTS;
+
+  try {
+    const res = await fetch('data/products.json');
+    if (!res.ok) return [];
+    const data = await res.json();
+    ALL_PRODUCTS = Array.isArray(data) ? data : [];
+  } catch (e) {
+    ALL_PRODUCTS = [];
+  }
+  return ALL_PRODUCTS;
+}
+
+function createProductCard(product) {
+  const article = document.createElement('article');
+  article.className = 'product-card';
+  article.dataset.category = product.mainCategory;
+  article.dataset.subcategory = product.subCategory;
+
+  article.innerHTML = `
+    <div class="product-image-wrapper">
+      <div class="product-image-box">
+        <div class="image-bg-extend"></div>
+        <img src="${product.image}" alt="${product.name}" class="product-image">
+      </div>
+    </div>
+    <div class="product-info">
+      <h3>${product.name}</h3>
+      <p class="price">$${product.price.toFixed(2)}</p>
+      ${typeof product.ratingValue === 'number' && typeof product.ratingCount === 'number'
+          ? `<p class="rating">⭐${product.ratingValue.toFixed(1)} (${product.ratingCount})</p>`
+        : ''}
+      <p class="details"> ${product.vendor}</p>
+    </div>
+  `;
+
+  return article;
+}
+
+async function renderProducts(mainCategory) {
+  const products = await loadProducts();
+  if (!products.length) return;
+
+  const groups = document.querySelectorAll('[data-products-group]');
+  if (!groups.length) return;
+
+  groups.forEach(group => {
+    const [groupMain, groupSub] = group.dataset.productsGroup.split(':');
+
+    // Clear old content
+    group.innerHTML = '';
+
+    // Filter products for this group and current main category
+    const visibleProducts = products.filter(p =>
+      p.mainCategory === mainCategory &&
+      p.mainCategory === groupMain &&
+      p.subCategory === groupSub
+    );
+
+    visibleProducts.forEach(p => {
+      const card = createProductCard(p);
+      group.appendChild(card);
+    });
+
+    // Hide empty rows completely
+    const row = group.closest('.subcategory-row');
+    if (row) {
+      row.style.display = visibleProducts.length ? 'block' : 'none';
+    }
+  });
+
+  // After injecting cards, sync blur backgrounds
+  initProductCardBackgrounds();
+}
+
+
+// ------------------------------------------------------
 // INITIALIZER
 // ------------------------------------------------------
 window.addEventListener('DOMContentLoaded', () => {
@@ -163,7 +270,7 @@ window.addEventListener('DOMContentLoaded', () => {
   initPageTransitions();
   initHomepageCategorySwitch();
   initProfileTabs();
-  initFeedbackModal();
+  initProductCardBackgrounds();
   loadFooter();
 });
 
@@ -180,6 +287,9 @@ async function loadFooter() {
     if (!response.ok) return;
     const html = await response.text();
     container.innerHTML = html;
+
+    // Now that footer + feedback markup exist, wire up the modal
+    initFeedbackModal();
   } catch (e) {
     // fail silently on local file restrictions
   }

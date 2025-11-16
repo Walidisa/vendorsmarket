@@ -73,58 +73,8 @@
   });
 </script>
 
-<!-- FEEDBACK POPUP -->
-<div class="feedback-overlay" id="feedbackOverlay" aria-hidden="true">
-  <div class="feedback-backdrop"></div>
-
-  <div class="feedback-modal" role="dialog" aria-modal="true" aria-labelledby="feedbackTitle">
-    <button class="feedback-close" id="closeFeedback" aria-label="Close feedback form">×</button>
-
-    <h2 id="feedbackTitle" class="feedback-title">Contact & Feedback</h2>
-    <p class="feedback-subtitle">
-      Tell us what you think about Vendors Market, or report an issue.
-    </p>
-
-    <form class="feedback-form">
-      <label class="input-label" for="fb-name">Name (optional)</label>
-      <input id="fb-name" type="text" class="input-field" placeholder="Your name">
-
-      <label class="input-label" for="fb-email">Email (optional)</label>
-      <input id="fb-email" type="email" class="input-field" placeholder="you@example.com">
-
-      <label class="input-label" for="fb-message">Message</label>
-      <textarea id="fb-message" class="input-field feedback-textarea" rows="4"
-        placeholder="Share your feedback or question..."></textarea>
-
-      <button type="submit" class="btn-primary feedback-submit">
-        Send feedback
-      </button>
-    </form>
-  </div>
-</div>
-
-
-  <!-- FOOTER -->
-  <footer class="footer">
-  <div class="footer-section">
-    <h3>Vendors Market</h3>
-    <p>Shop local. Support small businesses.</p>
-  </div>
-
-  <div class="footer-links">
-    <a href="#">About</a>
-    <a href="#">Terms</a>
-    <a href="#">Privacy</a>
-    <a href="#">Help</a>
-  </div>
-
-  <!-- New feedback button -->
-  <button class="footer-feedback-btn" id="openFeedback">
-    Contact & Feedback
-  </button>
-
-  <p class="footer-copy">© 2025 Vendors Market</p>
-</footer>
+<!-- Shared footer (includes contact & feedback modal) -->
+<div id="site-footer"></div>
 
 
 </body>

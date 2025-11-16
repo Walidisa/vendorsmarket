@@ -132,40 +132,137 @@
 .product-card {
   background: var(--card-bg);
   border-radius: var(--radius-card);
-  box-shadow: var(--shadow-card);
-  border: 1px solid rgba(0,0,0,0.08);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+  border: 1px solid rgba(0,0,0,0.06);
   overflow: hidden;
+  max-width: 120px;
 }
 
-/* Product Image */
+/* Image wrapper */
+.product-image-wrapper {
+  padding: 4px 6px;
+  text-align: center;              /* center the inline-block box */
+}
+
+/* Picture box: rounded white container with internal blur */
+.product-image-box {
+  position: relative;
+  background: #ffffff;
+  border-radius: 18px;
+  display: inline-block;            /* shrink to fit image content */
+  overflow: hidden; /* clip blur and image to this box */
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+}
+
+/* Light veil over the blur to unify color, still under image */
+.product-image-box::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0.5;                     /* between blur (0) and image (1) */
+  background: rgba(255, 255, 255, 0.12); /* soft white veil for smoother blend */
+}
+
+/* Blurred extended background lives INSIDE the picture box */
+.product-image-box .image-bg-extend {
+  position: absolute;
+  inset: 0;
+  z-index: 0;             /* behind the sharp product image */
+
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+
+  transform: scale(1.15);   /* slightly less zoom for smoother edges */
+  filter: blur(35px);       /* strong but softer blur */
+  opacity: 0.65;            /* blend with white box instead of overpowering */
+}
+
 .product-image {
-  width: 100%;
-  height: 160px;              /* smaller = less stretching */
-  object-fit: contain;        /* shows full image */
-  background: #ffffff;        /* clean product background */
-  padding: 10px;              /* breathing room */
+  position: relative;
+  z-index: 1;              /* sharp on top of the blur */
+  display: block;
+  max-width: 100%;         /* respect card width on small screens */
+  max-height: 105px;
+  object-fit: contain;
 }
 
 /* Product Info */
 .product-info {
-  padding: 1rem;
+  padding: 0.08rem 0.4rem 0.1rem;
 }
 
 .product-info h3 {
-  font-size: 1.1rem;
-  margin-bottom: 6px;
+  font-size: 0.85rem; /* keep readable title */
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 0; /* no extra gap */
+  line-height: 1.0;
 }
 
 .product-info .price {
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   font-weight: 700;
   color: var(--color-primary);
-  margin-bottom: 4px;
+  margin-bottom: 0; /* no extra gap */
+  line-height: 1.0;
 }
 
 .product-info .details {
-  font-size: 0.9rem;
+  font-size: 0.74rem;
   color: var(--color-muted);
+  line-height: 1.05;
+}
+
+.product-info .rating {
+  font-size: 0.7rem;
+  color: var(--color-muted);
+  line-height: 1.0;
+}
+
+/* SUBCATEGORY ROWS ON HOMEPAGE */
+.subcategory-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+  margin-top: 10px;
+}
+
+.subcategory-row-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.4rem;
+}
+
+.subcategory-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.subcategory-see-all {
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,0.12);
+  padding: 0.25rem 0.7rem;
+  background: #ffffff;
+  color: var(--color-muted);
+  cursor: pointer;
+}
+
+.subcategory-row-scroll {
+  display: flex;
+  gap: 0.8rem;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scroll-snap-type: x mandatory;
+}
+
+.subcategory-row-scroll .product-card {
+  min-width: 140px;
+  scroll-snap-align: start;
 }
 
 /* AUTH PAGES (LOGIN / SIGNUP) */
@@ -585,10 +682,13 @@
   align-items: center;
   justify-content: center;
   z-index: 1200;                  /* above bottom-nav */
+  opacity: 0;
+  transition: opacity 0.18s ease-out;
 }
 
 .feedback-overlay.is-open {
   display: flex;
+  opacity: 1;
 }
 
 /* Dim background */
@@ -609,6 +709,16 @@
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-card);
   padding: 1.2rem 1.1rem 1.3rem;
+
+  opacity: 0;
+  transform: translateY(16px) scale(0.94);   /* start lower & smaller, like from button */
+  transform-origin: bottom center;           /* animate up from bottom/footer area */
+  transition: opacity 0.22s ease-out, transform 0.22s ease-out;
+}
+
+.feedback-overlay.is-open .feedback-modal {
+  opacity: 1;
+  transform: translateY(0) scale(1);
 }
 
 /* Close button */
