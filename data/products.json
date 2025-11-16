@@ -144,7 +144,7 @@
   },
   {
     "id": "shoes4",
-    "name": "High-Top Sneakers",
+    "name": "High-Top Sneakers Sneakers Sneakers Sneakers",
     "price": 54.99,
     "vendor": "UrbanWalk",
     "image": "images/shoes4.jpg",
@@ -240,5 +240,16 @@
     "subCategory": "watches",
     "ratingValue": 4.9,
     "ratingCount": 143
+  },
+  {
+    "id": "trouser1",
+    "name": "Slim Fit Trousers",
+    "price": 34.5,
+    "vendor": "UrbanWalk",
+    "image": "images/trouser.jpg",
+    "mainCategory": "clothing",
+    "subCategory": "trousers",
+    "ratingValue": 4.6,
+    "ratingCount": 61
   }
 ]
