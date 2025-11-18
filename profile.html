@@ -18,7 +18,7 @@
 
     <!-- Banner -->
     <div class="profile-banner">
-        <img src="images/profile-banner.jpg" class="profile-banner-image" alt="">
+      <img src="" class="profile-banner-image" alt="" id="profileBanner">
     </div>
 
     <!-- Info row -->
@@ -26,14 +26,15 @@
         
         <!-- Avatar LEFT -->
         <div class="profile-avatar-wrapper profile-avatar-left">
-        <img src="images/profile.jpg" class="profile-avatar" alt="Shop owner">
+        <img src="" class="profile-avatar" alt="Shop owner" id="profileAvatar">
         </div>
 
         <!-- Text RIGHT -->
         <div class="profile-info-text">
-        <h1 class="profile-shop-name">Urban Streetwear</h1>
-        <p class="profile-name">@isa_closet</p>
-        <p class="profile-location">Based in Houston, TX</p>
+        <h1 class="profile-shop-name" id="profileShopName">Shop Name</h1>
+        <p class="profile-name" id="profileOwnerName">@username</p>
+        <p class="profile-location" id="profileLocation">Location</p>
+        <p class="profile-contact" id="profileContact">Contact</p>
         </div>
 
     </div>
@@ -45,59 +46,55 @@
     <!-- PROFILE TABS -->
     <div class="profile-tabs">
         <button class="profile-tab is-active" data-tab="products">Products</button>
-        <button class="profile-tab" data-tab="about">About</button>
+        <button class="profile-tab" data-tab="about">About & Reviews</button>
     </div>
 
     <!-- TAB PANELS -->
     <section class="profile-tab-panel is-active" id="tab-products">
-        <div class="product-grid">
-        <!-- Product 1 -->
-        <article class="product-card">
-            <img src="images/shoes.jpg" class="product-image" alt="Running Shoes">
-            <div class="product-info">
-            <h3>Running Shoes</h3>
-            <p class="price">$49.99</p>
-            <p class="details">In Stock • Seller: Urban Streetwear</p>
-            </div>
-        </article>
-
-        <!-- Product 2 -->
-        <article class="product-card">
-            <img src="images/shirt.jpg" class="product-image" alt="Oversized Tee">
-            <div class="product-info">
-            <h3>Oversized Tee</h3>
-            <p class="price">$29.99</p>
-            <p class="details">In Stock • Seller: Urban Streetwear</p>
-            </div>
-        </article>
-
-        <!-- Product 3 -->
-        <article class="product-card">
-            <img src="images/hat.jpg" class="product-image" alt="Bucket Hat">
-            <div class="product-info">
-            <h3>Bucket Hat</h3>
-            <p class="price">$19.99</p>
-            <p class="details">In Stock • Seller: Urban Streetwear</p>
-            </div>
-        </article>
-        </div>
+      <div class="product-grid" id="profileProductsGrid">
+      <!-- Filled dynamically with seller's products -->
+      </div>
     </section>
 
     <section class="profile-tab-panel" id="tab-about">
         <div class="profile-about">
         <h2>About this shop</h2>
-        <p>
-            Urban Streetwear is a small, independent shop focused on comfy everyday pieces:
-            sneakers, tees, hats and more. Every item is curated with students and young
-            creators in mind.
-        </p>
-        <p>
-            Orders ship within 3–5 business days. Local pickup is available in Houston, TX.
+        <p id="profileAboutText">
+          <!-- Filled from profiles.json -->
         </p>
         </div>
+
+        <div class="profile-feedback" id="profileFeedbackSection">
+          <h2>Feedback & Ratings</h2>
+          <p class="profile-feedback-empty" id="profileFeedbackEmpty">No feedback yet.</p>
+          <ul class="profile-feedback-list" id="profileFeedbackList"></ul>
+          <button type="button" class="btn-primary" id="profileFeedbackBtn">Leave seller feedback</button>
+        </div>
     </section>
+    <div class="profile-logout-wrapper">
+      <button type="button" id="profileLogoutBtn" class="profile-logout-btn">Log out</button>
+    </div>
 
     </div>
+</div>
+
+<!-- Logout confirmation popup (reuses feedback overlay styles) -->
+<div class="feedback-overlay" id="logoutOverlay" aria-hidden="true">
+  <div class="feedback-backdrop"></div>
+
+  <div class="feedback-modal" role="dialog" aria-modal="true" aria-labelledby="logoutTitle">
+    <button class="feedback-close" id="logoutCloseBtn" aria-label="Close logout dialog">×</button>
+
+    <h2 id="logoutTitle" class="feedback-title">Log out?</h2>
+    <p class="feedback-subtitle">
+      Are you sure you want to log out of Vendors Market?
+    </p>
+
+    <div class="logout-actions">
+      <button type="button" class="btn-secondary" id="logoutCancelBtn">Cancel</button>
+      <button type="button" class="btn-primary logout-confirm-btn" id="logoutConfirmBtn">Log out</button>
+    </div>
+  </div>
 </div>
 
 
@@ -130,7 +127,7 @@
     <span>Search</span>
   </a>
 
-  <a href="profile.html" class="nav-item active">
+  <a href="profile.html" class="nav-item" id="bottomNavProfileLink">
     <span class="nav-icon-wrapper">
       <img 
         src="icons/profile.png"

@@ -1,0 +1,57 @@
+[
+  {
+    "id": "sweet-treats",
+    "name": "Sweet Treats",
+    "shopName": "Sweet Treats Bakery",
+    "ownerName": "Amina Bello",
+    "location": "Lagos, Nigeria",
+    "avatar": "images/seller-sweettreats.jpg",
+    "banner": "images/banner-sweettreats.jpg",
+    "whatsapp": "+2348012345678",
+    "instagram": "@sweettreats_bakery",
+    "tagline": "Home-baked desserts made fresh daily with premium ingredients.",
+    "aboutDescription": "Sweet Treats Bakery specializes in freshly baked cakes, cupcakes and savory bites for everyday cravings and special occasions.",
+    "ownedProductIds": [
+      "cake1",
+      "cake2",
+      "cake3",
+      "cake4",
+      "cake5",
+      "meatpie1",
+      "springroll1",
+      "shawarma1",
+      "drink1",
+      "meal1"
+    ],
+    "category": "food"
+  },
+  {
+    "id": "fitgear",
+    "name": "FitGear",
+    "shopName": "FitGear Active Shop",
+    "ownerName": "Khalid Musa",
+    "location": "Abuja, Nigeria",
+    "avatar": "images/seller-fitgear.jpg",
+    "banner": "images/banner-fitgear.jpg",
+    "whatsapp": "+2348098765432",
+    "instagram": "@fitgear_active",
+    "tagline": "Performance wear and accessories for active lifestyles.",
+    "aboutDescription": "FitGear provides comfortable, durable footwear and apparel for students, professionals and weekend athletes.",
+    "ownedProductIds": [
+      "shoes1",
+      "shoes2",
+      "shoes3",
+      "shoes4",
+      "jallabiya1",
+      "shirt1",
+      "jewelry1",
+      "hijab1",
+      "material1",
+      "hat1",
+      "bag1",
+      "watch1",
+      "trouser1"
+    ],
+    "category": "clothing"
+  }
+]

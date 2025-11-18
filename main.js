@@ -49,6 +49,15 @@ function updateNavIconsByTheme() {
     if (theme === 'clothing' && blue) icon.src = blue;
   });
 
+  // Also update add-product card icon on profile page
+  const addIcons = document.querySelectorAll('.profile-add-product-card-icon');
+  addIcons.forEach(addIcon => {
+    const brown = addIcon.dataset.brown;
+    const blue = addIcon.dataset.blue;
+    if (theme === 'food' && brown) addIcon.src = brown;
+    if (theme === 'clothing' && blue) addIcon.src = blue;
+  });
+
   // Also update back button icon on subcategory page
   const backIcon = document.querySelector('#subcategoryBackBtn .back-icon');
   if (backIcon) {
@@ -56,6 +65,50 @@ function updateNavIconsByTheme() {
     const blue = backIcon.dataset.blue;
     if (theme === 'food' && brown) backIcon.src = brown;
     if (theme === 'clothing' && blue) backIcon.src = blue;
+  }
+}
+
+
+// ------------------------------------------------------
+// AUTH – HARD-CODED LOGIN
+// ------------------------------------------------------
+function initAuth() {
+  const loginForm = document.querySelector('.auth-form');
+  const isLoginPage = !!document.getElementById('login-email');
+
+  if (!loginForm) return;
+
+  if (isLoginPage) {
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const emailInput = document.getElementById('login-email');
+      const passwordInput = document.getElementById('login-password');
+      const email = emailInput ? emailInput.value.trim() : '';
+      const password = passwordInput ? passwordInput.value : '';
+
+      const HARD_CODED_EMAIL = 'demo@vendorsmarket.test';
+      const HARD_CODED_PASSWORD = 'password123';
+
+      if (email === HARD_CODED_EMAIL && password === HARD_CODED_PASSWORD) {
+        localStorage.setItem('isLoggedIn', '1');
+        localStorage.setItem('currentUserEmail', email);
+        // For this demo, the logged-in vendor is always FitGear
+        localStorage.setItem('loggedInVendorName', 'FitGear');
+        // Start by viewing their profile
+        localStorage.setItem('activeVendorName', 'FitGear');
+        // send user to profile page after successful login
+        window.location.href = 'profile.html';
+      } else {
+        alert('Invalid email or password. Try demo@vendorsmarket.test / password123');
+      }
+    });
+  } else {
+    // On signup page, just prevent submit and hint about demo credentials
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      alert('Sign up is not wired yet. Use demo@vendorsmarket.test with password123 on the login page.');
+    });
   }
 }
 
@@ -138,6 +191,199 @@ function initProfileTabs() {
       if (panel) panel.classList.add('is-active');
     });
   });
+}
+
+// PROFILE PAGE – DATA BINDING
+async function initProfilePage() {
+  const bannerEl = document.getElementById('profileBanner');
+  const shopNameEl = document.getElementById('profileShopName');
+  const ownerNameEl = document.getElementById('profileOwnerName');
+  const locationEl = document.getElementById('profileLocation');
+  const contactEl = document.getElementById('profileContact');
+  const avatarEl = document.getElementById('profileAvatar');
+  const aboutEl = document.getElementById('profileAboutText');
+  const feedbackEmptyEl = document.getElementById('profileFeedbackEmpty');
+  const feedbackListEl = document.getElementById('profileFeedbackList');
+  const feedbackBtnEl = document.getElementById('profileFeedbackBtn');
+  const productsGrid = document.getElementById('profileProductsGrid');
+  const logoutBtn = document.getElementById('profileLogoutBtn');
+  const logoutOverlay = document.getElementById('logoutOverlay');
+  const logoutCancelBtn = document.getElementById('logoutCancelBtn');
+  const logoutConfirmBtn = document.getElementById('logoutConfirmBtn');
+  const logoutCloseBtn = document.getElementById('logoutCloseBtn');
+  if (!shopNameEl || !productsGrid) return; // not on profile page
+
+  // Default seller when no explicit vendor has been selected
+  // If the user logged in, this will have been set to "FitGear" in initAuth()
+  const activeVendorName = localStorage.getItem('activeVendorName') || 'Sweet Treats';
+
+  // load profiles
+  let profiles = [];
+  try {
+    const res = await fetch('data/profiles.json');
+    if (res.ok) {
+      profiles = await res.json();
+    }
+  } catch (e) {
+    profiles = [];
+  }
+
+  const profile = profiles.find(p => p.name === activeVendorName) || profiles.find(p => p.name === 'FitGear') || profiles[0];
+
+  // apply profile info
+  if (profile) {
+    shopNameEl.textContent = profile.shopName || profile.name;
+    ownerNameEl.textContent = profile.ownerName ? `@${profile.ownerName}` : (profile.id === 'sweet-treats' ? '@sweettreats' : '@fitgear');
+    const rawLocation = profile.location || (profile.id === 'sweet-treats' ? 'Lagos, NG' : 'Abuja, NG');
+    locationEl.textContent = `Based in ${rawLocation}`;
+    if (bannerEl && profile.banner) {
+      bannerEl.src = profile.banner;
+      bannerEl.alt = profile.shopName || profile.name;
+    }
+
+    if (avatarEl && profile.avatar) {
+      avatarEl.src = profile.avatar;
+      avatarEl.alt = profile.name;
+    }
+    if (aboutEl) {
+      aboutEl.textContent = profile.aboutDescription || profile.tagline;
+    }
+
+    if (contactEl) {
+      const wa = profile.whatsapp || '';
+      const ig = profile.instagram || '';
+      const parts = [];
+      if (wa) parts.push(`WhatsApp: ${wa}`);
+      if (ig) parts.push(`Instagram: ${ig}`);
+      contactEl.textContent = parts.join(' • ');
+    }
+  }
+
+  // load and render products owned by this seller
+  const products = await loadProducts();
+  const owned = products.filter(p => p.vendor === (profile ? profile.name : activeVendorName));
+  productsGrid.innerHTML = '';
+  owned.forEach(p => {
+    const card = createProductCard(p);
+    productsGrid.appendChild(card);
+  });
+
+  initProductCardBackgrounds();
+
+  // Determine ownership: is the logged-in user viewing their own shop?
+  const isLoggedIn = localStorage.getItem('isLoggedIn') === '1';
+  const loggedInVendor = localStorage.getItem('loggedInVendorName');
+  const isOwnProfile = !!(isLoggedIn && profile && loggedInVendor && loggedInVendor === profile.name);
+
+  // Update bottom nav active state: profile icon should only be active
+  // when viewing the logged-in user's own profile
+  const navProfileLink = document.getElementById('bottomNavProfileLink');
+  if (navProfileLink) {
+    navProfileLink.classList.toggle('active', !!isOwnProfile);
+  }
+
+  // Feedback button: show only when viewing someone else's profile
+  if (feedbackBtnEl) {
+    feedbackBtnEl.style.display = isOwnProfile ? 'none' : 'block';
+  }
+
+  // Logout button: visible only on own profile
+  if (logoutBtn) {
+    logoutBtn.style.display = isOwnProfile ? 'inline-block' : 'none';
+  }
+
+  // Add-product card: only for own profile
+  if (isOwnProfile && productsGrid) {
+    const addCard = document.createElement('button');
+    addCard.type = 'button';
+    addCard.className = 'profile-add-product-card';
+    addCard.innerHTML = `
+      <span class="profile-add-product-circle">
+          <img src="icons/add.png" alt="Add" class="profile-add-product-card-icon" data-blue="icons/add.png" data-brown="icons/add-orange.png">
+      </span>
+    `;
+    productsGrid.appendChild(addCard);
+  }
+
+  // Load existing seller feedback from JSON file + localStorage and render it
+  if (feedbackEmptyEl && feedbackListEl && profile) {
+    const sellerKey = profile.name;
+    const listKey = `sellerFeedback_${sellerKey}`;
+
+    // Local feedback (what this user added)
+    let localEntries = [];
+    const storedLocal = localStorage.getItem(listKey);
+    if (storedLocal) {
+      try {
+        localEntries = JSON.parse(storedLocal);
+        if (!Array.isArray(localEntries)) localEntries = [];
+      } catch (e) {
+        localEntries = [];
+      }
+    }
+
+    // Seed feedback from JSON file
+    let seedEntries = [];
+    try {
+      const seedRes = await fetch('data/feedback.json');
+      if (seedRes.ok) {
+        const allSeed = await seedRes.json();
+        if (Array.isArray(allSeed)) {
+          seedEntries = allSeed.filter(item => item.sellerName === sellerKey || item.sellerId === profile.id);
+        }
+      }
+    } catch (e) {
+      seedEntries = [];
+    }
+
+    const combined = [...seedEntries, ...localEntries];
+
+    if (combined.length) {
+      const total = combined.reduce((sum, entry) => sum + (Number(entry.rating) || 0), 0);
+      const count = combined.length;
+      const avg = total / count;
+      renderSellerFeedbackList(combined, feedbackEmptyEl, feedbackListEl, avg, count);
+    } else {
+      renderSellerFeedbackList([], feedbackEmptyEl, feedbackListEl);
+    }
+  }
+  // Custom logout modal wiring
+  if (logoutBtn && logoutOverlay && logoutCancelBtn && logoutConfirmBtn && logoutCloseBtn) {
+    const openLogoutModal = () => {
+      logoutOverlay.classList.add('is-open');
+      logoutOverlay.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+    };
+
+    const closeLogoutModal = () => {
+      logoutOverlay.classList.remove('is-open');
+      logoutOverlay.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    };
+
+    logoutBtn.addEventListener('click', openLogoutModal);
+    logoutCancelBtn.addEventListener('click', closeLogoutModal);
+    logoutCloseBtn.addEventListener('click', closeLogoutModal);
+
+    logoutOverlay.addEventListener('click', (e) => {
+      if (e.target === logoutOverlay || e.target.classList.contains('feedback-backdrop')) {
+        closeLogoutModal();
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeLogoutModal();
+      }
+    });
+
+    logoutConfirmBtn.addEventListener('click', () => {
+      localStorage.removeItem('isLoggedIn');
+      localStorage.removeItem('currentUserEmail');
+      localStorage.removeItem('activeVendorName');
+      window.location.href = 'homepage.html';
+    });
+  }
 }
 function initFeedbackModal() {
   const openBtn = document.getElementById('openFeedback');
@@ -302,14 +548,41 @@ async function renderProducts(mainCategory) {
 window.addEventListener('DOMContentLoaded', () => {
   applySavedBodyTheme();
   updateNavIconsByTheme();
+  initAuth();
   initPageTransitions();
   initHomepageCategorySwitch();
   initProfileTabs();
+  initProfilePage();
+  initProfileNavGuard();
   initProductCardBackgrounds();
   initSubcategoryPage();
    initProductDetailPage();
   loadFooter();
+  initSellerFeedback();
 });
+
+// PROFILE NAV – LOGIN GUARD
+function initProfileNavGuard() {
+  const navProfileLink = document.querySelector('nav.bottom-nav a[href="profile.html"]');
+  if (!navProfileLink) return;
+
+  navProfileLink.addEventListener('click', (e) => {
+    const isLoggedIn = localStorage.getItem('isLoggedIn') === '1';
+    if (!isLoggedIn) {
+      e.preventDefault();
+      window.location.href = 'login.html';
+      return;
+    }
+
+    // If logged in, always navigate to the user's own profile
+    e.preventDefault();
+    const loggedInVendor = localStorage.getItem('loggedInVendorName');
+    if (loggedInVendor) {
+      localStorage.setItem('activeVendorName', loggedInVendor);
+    }
+    window.location.href = 'profile.html';
+  });
+}
 
 
 // ------------------------------------------------------
@@ -343,6 +616,191 @@ async function initSubcategoryPage() {
       window.location.href = 'homepage.html';
     });
   }
+}
+
+
+// ------------------------------------------------------
+// SELLER FEEDBACK POPUP (PROFILE PAGE)
+// ------------------------------------------------------
+function initSellerFeedback() {
+  const feedbackBtn = document.getElementById('profileFeedbackBtn');
+  if (!feedbackBtn) return; // not on profile page
+
+  feedbackBtn.addEventListener('click', () => {
+    const activeVendorName = localStorage.getItem('activeVendorName') || 'Sweet Treats';
+    showSellerFeedbackPopup(activeVendorName);
+  });
+}
+
+function showSellerFeedbackPopup(vendorName) {
+  let overlay = document.getElementById('sellerFeedbackOverlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'sellerFeedbackOverlay';
+    overlay.className = 'rating-overlay';
+    overlay.innerHTML = `
+      <div class="rating-dialog">
+        <h2>Rate this seller</h2>
+        <p class="rating-dialog-sub">Share a quick rating and (optional) comment.</p>
+        <div class="rating-buttons" id="sellerRatingButtons"></div>
+        <textarea id="sellerFeedbackComment" class="feedback-comment" rows="3" placeholder="Add a short comment (optional)"></textarea>
+        <div class="rating-dialog-actions">
+          <button type="button" class="rating-cancel" id="sellerFeedbackCancelBtn">Cancel</button>
+          <button type="button" class="rating-confirm" id="sellerFeedbackConfirmBtn" disabled>Send</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+  }
+
+  const buttonsContainer = overlay.querySelector('#sellerRatingButtons');
+  const confirmBtn = overlay.querySelector('#sellerFeedbackConfirmBtn');
+  const cancelBtn = overlay.querySelector('#sellerFeedbackCancelBtn');
+  const commentInput = overlay.querySelector('#sellerFeedbackComment');
+  if (!buttonsContainer || !confirmBtn || !cancelBtn || !commentInput) return;
+
+  buttonsContainer.innerHTML = '';
+  commentInput.value = '';
+  let selected = null;
+
+  // build 1–5 rating buttons reusing the same visual style
+  for (let i = 1; i <= 5; i++) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = String(i);
+    btn.className = 'rating-value-btn';
+    btn.addEventListener('click', () => {
+      selected = i;
+      confirmBtn.disabled = false;
+      Array.from(buttonsContainer.children).forEach(el => {
+        el.classList.toggle('is-selected', el === btn);
+      });
+    });
+    buttonsContainer.appendChild(btn);
+  }
+
+  function close() {
+    overlay.classList.remove('is-visible');
+  }
+
+  cancelBtn.onclick = () => {
+    close();
+  };
+
+  confirmBtn.onclick = () => {
+    if (!selected) return;
+
+    const ratingKey = `sellerRating_${vendorName}`;
+    const listKey = `sellerFeedback_${vendorName}`;
+
+    // Aggregate rating using same formula as products
+    const ratingStored = localStorage.getItem(ratingKey);
+    let currentValue = 0;
+    let currentCount = 0;
+    if (ratingStored) {
+      try {
+        const parsed = JSON.parse(ratingStored);
+        currentValue = Number(parsed.value) || 0;
+        currentCount = Number(parsed.count) || 0;
+      } catch (e) {
+        currentValue = 0;
+        currentCount = 0;
+      }
+    }
+
+    const total = currentValue * currentCount + selected;
+    const newCount = currentCount + 1;
+    const newValue = total / newCount;
+
+    const ratingPayload = {
+      value: newValue,
+      count: newCount
+    };
+    localStorage.setItem(ratingKey, JSON.stringify(ratingPayload));
+
+    // Append this feedback entry to list
+    const listStored = localStorage.getItem(listKey);
+    let entries = [];
+    if (listStored) {
+      try {
+        entries = JSON.parse(listStored);
+        if (!Array.isArray(entries)) entries = [];
+      } catch (e) {
+        entries = [];
+      }
+    }
+
+    const comment = commentInput.value.trim();
+    const now = new Date();
+    const entry = {
+      rating: selected,
+      comment,
+      createdAt: now.toISOString()
+    };
+    entries.push(entry);
+    localStorage.setItem(listKey, JSON.stringify(entries));
+
+    // Update UI list immediately if we are on the profile page
+    const emptyEl = document.getElementById('profileFeedbackEmpty');
+    const listEl = document.getElementById('profileFeedbackList');
+    if (emptyEl && listEl) {
+      renderSellerFeedbackList(entries, emptyEl, listEl, newValue, newCount);
+    }
+
+    showRatingToast('Thanks for your seller feedback!');
+    close();
+  };
+
+  overlay.classList.add('is-visible');
+}
+
+function renderSellerFeedbackList(entries, emptyEl, listEl, avgValue, count) {
+  const hasEntries = entries && entries.length > 0;
+
+  if (!hasEntries) {
+    emptyEl.textContent = 'No feedback yet.';
+    listEl.innerHTML = '';
+    return;
+  }
+
+  // If average rating info was provided, show summary text; otherwise derive from stored rating if available
+  if (typeof avgValue === 'number' && typeof count === 'number') {
+    emptyEl.textContent = `⭐ ${avgValue.toFixed(1)} (${count} rating${count === 1 ? '' : 's'})`;
+  } else {
+    // Fallback: show simple count
+    emptyEl.textContent = `⭐ Seller has ${entries.length} feedback${entries.length === 1 ? '' : 's'}`;
+  }
+
+  listEl.innerHTML = '';
+
+  // Show newest first
+  const sorted = [...entries].sort((a, b) => {
+    const ad = a.createdAt ? Date.parse(a.createdAt) : 0;
+    const bd = b.createdAt ? Date.parse(b.createdAt) : 0;
+    return bd - ad;
+  });
+
+  sorted.forEach(entry => {
+    const li = document.createElement('li');
+    li.className = 'profile-feedback-item';
+
+    const createdDate = entry.createdAt ? new Date(entry.createdAt) : null;
+    const dateLabel = createdDate && !Number.isNaN(createdDate.getTime())
+      ? createdDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+      : '';
+
+    const comment = entry.comment || '';
+
+    li.innerHTML = `
+      <div class="profile-feedback-item-header">
+        <span class="profile-feedback-item-rating">⭐ ${entry.rating}</span>
+        <span class="profile-feedback-item-date">${dateLabel}</span>
+      </div>
+      ${comment ? `<p class="profile-feedback-item-comment">${comment}</p>` : ''}
+    `;
+
+    listEl.appendChild(li);
+  });
 }
 
 
@@ -401,7 +859,7 @@ async function initProductDetailPage() {
       <div class="product-detail-seller-avatar">
         <img src="${product.sellerAvatar || 'images/default-seller.jpg'}" alt="${product.vendor}">
       </div>
-      <div class="product-detail-seller-text">
+      <div class="product-detail-seller-text" id="productSellerLink">
         <span class="product-detail-seller-name">${product.vendor}</span>
         <span class="product-detail-seller-extra">${product.sellerDetails || 'Trusted local vendor'}</span>
       </div>
@@ -455,6 +913,18 @@ async function initProductDetailPage() {
           rateBtn.textContent = 'Remove my rating';
         });
       }
+    });
+  }
+
+  // make seller area clickable to open profile
+  const sellerLink = document.getElementById('productSellerLink');
+  if (sellerLink) {
+    sellerLink.style.cursor = 'pointer';
+    sellerLink.addEventListener('click', () => {
+      if (product && product.vendor) {
+        localStorage.setItem('activeVendorName', product.vendor);
+      }
+      window.location.href = 'profile.html';
     });
   }
 
