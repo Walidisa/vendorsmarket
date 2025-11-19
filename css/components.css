@@ -140,9 +140,17 @@
   flex-direction: column;
 }
 
+/* Profile page product card variant: larger, but still 3 per row */
+#profileProductsGrid .product-card {
+  max-width: none;              /* let grid cell control width */
+  width: 100%;                  /* fill its grid column */
+  border-radius: 18px;
+  position: relative;           /* for positioning edit/delete controls */
+}
+
 /* Image wrapper */
 .product-image-wrapper {
-  padding: 4px 6px;
+  padding: 6px 8px;
   text-align: center;              /* center the inline-block box */
   flex: 1 0 auto;                  /* take up remaining space above text */
 }
@@ -151,7 +159,7 @@
 .product-image-box {
   position: relative;
   background: #ffffff;
-  border-radius: 18px;
+  border-radius: 20px;
   display: inline-block;            /* shrink to fit image content */
   overflow: hidden; /* clip blur and image to this box */
   box-shadow: 0 8px 24px rgba(0,0,0,0.08);
@@ -186,18 +194,18 @@
   z-index: 1;              /* sharp on top of the blur */
   display: block;
   max-width: 100%;         /* respect card width on small screens */
-  max-height: 105px;
+  max-height: 115px;
   object-fit: contain;
 }
 
 /* Product Info */
 .product-info {
-  padding: 0.08rem 0.4rem 0.1rem;
+  padding: 0.18rem 0.5rem 0.2rem;
   flex: 0 0 auto;                  /* keep text block at the bottom */
 }
 
 .product-info h3 {
-  font-size: 0.85rem; /* keep readable title */
+  font-size: 0.9rem; /* slightly larger title on profile */
   font-weight: 600;
   color: var(--color-text);
   margin-bottom: 1px; /* tiny gap so descenders aren't clipped */
@@ -205,6 +213,35 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis; /* long names show as "..." */
+}
+
+/* Profile card inline edit/delete controls */
+.profile-card-actions {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  display: flex;
+  gap: 4px;
+}
+
+.profile-card-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: none;
+  padding: 0;
+  background: rgba(255,255,255,0.95);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.profile-card-btn-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
 }
 
 .product-info .price {
@@ -257,6 +294,7 @@
   background: #ffffff;
   color: var(--color-muted);
   cursor: pointer;
+  white-space: nowrap;          /* keep label on a single line */
 }
 
 .subcategory-row-scroll {

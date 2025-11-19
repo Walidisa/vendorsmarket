@@ -206,11 +206,16 @@ async function initProfilePage() {
   const feedbackListEl = document.getElementById('profileFeedbackList');
   const feedbackBtnEl = document.getElementById('profileFeedbackBtn');
   const productsGrid = document.getElementById('profileProductsGrid');
+  const editProfileBtn = document.getElementById('profileEditProfileBtn');
   const logoutBtn = document.getElementById('profileLogoutBtn');
   const logoutOverlay = document.getElementById('logoutOverlay');
   const logoutCancelBtn = document.getElementById('logoutCancelBtn');
   const logoutConfirmBtn = document.getElementById('logoutConfirmBtn');
   const logoutCloseBtn = document.getElementById('logoutCloseBtn');
+  const deleteOverlay = document.getElementById('deleteProductOverlay');
+  const deleteCancelBtn = document.getElementById('deleteProductCancelBtn');
+  const deleteConfirmBtn = document.getElementById('deleteProductConfirmBtn');
+  const deleteCloseBtn = document.getElementById('deleteProductCloseBtn');
   if (!shopNameEl || !productsGrid) return; // not on profile page
 
   // Default seller when no explicit vendor has been selected
@@ -259,21 +264,99 @@ async function initProfilePage() {
     }
   }
 
+  // Determine ownership: is the logged-in user viewing their own shop?
+  const isLoggedIn = localStorage.getItem('isLoggedIn') === '1';
+  const loggedInVendor = localStorage.getItem('loggedInVendorName');
+  const isOwnProfile = !!(isLoggedIn && profile && loggedInVendor && loggedInVendor === profile.name);
+
   // load and render products owned by this seller
   const products = await loadProducts();
   const owned = products.filter(p => p.vendor === (profile ? profile.name : activeVendorName));
   productsGrid.innerHTML = '';
   owned.forEach(p => {
     const card = createProductCard(p);
+
+    // If this is the logged-in seller viewing their own profile,
+    // add inline edit/delete controls to the card
+    if (isOwnProfile) {
+      const actions = document.createElement('div');
+      actions.className = 'profile-card-actions';
+      actions.innerHTML = `
+        <button type="button" class="profile-card-btn profile-card-edit" aria-label="Edit product">
+          <img 
+            src="icons/edit.png" 
+            alt="Edit" 
+            class="profile-card-btn-icon" 
+            data-blue="icons/edit.png" 
+            data-brown="icons/edit-orange.png">
+        </button>
+        <button type="button" class="profile-card-btn profile-card-delete" aria-label="Delete product">
+          <img 
+            src="icons/delete.png" 
+            alt="Delete" 
+            class="profile-card-btn-icon">
+        </button>
+      `;
+
+      // Prevent click on action buttons from triggering card navigation
+      actions.addEventListener('click', (e) => {
+        e.stopPropagation();
+      });
+
+      // Delete button wiring: open confirmation modal and remove card on confirm
+      const deleteBtn = actions.querySelector('.profile-card-delete');
+      if (deleteBtn && deleteOverlay && deleteCancelBtn && deleteConfirmBtn && deleteCloseBtn) {
+        deleteBtn.addEventListener('click', () => {
+          deleteOverlay.classList.add('is-open');
+          deleteOverlay.setAttribute('aria-hidden', 'false');
+          document.body.style.overflow = 'hidden';
+
+          // Set up a one-time confirm handler for this specific card
+          const handleConfirm = () => {
+            if (card.parentElement) {
+              card.parentElement.removeChild(card);
+            }
+            deleteOverlay.classList.remove('is-open');
+            deleteOverlay.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = '';
+
+            deleteConfirmBtn.removeEventListener('click', handleConfirm);
+            deleteCancelBtn.removeEventListener('click', handleCancel);
+            deleteCloseBtn.removeEventListener('click', handleCancel);
+            deleteOverlay.removeEventListener('click', handleBackdropClick);
+          };
+
+          const handleCancel = () => {
+            deleteOverlay.classList.remove('is-open');
+            deleteOverlay.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = '';
+
+            deleteConfirmBtn.removeEventListener('click', handleConfirm);
+            deleteCancelBtn.removeEventListener('click', handleCancel);
+            deleteCloseBtn.removeEventListener('click', handleCancel);
+            deleteOverlay.removeEventListener('click', handleBackdropClick);
+          };
+
+          const handleBackdropClick = (e) => {
+            if (e.target === deleteOverlay || e.target.classList.contains('feedback-backdrop')) {
+              handleCancel();
+            }
+          };
+
+          deleteConfirmBtn.addEventListener('click', handleConfirm);
+          deleteCancelBtn.addEventListener('click', handleCancel);
+          deleteCloseBtn.addEventListener('click', handleCancel);
+          deleteOverlay.addEventListener('click', handleBackdropClick);
+        });
+      }
+
+      card.appendChild(actions);
+    }
+
     productsGrid.appendChild(card);
   });
 
   initProductCardBackgrounds();
-
-  // Determine ownership: is the logged-in user viewing their own shop?
-  const isLoggedIn = localStorage.getItem('isLoggedIn') === '1';
-  const loggedInVendor = localStorage.getItem('loggedInVendorName');
-  const isOwnProfile = !!(isLoggedIn && profile && loggedInVendor && loggedInVendor === profile.name);
 
   // Update bottom nav active state: profile icon should only be active
   // when viewing the logged-in user's own profile
@@ -290,6 +373,11 @@ async function initProfilePage() {
   // Logout button: visible only on own profile
   if (logoutBtn) {
     logoutBtn.style.display = isOwnProfile ? 'inline-block' : 'none';
+  }
+
+   // Profile header edit button: only on own profile
+  if (editProfileBtn) {
+    editProfileBtn.style.display = isOwnProfile ? 'flex' : 'none';
   }
 
   // Add-product card: only for own profile

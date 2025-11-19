@@ -467,6 +467,33 @@ body.scrolled .hero-image {
   margin: 0;
 }
 
+.profile-shop-header-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.profile-shop-edit-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: none;
+  padding: 0;
+  background: #ffffff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-top: 2px; /* nudge slightly downward */
+}
+
+.profile-shop-edit-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
 .profile-name,
 .profile-location {
   font-size: 0.9rem;

@@ -31,7 +31,17 @@
 
         <!-- Text RIGHT -->
         <div class="profile-info-text">
-        <h1 class="profile-shop-name" id="profileShopName">Shop Name</h1>
+        <div class="profile-shop-header-row">
+          <h1 class="profile-shop-name" id="profileShopName">Shop Name</h1>
+          <button type="button" class="profile-shop-edit-btn" id="profileEditProfileBtn" aria-label="Edit profile details">
+            <img 
+              src="icons/edit.png" 
+              alt="Edit profile" 
+              class="profile-shop-edit-icon"
+              data-blue="icons/edit.png" 
+              data-brown="icons/edit-orange.png">
+          </button>
+        </div>
         <p class="profile-name" id="profileOwnerName">@username</p>
         <p class="profile-location" id="profileLocation">Location</p>
         <p class="profile-contact" id="profileContact">Contact</p>
@@ -93,6 +103,25 @@
     <div class="logout-actions">
       <button type="button" class="btn-secondary" id="logoutCancelBtn">Cancel</button>
       <button type="button" class="btn-primary logout-confirm-btn" id="logoutConfirmBtn">Log out</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete product confirmation popup -->
+<div class="feedback-overlay" id="deleteProductOverlay" aria-hidden="true">
+  <div class="feedback-backdrop"></div>
+
+  <div class="feedback-modal" role="dialog" aria-modal="true" aria-labelledby="deleteProductTitle">
+    <button class="feedback-close" id="deleteProductCloseBtn" aria-label="Close delete dialog">×</button>
+
+    <h2 id="deleteProductTitle" class="feedback-title">Delete product?</h2>
+    <p class="feedback-subtitle">
+      This will remove the product from your profile. You can’t undo this action.
+    </p>
+
+    <div class="logout-actions">
+      <button type="button" class="btn-secondary" id="deleteProductCancelBtn">Cancel</button>
+      <button type="button" class="btn-primary logout-confirm-btn" id="deleteProductConfirmBtn">Delete</button>
     </div>
   </div>
 </div>
