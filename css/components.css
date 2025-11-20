@@ -130,12 +130,12 @@
 
 /* PRODUCT CARDS */
 .product-card {
-  background: var(--card-bg);
+  background: transparent;
   border-radius: var(--radius-card);
-  box-shadow: 0 6px 20px rgba(0,0,0,0.06);
-  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: none;
+  border: none;
   overflow: hidden;
-  max-width: 120px;
+  max-width: 140px; /* slightly wider so category images aren't too narrow */
   display: flex;
   flex-direction: column;
 }
@@ -150,57 +150,45 @@
 
 /* Image wrapper */
 .product-image-wrapper {
-  padding: 6px 8px;
-  text-align: center;              /* center the inline-block box */
+  padding: 0 0.5rem;               /* modest side padding; keeps image wide */
+  text-align: center;              /* center the image box */
   flex: 1 0 auto;                  /* take up remaining space above text */
 }
 
 /* Picture box: rounded white container with internal blur */
 .product-image-box {
   position: relative;
-  background: #ffffff;
-  border-radius: 20px;
-  display: inline-block;            /* shrink to fit image content */
-  overflow: hidden; /* clip blur and image to this box */
-  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  background: transparent;
+  border-radius: 0;
+  display: block;                   /* fill the card's width */
+  overflow: hidden;                 /* crop any overflow from object-fit: cover */
+  box-shadow: none;
 }
 
 /* Light veil over the blur to unify color, still under image */
 .product-image-box::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 0.5;                     /* between blur (0) and image (1) */
-  background: rgba(255, 255, 255, 0.12); /* soft white veil for smoother blend */
+  content: none; /* disable overlay to avoid extra glow */
 }
 
 /* Blurred extended background lives INSIDE the picture box */
 .product-image-box .image-bg-extend {
-  position: absolute;
-  inset: 0;
-  z-index: 0;             /* behind the sharp product image */
-
-  background-position: center;
-  background-size: cover;
-  background-repeat: no-repeat;
-
-  transform: scale(1.15);   /* slightly less zoom for smoother edges */
-  filter: blur(35px);       /* strong but softer blur */
-  opacity: 0.65;            /* blend with white box instead of overpowering */
+  display: none; /* fully remove blurred glow layer */
 }
 
 .product-image {
   position: relative;
   z-index: 1;              /* sharp on top of the blur */
   display: block;
-  max-width: 100%;         /* respect card width on small screens */
-  max-height: 115px;
-  object-fit: contain;
+  width: 100%;
+  height: 130px;           /* shorter uniform height for images */
+  object-fit: cover;       /* keeps images uniform */
+  border-radius: 12px;     /* optional rounded corners inside box */
+  background: #ffffff; 
 }
 
 /* Product Info */
 .product-info {
-  padding: 0.18rem 0.5rem 0.2rem;
+  padding: 0 0.5rem 0.1rem;        /* slightly less vertical padding under image */
   flex: 0 0 auto;                  /* keep text block at the bottom */
 }
 
@@ -208,8 +196,9 @@
   font-size: 0.9rem; /* slightly larger title on profile */
   font-weight: 600;
   color: var(--color-text);
-  margin-bottom: 1px; /* tiny gap so descenders aren't clipped */
-  line-height: 1.15;
+  margin-bottom: 0;
+  margin-top: 1px; /* no extra gap below name */
+  line-height: 2; /* tighter line box without changing font size */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis; /* long names show as "..." */
@@ -225,8 +214,8 @@
 }
 
 .profile-card-btn {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   border-radius: 999px;
   border: none;
   padding: 0;
@@ -239,8 +228,8 @@
 }
 
 .profile-card-btn-icon {
-  width: 18px;
-  height: 18px;
+  width: 14px;
+  height: 14px;
   object-fit: contain;
 }
 
@@ -248,7 +237,8 @@
   font-size: 0.95rem;
   font-weight: 700;
   color: var(--color-primary);
-  margin-bottom: 0; /* no extra gap */
+  margin-top: 0;  /* keep price snug under name */
+  margin-bottom: 0;
   line-height: 1.0;
 }
 
@@ -256,6 +246,9 @@
   font-size: 0.74rem;
   color: var(--color-muted);
   line-height: 1.05;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .product-info .rating {

@@ -576,7 +576,7 @@ function createProductCard(product) {
     </div>
     <div class="product-info">
       <h3>${product.name}</h3>
-      <p class="price">$${product.price.toFixed(2)}</p>
+      <p class="price">₦${product.price.toLocaleString()}</p>
       ${typeof product.ratingValue === 'number' && typeof product.ratingCount === 'number'
           ? `<p class="rating">⭐${product.ratingValue.toFixed(1)} (${product.ratingCount})</p>`
         : ''}
@@ -921,7 +921,7 @@ async function initProductDetailPage() {
   const slides = images
     .map(src => `
       <div class="product-detail-slide">
-        <img src="${src}" alt="${product.name}">
+        <img src="${src}" alt="${product.name}" class="product-image">
       </div>
     `)
     .join('');
@@ -936,7 +936,7 @@ async function initProductDetailPage() {
       </div>
     </div>
     <div class="product-detail-meta">
-      <p class="price">$${product.price.toFixed(2)}</p>
+      <p class="price">₦${product.price.toLocaleString()}</p>
       ${typeof product.ratingValue === 'number' && typeof product.ratingCount === 'number'
         ? `<p class="rating">⭐<span id="productRatingValue">${product.ratingValue.toFixed(1)}</span> (<span id="productRatingCount">${product.ratingCount}</span>) <button id="rateProductBtn" class="rate-link" type="button">Rate</button></p>`
         : ''}

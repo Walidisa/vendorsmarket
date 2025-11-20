@@ -53,8 +53,9 @@ body.scrolled .hero-image {
 
 .subcategory-page-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.75rem;
+  grid-template-columns: repeat(3, 1fr);  /* match profile grid */
+  gap: 0.5rem;                            /* match profile spacing */
+  justify-items: center;                  /* center cards like profile */
 }
 
 /* PRODUCT DETAIL PAGE */
@@ -128,7 +129,9 @@ body.scrolled .hero-image {
 }
 
 .product-detail-meta .price {
-  font-size: 1.1rem;
+  font-size: 1.2rem;           /* slightly larger than cards */
+  font-weight: 700;            /* match card weight */
+  color: var(--color-primary); /* match card price color */
 }
 
 .product-detail-meta .rating {
