@@ -252,9 +252,9 @@
 }
 
 .product-info .rating {
-  font-size: 0.7rem;
-  color: var(--color-muted);
-  line-height: 1.0;
+    font-size: 0.82rem;
+    color: var(--color-muted);
+    line-height: 1.0;
 }
 
 /* SUBCATEGORY ROWS ON HOMEPAGE */

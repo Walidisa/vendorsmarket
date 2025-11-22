@@ -300,7 +300,7 @@ async function initProfilePage() {
     const rawLocation = profile.location || (profile.id === 'sweet-treats' ? 'Lagos, NG' : 'Abuja, NG');
     locationEl.textContent = `Based in ${rawLocation}`;
     if (bannerEl && profile.banner) {
-      bannerEl.src = profile.banner;
+      bannerEl.src = profile.banner || '/images/default-banner.jpg';
       bannerEl.alt = profile.shopName || profile.name;
     }
 
@@ -635,7 +635,7 @@ function createProductCard(product) {
       <h3>${product.name}</h3>
       <p class="price">&#8358;${product.price.toLocaleString()}</p>
       ${typeof product.ratingValue === 'number' && typeof product.ratingCount === 'number'
-          ? `<p class="rating">&#9733;<span id="productRatingValue">${product.ratingValue.toFixed(1)}</span> (<span id="productRatingCount">${product.ratingCount}</span>) <button id="rateProductBtn" class="rate-link" type="button">Rate</button></p>`
+          ? `<p class="rating">⭐<span id="productRatingValue">${product.ratingValue.toFixed(1)}</span> (<span id="productRatingCount">${product.ratingCount}</span>)</p>`
         : ''}
       <p class="details"> ${product.vendor}</p>
     </div>
@@ -925,10 +925,10 @@ function renderSellerFeedbackList(entries, emptyEl, listEl, avgValue, count) {
 
   // If average rating info was provided, show summary text; otherwise derive from stored rating if available
   if (typeof avgValue === 'number' && typeof count === 'number') {
-    emptyEl.textContent = `⭐ ${avgValue.toFixed(1)} (${count} rating${count === 1 ? '' : 's'})`;
+    emptyEl.textContent = `? ${avgValue.toFixed(1)} (${count} rating${count === 1 ? '' : 's'})`;
   } else {
     // Fallback: show simple count
-    emptyEl.textContent = `⭐ Seller has ${entries.length} feedback${entries.length === 1 ? '' : 's'}`;
+    emptyEl.textContent = `? Seller has ${entries.length} feedback${entries.length === 1 ? '' : 's'}`;
   }
 
   listEl.innerHTML = '';
@@ -953,7 +953,7 @@ function renderSellerFeedbackList(entries, emptyEl, listEl, avgValue, count) {
 
     li.innerHTML = `
       <div class="profile-feedback-item-header">
-        <span class="profile-feedback-item-rating">⭐ ${entry.rating}</span>
+        <span class="profile-feedback-item-rating">? ${entry.rating}</span>
         <span class="profile-feedback-item-date">${dateLabel}</span>
       </div>
       ${comment ? `<p class="profile-feedback-item-comment">${comment}</p>` : ''}
@@ -982,20 +982,60 @@ async function initProductDetailPage() {
   const product = products.find(p => p.id === productId);
   if (!product) return;
 
-  // seller rating from local storage (set via profile feedback)
+  // seller rating from storage or fallback seed data
+  const sellerRatingKeys = Array.from(new Set([
+    product.vendorUsername,
+    product.vendor,
+    product.vendorShopName
+  ].filter(Boolean)));
   let sellerRatingValue = null;
   let sellerRatingCount = null;
-  const storedSellerRating = localStorage.getItem(`sellerRating_${product.vendor}`);
-  if (storedSellerRating) {
+
+  for (const key of sellerRatingKeys) {
+    const storedSellerRating = localStorage.getItem(`sellerRating_${key}`);
+    if (!storedSellerRating) continue;
     try {
       const parsedSeller = JSON.parse(storedSellerRating);
       if (parsedSeller && typeof parsedSeller.value === 'number' && typeof parsedSeller.count === 'number') {
         sellerRatingValue = parsedSeller.value;
         sellerRatingCount = parsedSeller.count;
+        break;
       }
     } catch (e) {
       sellerRatingValue = null;
       sellerRatingCount = null;
+    }
+  }
+
+  if (sellerRatingValue === null && typeof fetch === 'function') {
+    try {
+      const response = await fetch('/data/feedback.json');
+      if (response.ok) {
+        const seedEntries = await response.json();
+        if (Array.isArray(seedEntries)) {
+          const normalizedKeys = sellerRatingKeys.map(key => String(key).toLowerCase());
+          const vendorEntries = seedEntries.filter(entry => {
+            const entryKeys = [entry.sellerId, entry.sellerName]
+              .filter(Boolean)
+              .map(value => String(value).toLowerCase());
+            return entryKeys.some(value => normalizedKeys.includes(value));
+          });
+
+          if (vendorEntries.length) {
+            const total = vendorEntries.reduce((sum, entry) => sum + (Number(entry.rating) || 0), 0);
+            sellerRatingCount = vendorEntries.length;
+            sellerRatingValue = total / sellerRatingCount;
+            sellerRatingKeys.forEach(key => {
+              localStorage.setItem(`sellerRating_${key}`, JSON.stringify({
+                value: sellerRatingValue,
+                count: sellerRatingCount
+              }));
+            });
+          }
+        }
+      }
+    } catch (e) {
+      // ignore network errors
     }
   }
 
@@ -1035,15 +1075,10 @@ async function initProductDetailPage() {
     <div class="product-detail-meta">
       <p class="price">&#8358;${product.price.toLocaleString()}</p>
       ${typeof product.ratingValue === 'number' && typeof product.ratingCount === 'number'
-        ? `<p class="rating">★<span id="productRatingValue">${product.ratingValue.toFixed(1)}</span> (<span id="productRatingCount">${product.ratingCount}</span>) <button id="rateProductBtn" class="rate-link" type="button">Rate</button></p>`
+        ? `<p class="rating">⭐<span id="productRatingValue">${product.ratingValue.toFixed(1)}</span> (<span id="productRatingCount">${product.ratingCount}</span>) <button id="rateProductBtn" class="rate-link" type="button">Rate</button></p>`
         : ''}
       <p class="product-detail-vendor">
         Sold by ${product.vendorShopName || product.vendor}
-        ${
-          typeof sellerRatingValue === 'number' && typeof sellerRatingCount === 'number'
-            ? `<span class="product-detail-seller-rating-inline"> · ★ ${sellerRatingValue.toFixed(1)} (${sellerRatingCount})</span>`
-            : ''
-        }
       </p>
     </div>
     ${product.description ? `<p class="product-detail-description">${product.description}</p>` : ''}
@@ -1052,11 +1087,13 @@ async function initProductDetailPage() {
         <img src="${product.sellerAvatar || '/images/default-seller.jpg'}" alt="${product.vendor}">
       </div>
       <div class="product-detail-seller-text" id="productSellerLink">
-        <span class="product-detail-seller-name">${product.vendor}</span>
+        <span class="product-detail-seller-name">
+          ${product.vendorShopName || product.vendor}
+          ${typeof sellerRatingValue === 'number' && typeof sellerRatingCount === 'number'
+            ? `<span class="product-detail-seller-rating"> · ⭐ ${sellerRatingValue.toFixed(1)} (${sellerRatingCount})</span>`
+            : ''}
+        </span>
         <span class="product-detail-seller-extra">${product.sellerDetails || 'Trusted local vendor'}</span>
-        ${typeof sellerRatingValue === 'number' && typeof sellerRatingCount === 'number'
-          ? `<span class="product-detail-seller-rating">★ ${sellerRatingValue.toFixed(1)} (${sellerRatingCount})</span>`
-          : ''}
       </div>
     </div>
   `;
@@ -1367,3 +1404,20 @@ async function loadFooter() {
   // Footer markup is already rendered by Next; just wire modal behavior.
   initFeedbackModal();
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
