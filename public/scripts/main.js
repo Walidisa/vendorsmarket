@@ -1,4 +1,4 @@
-// ======================================================
+﻿// ======================================================
 // Shared JavaScript for Vendors Market
 // ======================================================
 
@@ -9,21 +9,19 @@
 function initPageTransitions() {
   const navLinks = document.querySelectorAll('.bottom-nav .nav-item');
   const wrapper = document.querySelector('.page-transition');
-
   if (!navLinks.length || !wrapper) return;
 
+  // clear any lingering exit state
+  wrapper.classList.remove('page-exit');
+
+  if (window.__navTransitionsBound) return;
+  window.__navTransitionsBound = true;
+
   navLinks.forEach(link => {
-    link.addEventListener('click', e => {
+    link.addEventListener('click', () => {
       const url = link.getAttribute('href');
-
       if (!url || window.location.pathname.endsWith(url)) return;
-
-      e.preventDefault();
       wrapper.classList.add('page-exit');
-
-      setTimeout(() => {
-        window.location.href = url;
-      }, 180);
     });
   });
 }
@@ -34,7 +32,15 @@ function initPageTransitions() {
 // ------------------------------------------------------
 function applySavedBodyTheme() {
   const theme = localStorage.getItem('activeTheme') || 'food';
+  document.body.classList.remove('theme-food', 'theme-clothing');
   document.body.classList.add(theme === 'food' ? 'theme-food' : 'theme-clothing');
+}
+
+function slugifyName(name) {
+  return (name || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
 }
 
 function updateNavIconsByTheme() {
@@ -58,6 +64,24 @@ function updateNavIconsByTheme() {
     if (theme === 'clothing' && blue) addIcon.src = blue;
   });
 
+  // Also update edit buttons on profile product cards
+  const profileActionIcons = document.querySelectorAll('.profile-card-btn-icon');
+  profileActionIcons.forEach(actionIcon => {
+    const brown = actionIcon.dataset.brown;
+    const blue = actionIcon.dataset.blue;
+    if (theme === 'food' && brown) actionIcon.src = brown;
+    if (theme === 'clothing' && blue) actionIcon.src = blue;
+  });
+
+  // Update profile header edit icon
+  const profileEditIcons = document.querySelectorAll('.profile-shop-edit-icon');
+  profileEditIcons.forEach(editIcon => {
+    const brown = editIcon.dataset.brown;
+    const blue = editIcon.dataset.blue;
+    if (theme === 'food' && brown) editIcon.src = brown;
+    if (theme === 'clothing' && blue) editIcon.src = blue;
+  });
+
   // Also update back button icon on subcategory page
   const backIcon = document.querySelector('#subcategoryBackBtn .back-icon');
   if (backIcon) {
@@ -65,6 +89,15 @@ function updateNavIconsByTheme() {
     const blue = backIcon.dataset.blue;
     if (theme === 'food' && brown) backIcon.src = brown;
     if (theme === 'clothing' && blue) backIcon.src = blue;
+  }
+
+  // Update back button icon on product detail page
+  const productBackIcon = document.querySelector('#productBackBtn .back-icon');
+  if (productBackIcon) {
+    const brown = productBackIcon.dataset.brown;
+    const blue = productBackIcon.dataset.blue;
+    if (theme === 'food' && brown) productBackIcon.src = brown;
+    if (theme === 'clothing' && blue) productBackIcon.src = blue;
   }
 }
 
@@ -87,8 +120,8 @@ function initAuth() {
       const email = emailInput ? emailInput.value.trim() : '';
       const password = passwordInput ? passwordInput.value : '';
 
-      const HARD_CODED_EMAIL = 'demo@vendorsmarket.test';
-      const HARD_CODED_PASSWORD = 'password123';
+      const HARD_CODED_EMAIL = 'demo@v.t';
+      const HARD_CODED_PASSWORD = 'pass';
 
       if (email === HARD_CODED_EMAIL && password === HARD_CODED_PASSWORD) {
         localStorage.setItem('isLoggedIn', '1');
@@ -98,7 +131,8 @@ function initAuth() {
         // Start by viewing their profile
         localStorage.setItem('activeVendorName', 'FitGear');
         // send user to profile page after successful login
-        window.location.href = 'profile.html';
+        const slug = slugifyName('FitGear') || 'fitgear';
+        window.location.href = `/profile/${slug}`;
       } else {
         alert('Invalid email or password. Try demo@vendorsmarket.test / password123');
       }
@@ -120,6 +154,8 @@ function initHomepageCategorySwitch() {
   const pills = document.querySelectorAll('.category-icon-btn');
   const rows = document.querySelectorAll('.subcategory-row');
   if (!pills.length) return;
+  if (window.__homepageCategoriesBound) return;
+  window.__homepageCategoriesBound = true;
 
   function setTheme(theme) {
     document.body.classList.remove('theme-food', 'theme-clothing');
@@ -165,7 +201,7 @@ function initHomepageCategorySwitch() {
       const title = row.querySelector('.subcategory-title')?.textContent || sub;
       localStorage.setItem('subcategoryTitle', title);
 
-      window.location.href = 'category.html';
+      window.location.href = '/category';
     });
   });
 }
@@ -178,6 +214,8 @@ function initProfileTabs() {
   const tabs = document.querySelectorAll('.profile-tab');
   const panels = document.querySelectorAll('.profile-tab-panel');
   if (!tabs.length) return;
+  if (window.__profileTabsBound) return;
+  window.__profileTabsBound = true;
 
   tabs.forEach(tab => {
     tab.addEventListener('click', () => {
@@ -218,14 +256,15 @@ async function initProfilePage() {
   const deleteCloseBtn = document.getElementById('deleteProductCloseBtn');
   if (!shopNameEl || !productsGrid) return; // not on profile page
 
-  // Default seller when no explicit vendor has been selected
-  // If the user logged in, this will have been set to "FitGear" in initAuth()
-  const activeVendorName = localStorage.getItem('activeVendorName') || 'Sweet Treats';
+  const urlParts = window.location.pathname.split('/').filter(Boolean);
+  const profileSlug = urlParts[0] === 'profile' ? urlParts[1] : null;
+
+  const activeVendorNameFromStorage = localStorage.getItem('activeVendorName') || null;
 
   // load profiles
   let profiles = [];
   try {
-    const res = await fetch('data/profiles.json');
+    const res = await fetch('/data/profiles.json');
     if (res.ok) {
       profiles = await res.json();
     }
@@ -233,7 +272,26 @@ async function initProfilePage() {
     profiles = [];
   }
 
-  const profile = profiles.find(p => p.name === activeVendorName) || profiles.find(p => p.name === 'FitGear') || profiles[0];
+  let profile = null;
+
+  if (profileSlug && profiles.length) {
+    profile = profiles.find(p => slugifyName(p.name) === profileSlug || slugifyName(p.id) === profileSlug) || null;
+  } else if (activeVendorNameFromStorage) {
+    profile = profiles.find(p => p.name === activeVendorNameFromStorage) || null;
+  }
+
+  if (!profile) {
+    const page = document.querySelector('.page');
+    if (page) {
+      page.innerHTML = '<div style="padding:1.5rem; text-align:center"><h1 style="margin:0 auto;">Profile does not exist</h1></div>';
+    } else if (shopNameEl) {
+      shopNameEl.textContent = 'Profile does not exist';
+    }
+    return;
+  }
+
+  const activeVendorName = profile.name;
+  localStorage.setItem('activeVendorName', activeVendorName);
 
   // apply profile info
   if (profile) {
@@ -284,15 +342,15 @@ async function initProfilePage() {
       actions.innerHTML = `
         <button type="button" class="profile-card-btn profile-card-edit" aria-label="Edit product">
           <img 
-            src="icons/edit.png" 
+            src="/icons/edit.png" 
             alt="Edit" 
             class="profile-card-btn-icon" 
-            data-blue="icons/edit.png" 
-            data-brown="icons/edit-orange.png">
+            data-blue="/icons/edit.png" 
+            data-brown="/icons/edit-orange.png">
         </button>
         <button type="button" class="profile-card-btn profile-card-delete" aria-label="Delete product">
           <img 
-            src="icons/delete.png" 
+            src="/icons/delete.png" 
             alt="Delete" 
             class="profile-card-btn-icon">
         </button>
@@ -357,6 +415,7 @@ async function initProfilePage() {
   });
 
   initProductCardBackgrounds();
+  updateNavIconsByTheme();
 
   // Update bottom nav active state: profile icon should only be active
   // when viewing the logged-in user's own profile
@@ -387,7 +446,7 @@ async function initProfilePage() {
     addCard.className = 'profile-add-product-card';
     addCard.innerHTML = `
       <span class="profile-add-product-circle">
-          <img src="icons/add.png" alt="Add" class="profile-add-product-card-icon" data-blue="icons/add.png" data-brown="icons/add-orange.png">
+          <img src="/icons/add.png" alt="Add" class="profile-add-product-card-icon" data-blue="/icons/add.png" data-brown="/icons/add-orange.png">
       </span>
     `;
     productsGrid.appendChild(addCard);
@@ -413,7 +472,7 @@ async function initProfilePage() {
     // Seed feedback from JSON file
     let seedEntries = [];
     try {
-      const seedRes = await fetch('data/feedback.json');
+      const seedRes = await fetch('/data/feedback.json');
       if (seedRes.ok) {
         const allSeed = await seedRes.json();
         if (Array.isArray(allSeed)) {
@@ -469,7 +528,7 @@ async function initProfilePage() {
       localStorage.removeItem('isLoggedIn');
       localStorage.removeItem('currentUserEmail');
       localStorage.removeItem('activeVendorName');
-      window.location.href = 'homepage.html';
+      window.location.href = '/homepage';
     });
   }
 }
@@ -479,6 +538,8 @@ function initFeedbackModal() {
   const closeBtn = document.getElementById('closeFeedback');
 
   if (!openBtn || !overlay || !closeBtn) return;
+  if (overlay.dataset.bound === '1') return;
+  overlay.dataset.bound = '1';
 
   function openModal() {
     overlay.classList.add('is-open');
@@ -493,26 +554,22 @@ function initFeedbackModal() {
   openBtn.addEventListener('click', openModal);
   closeBtn.addEventListener('click', closeModal);
 
-  // Close when clicking the dark backdrop
   overlay.addEventListener('click', (e) => {
     if (e.target === overlay || e.target.classList.contains('feedback-backdrop')) {
       closeModal();
     }
   });
 
-  // ESC key closes
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       closeModal();
     }
   });
 
-  // (Optional) block actual submit for now
   const form = overlay.querySelector('.feedback-form');
   if (form) {
     form.addEventListener('submit', (e) => {
       e.preventDefault();
-      // You can connect this to backend later
       closeModal();
       alert('Thanks for your feedback!');
     });
@@ -550,7 +607,7 @@ async function loadProducts() {
   if (ALL_PRODUCTS.length) return ALL_PRODUCTS;
 
   try {
-    const res = await fetch('data/products.json');
+    const res = await fetch('/data/products.json');
     if (!res.ok) return [];
     const data = await res.json();
     ALL_PRODUCTS = Array.isArray(data) ? data : [];
@@ -576,9 +633,9 @@ function createProductCard(product) {
     </div>
     <div class="product-info">
       <h3>${product.name}</h3>
-      <p class="price">₦${product.price.toLocaleString()}</p>
+      <p class="price">&#8358;${product.price.toLocaleString()}</p>
       ${typeof product.ratingValue === 'number' && typeof product.ratingCount === 'number'
-          ? `<p class="rating">⭐${product.ratingValue.toFixed(1)} (${product.ratingCount})</p>`
+          ? `<p class="rating">&#9733;<span id="productRatingValue">${product.ratingValue.toFixed(1)}</span> (<span id="productRatingCount">${product.ratingCount}</span>) <button id="rateProductBtn" class="rate-link" type="button">Rate</button></p>`
         : ''}
       <p class="details"> ${product.vendor}</p>
     </div>
@@ -587,7 +644,7 @@ function createProductCard(product) {
   // Clicking a product card opens the product detail page
   article.addEventListener('click', () => {
     localStorage.setItem('activeProductId', product.id);
-    window.location.href = 'product.html';
+    window.location.href = '/product';
   });
 
   return article;
@@ -633,7 +690,7 @@ async function renderProducts(mainCategory) {
 // ------------------------------------------------------
 // INITIALIZER
 // ------------------------------------------------------
-window.addEventListener('DOMContentLoaded', () => {
+function runAllInitializers() {
   applySavedBodyTheme();
   updateNavIconsByTheme();
   initAuth();
@@ -644,31 +701,44 @@ window.addEventListener('DOMContentLoaded', () => {
   initProfileNavGuard();
   initProductCardBackgrounds();
   initSubcategoryPage();
-   initProductDetailPage();
+  initProductDetailPage();
   loadFooter();
   initSellerFeedback();
-});
+}
+
+if (document.readyState === 'loading') {
+  window.addEventListener('DOMContentLoaded', runAllInitializers);
+} else {
+  runAllInitializers();
+}
 
 // PROFILE NAV – LOGIN GUARD
 function initProfileNavGuard() {
-  const navProfileLink = document.querySelector('nav.bottom-nav a[href="profile.html"]');
-  if (!navProfileLink) return;
+  const navProfileLinks = document.querySelectorAll('nav.bottom-nav a[href^="/profile"]');
+  if (!navProfileLinks.length) return;
+  if (window.__profileNavBound) return;
+  window.__profileNavBound = true;
 
-  navProfileLink.addEventListener('click', (e) => {
-    const isLoggedIn = localStorage.getItem('isLoggedIn') === '1';
-    if (!isLoggedIn) {
+  navProfileLinks.forEach((link) => {
+    link.addEventListener('click', (e) => {
+      const isLoggedIn = localStorage.getItem('isLoggedIn') === '1';
+      if (!isLoggedIn) {
+        e.preventDefault();
+        window.location.href = '/login';
+        return;
+      }
+
       e.preventDefault();
-      window.location.href = 'login.html';
-      return;
-    }
+      const loggedInVendor = localStorage.getItem('loggedInVendorName');
+      if (loggedInVendor) {
+        localStorage.setItem('activeVendorName', loggedInVendor);
+        const slug = slugifyName(loggedInVendor);
+        window.location.href = `/profile/${slug}`;
+        return;
+      }
 
-    // If logged in, always navigate to the user's own profile
-    e.preventDefault();
-    const loggedInVendor = localStorage.getItem('loggedInVendorName');
-    if (loggedInVendor) {
-      localStorage.setItem('activeVendorName', loggedInVendor);
-    }
-    window.location.href = 'profile.html';
+      window.location.href = '/login';
+    });
   });
 }
 
@@ -680,7 +750,9 @@ async function initSubcategoryPage() {
   const grid = document.getElementById('subcategoryPageGrid');
   const titleEl = document.getElementById('subcategoryTitle');
   const backBtn = document.getElementById('subcategoryBackBtn');
-  if (!grid || !titleEl) return; // not on category.html
+  if (!grid || !titleEl) return; // not on /category
+  if (window.__subcategoryPageBound) return;
+  window.__subcategoryPageBound = true;
 
   const main = localStorage.getItem('subcategoryMain');
   const sub = localStorage.getItem('subcategorySlug');
@@ -701,7 +773,7 @@ async function initSubcategoryPage() {
 
   if (backBtn) {
     backBtn.addEventListener('click', () => {
-      window.location.href = 'homepage.html';
+      window.location.href = '/homepage';
     });
   }
 }
@@ -899,7 +971,9 @@ async function initProductDetailPage() {
   const container = document.getElementById('productDetailMain');
   const titleEl = document.getElementById('productTitle');
   const backBtn = document.getElementById('productBackBtn');
-  if (!container || !titleEl) return; // not on product.html
+  if (!container || !titleEl) return; // not on /product
+  if (window.__productDetailBound) return;
+  window.__productDetailBound = true;
 
   const productId = localStorage.getItem('activeProductId');
   if (!productId) return;
@@ -907,6 +981,23 @@ async function initProductDetailPage() {
   const products = await loadProducts();
   const product = products.find(p => p.id === productId);
   if (!product) return;
+
+  // seller rating from local storage (set via profile feedback)
+  let sellerRatingValue = null;
+  let sellerRatingCount = null;
+  const storedSellerRating = localStorage.getItem(`sellerRating_${product.vendor}`);
+  if (storedSellerRating) {
+    try {
+      const parsedSeller = JSON.parse(storedSellerRating);
+      if (parsedSeller && typeof parsedSeller.value === 'number' && typeof parsedSeller.count === 'number') {
+        sellerRatingValue = parsedSeller.value;
+        sellerRatingCount = parsedSeller.count;
+      }
+    } catch (e) {
+      sellerRatingValue = null;
+      sellerRatingCount = null;
+    }
+  }
 
   titleEl.textContent = product.name;
 
@@ -928,6 +1019,12 @@ async function initProductDetailPage() {
 
   container.innerHTML = `
     <div class="product-detail-hero">
+      <button class="product-detail-nav prev" id="productDetailPrev" aria-label="Previous image">
+        <img src="/icons/left.png" alt="Previous" />
+      </button>
+      <button class="product-detail-nav next" id="productDetailNext" aria-label="Next image">
+        <img src="/icons/right.png" alt="Next" />
+      </button>
       <div class="product-detail-slider">
         ${slides}
       </div>
@@ -936,20 +1033,30 @@ async function initProductDetailPage() {
       </div>
     </div>
     <div class="product-detail-meta">
-      <p class="price">₦${product.price.toLocaleString()}</p>
+      <p class="price">&#8358;${product.price.toLocaleString()}</p>
       ${typeof product.ratingValue === 'number' && typeof product.ratingCount === 'number'
-        ? `<p class="rating">⭐<span id="productRatingValue">${product.ratingValue.toFixed(1)}</span> (<span id="productRatingCount">${product.ratingCount}</span>) <button id="rateProductBtn" class="rate-link" type="button">Rate</button></p>`
+        ? `<p class="rating">★<span id="productRatingValue">${product.ratingValue.toFixed(1)}</span> (<span id="productRatingCount">${product.ratingCount}</span>) <button id="rateProductBtn" class="rate-link" type="button">Rate</button></p>`
         : ''}
-      <p class="product-detail-vendor">Sold by ${product.vendor}</p>
+      <p class="product-detail-vendor">
+        Sold by ${product.vendorShopName || product.vendor}
+        ${
+          typeof sellerRatingValue === 'number' && typeof sellerRatingCount === 'number'
+            ? `<span class="product-detail-seller-rating-inline"> · ★ ${sellerRatingValue.toFixed(1)} (${sellerRatingCount})</span>`
+            : ''
+        }
+      </p>
     </div>
     ${product.description ? `<p class="product-detail-description">${product.description}</p>` : ''}
     <div class="product-detail-seller">
       <div class="product-detail-seller-avatar">
-        <img src="${product.sellerAvatar || 'images/default-seller.jpg'}" alt="${product.vendor}">
+        <img src="${product.sellerAvatar || '/images/default-seller.jpg'}" alt="${product.vendor}">
       </div>
       <div class="product-detail-seller-text" id="productSellerLink">
         <span class="product-detail-seller-name">${product.vendor}</span>
         <span class="product-detail-seller-extra">${product.sellerDetails || 'Trusted local vendor'}</span>
+        ${typeof sellerRatingValue === 'number' && typeof sellerRatingCount === 'number'
+          ? `<span class="product-detail-seller-rating">★ ${sellerRatingValue.toFixed(1)} (${sellerRatingCount})</span>`
+          : ''}
       </div>
     </div>
   `;
@@ -957,6 +1064,8 @@ async function initProductDetailPage() {
   // simple dot navigation slider
   const slider = container.querySelector('.product-detail-slider');
   const dotEls = Array.from(container.querySelectorAll('.product-detail-dot'));
+  const prevBtn = container.querySelector('#productDetailPrev');
+  const nextBtn = container.querySelector('#productDetailNext');
   let activeIndex = 0;
 
   function updateSlider(index) {
@@ -975,6 +1084,20 @@ async function initProductDetailPage() {
       updateSlider(index);
     });
   });
+
+  if (prevBtn) {
+    prevBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      updateSlider(Math.max(0, activeIndex - 1));
+    });
+  }
+
+  if (nextBtn) {
+    nextBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      updateSlider(Math.min(images.length - 1, activeIndex + 1));
+    });
+  }
 
   updateSlider(0);
 
@@ -1011,8 +1134,15 @@ async function initProductDetailPage() {
     sellerLink.addEventListener('click', () => {
       if (product && product.vendor) {
         localStorage.setItem('activeVendorName', product.vendor);
+        const slug = product.vendorUsername;
+        if (!slug) {
+          window.location.href = '/login';
+          return;
+        }
+        window.location.href = `/profile/${slug}`;
+        return;
       }
-      window.location.href = 'profile.html';
+      window.location.href = '/profile/sweet-treats';
     });
   }
 
@@ -1234,16 +1364,6 @@ function showRatingToast(message) {
 async function loadFooter() {
   const container = document.getElementById('site-footer');
   if (!container) return;
-
-  try {
-    const response = await fetch('footer.html');
-    if (!response.ok) return;
-    const html = await response.text();
-    container.innerHTML = html;
-
-    // Now that footer + feedback markup exist, wire up the modal
-    initFeedbackModal();
-  } catch (e) {
-    // fail silently on local file restrictions
-  }
+  // Footer markup is already rendered by Next; just wire modal behavior.
+  initFeedbackModal();
 }

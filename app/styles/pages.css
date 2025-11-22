@@ -71,7 +71,7 @@ body.scrolled .hero-image {
 }
 
 .product-detail-header h1 {
-  font-size: 1.3rem;
+  font-size: 1.5rem;
 }
 
 .product-detail-main {
@@ -84,23 +84,80 @@ body.scrolled .hero-image {
   border-radius: 18px;
   overflow: hidden;
   margin: 0 0 0.8rem;
+  height: 320px;
+  background: #d8d8d8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .product-detail-slider {
   display: flex;
   width: 100%;
   transition: transform 0.28s ease-out;
+  height: 100%;
+  background: #d8d8d8;
+  position: relative;
+  z-index: 1;
 }
 
 .product-detail-slide {
   flex: 0 0 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  background: #d8d8d8;
 }
 
 .product-detail-slide img {
   width: 100%;
-  height: auto;
+  height: 100%;
   object-fit: contain;
   display: block;
+  background: #d8d8d8;
+}
+
+.product-detail-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,0,0,0.08);
+  background: #ffffff;
+  color: #444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 2;
+  transition: background 0.2s ease, transform 0.12s ease, box-shadow 0.2s ease;
+}
+
+.product-detail-nav:hover {
+  background: #f2f2f2;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+
+.product-detail-nav:active {
+  transform: translateY(-50%) scale(0.96);
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.12);
+}
+
+.product-detail-nav img {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+.product-detail-nav.prev {
+  left: 10px;
+}
+
+.product-detail-nav.next {
+  right: 10px;
 }
 
 .product-detail-dots {
@@ -129,13 +186,15 @@ body.scrolled .hero-image {
 }
 
 .product-detail-meta .price {
-  font-size: 1.2rem;           /* slightly larger than cards */
+  font-size: 1.4rem;           /* larger emphasis */
   font-weight: 700;            /* match card weight */
   color: var(--color-primary); /* match card price color */
 }
 
 .product-detail-meta .rating {
-  margin-top: 2px;
+  margin-top: 6px;
+  font-size: 1.05rem;
+  font-weight: 600;
 }
 
 .rate-link {
@@ -150,14 +209,14 @@ body.scrolled .hero-image {
 }
 
 .product-detail-vendor {
-  margin-top: 6px;
-  font-size: 0.9rem;
+  margin-top: 8px;
+  font-size: 1rem;
   color: var(--color-muted);
 }
 
 .product-detail-description {
-  margin-top: 10px;
-  font-size: 0.9rem;
+  margin-top: 12px;
+  font-size: 1rem;
   color: var(--color-muted);
   line-height: 1.5;
 }
@@ -190,13 +249,25 @@ body.scrolled .hero-image {
 }
 
 .product-detail-seller-name {
-  font-size: 0.95rem;
-  font-weight: 600;
+  font-size: 1.05rem;
+  font-weight: 700;
 }
 
 .product-detail-seller-extra {
-  font-size: 0.8rem;
+  font-size: 0.95rem;
   color: var(--color-muted);
+}
+
+.product-detail-seller-rating {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.product-detail-seller-rating-inline {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-primary);
 }
 
 /* RATING POPUP */
