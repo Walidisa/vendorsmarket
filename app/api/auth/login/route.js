@@ -1,0 +1,56 @@
+import { NextResponse } from 'next/server';
+import { supabaseServer } from '../../../../lib/supabaseServer.js';
+
+export async function POST(request) {
+  const body = await request.json().catch(() => null);
+  const email = body?.email?.trim();
+  const password = body?.password || '';
+
+  if (!email || !password) {
+    return NextResponse.json({ error: 'Email and password are required.' }, { status: 400 });
+  }
+
+  const { data, error } = await supabaseServer
+    .from('vendors')
+    .select(
+      `
+        username,
+        shop_name,
+        full_name,
+        email,
+        password,
+        profile_pic,
+        banner_pic,
+        motto,
+        about_description,
+        location,
+        whatsapp,
+        instagram
+      `,
+    )
+    .eq('email', email)
+    .eq('password', password)
+    .maybeSingle();
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  if (!data) {
+    return NextResponse.json({ error: 'Invalid credentials.' }, { status: 401 });
+  }
+
+  return NextResponse.json({
+    username: data.username,
+    shopName: data.shop_name,
+    fullName: data.full_name,
+    email: data.email,
+    profilePic: data.profile_pic,
+    bannerPic: data.banner_pic,
+    motto: data.motto,
+    aboutDescription: data.about_description,
+    location: data.location,
+    whatsapp: data.whatsapp,
+    instagram: data.instagram,
+  });
+}

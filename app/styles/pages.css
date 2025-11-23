@@ -846,3 +846,226 @@ body.scrolled .hero-image {
   transform: translateY(4px);
   transition: opacity 0.18s ease-out, transform 0.18s ease-out;
 }
+
+/* ADD PRODUCT PAGE */
+.add-product-page {
+  padding: 1.25rem;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.add-product-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.add-product-title {
+  margin: 0;
+  line-height: 1;
+}
+
+.add-product-form {
+  display: grid;
+  gap: 0.75rem;
+  max-width: 480px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.add-product-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.9rem;
+}
+
+.add-product-form input,
+.add-product-form textarea,
+.add-product-form select {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+  font-size: 0.95rem;
+  background: #fff;
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+.add-product-form input[type="file"] {
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+}
+
+.file-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.4rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.file-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+}
+
+.file-list .file-remove-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.95);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+  cursor: pointer;
+}
+
+.file-actions-row .btn-secondary {
+  padding: 0.45rem 0.8rem;
+}
+
+.file-input-hidden {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  width: 0;
+  height: 0;
+}
+
+.file-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.3rem;
+  flex-wrap: wrap;
+}
+
+.file-name {
+  font-size: 0.9rem;
+  color: var(--color-muted);
+}
+
+.add-product-form textarea {
+  resize: vertical;
+}
+
+.add-product-form button[type="submit"] {
+  padding: 0.8rem 1rem;
+  border: none;
+  border-radius: 14px;
+  background: var(--color-primary, #8a624a);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+}
+
+.add-product-form button[type="submit"]:hover {
+  background: var(--color-primary-light);
+}
+
+.add-product-form button[type="submit"]:active {
+  transform: translateY(1px) scale(0.99);
+}
+
+.form-status {
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.add-product-success-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+}
+
+.add-product-success-dialog {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 1.3rem 1.1rem 1.1rem;
+  width: 90%;
+  max-width: 360px;
+  text-align: center;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.18);
+}
+
+.add-product-success-dialog h2 {
+  margin: 0.5rem 0 0.35rem;
+  font-size: 1.2rem;
+}
+
+.add-product-success-dialog p {
+  margin: 0 0 0.9rem;
+  color: var(--color-muted);
+  font-size: 0.95rem;
+}
+
+.success-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #daf5e3;
+  color: #1f9d55;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.success-actions {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 0.6rem;
+}
+
+.btn-primary,
+.btn-secondary {
+  flex: 1;
+  padding: 0.65rem 0.9rem;
+  border-radius: 12px;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: var(--color-primary, #8a624a);
+  color: #fff;
+  transition: background 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+}
+
+.btn-primary:hover {
+  background: var(--color-primary-light, #a98163);
+}
+
+.btn-primary:active {
+  transform: translateY(1px) scale(0.99);
+}
+
+.btn-secondary {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.btn-secondary:hover {
+  background: #e5e7eb;
+}

@@ -3,18 +3,6 @@
   --color-primary: #8A624A;       /* Caramel brown */
   --color-primary-light: #A98163; /* Lighter baked tone */
   --page-bg: #f1f1f1;             /* Cream flour background */
-}
-
-
-/* THEME – CLOTHING (Dark Blue) */
-.theme-clothing {
-  --color-primary: #0d3b66;        /* Your original dark blue */
-  --color-primary-light: #144a82;
-  --page-bg: #f1f1f1;              /* faint blue background */
-}
-
-/* THEME – FOOD (Caramel) */
-.theme-food {
   --nav-active-color: #8A624A;
   --nav-active-glow: rgba(138, 98, 74, 0.15);
   --nav-active-glow-strong: rgba(138, 98, 74, 0.25);
@@ -22,18 +10,9 @@
 
 /* THEME – CLOTHING (Blue) */
 .theme-clothing {
-  --nav-active-color: #0d3b66;
-  --nav-active-glow: rgba(13, 59, 102, 0.15);
-  --nav-active-glow-strong: rgba(13, 59, 102, 0.25);
-}
-
-/* THEME – CLOTHING (Blue) – consolidated with nav variables */
-.theme-clothing {
-  --color-primary: #0d3b66;
+  --color-primary: #0d3b66;       /* Dark blue */
   --color-primary-light: #144a82;
   --page-bg: #f1f1f1;
-
-  /* You were missing these three: */
   --nav-active-color: #0d3b66;
   --nav-active-glow: rgba(13, 59, 102, 0.15);
   --nav-active-glow-strong: rgba(13, 59, 102, 0.25);

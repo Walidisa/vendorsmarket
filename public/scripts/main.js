@@ -1,4 +1,4 @@
-﻿// ======================================================
+// ======================================================
 // Shared JavaScript for Vendors Market
 // ======================================================
 
@@ -62,6 +62,17 @@ function updateNavIconsByTheme() {
     const blue = addIcon.dataset.blue;
     if (theme === 'food' && brown) addIcon.src = brown;
     if (theme === 'clothing' && blue) addIcon.src = blue;
+    addIcon.classList.toggle('theme-food', theme === 'food');
+    addIcon.classList.toggle('theme-clothing', theme === 'clothing');
+  });
+
+  // Generic back icons (e.g., add-product page)
+  const backIcons = document.querySelectorAll('.back-icon');
+  backIcons.forEach(icon => {
+    const brown = icon.dataset.brown;
+    const blue = icon.dataset.blue;
+    if (theme === 'food' && brown) icon.src = brown;
+    if (theme === 'clothing' && blue) icon.src = blue;
   });
 
   // Also update edit buttons on profile product cards
@@ -103,7 +114,7 @@ function updateNavIconsByTheme() {
 
 
 // ------------------------------------------------------
-// AUTH – HARD-CODED LOGIN
+// AUTH | HARD-CODED LOGIN
 // ------------------------------------------------------
 function initAuth() {
   const loginForm = document.querySelector('.auth-form');
@@ -120,22 +131,33 @@ function initAuth() {
       const email = emailInput ? emailInput.value.trim() : '';
       const password = passwordInput ? passwordInput.value : '';
 
-      const HARD_CODED_EMAIL = 'demo@v.t';
-      const HARD_CODED_PASSWORD = 'pass';
-
-      if (email === HARD_CODED_EMAIL && password === HARD_CODED_PASSWORD) {
-        localStorage.setItem('isLoggedIn', '1');
-        localStorage.setItem('currentUserEmail', email);
-        // For this demo, the logged-in vendor is always FitGear
-        localStorage.setItem('loggedInVendorName', 'FitGear');
-        // Start by viewing their profile
-        localStorage.setItem('activeVendorName', 'FitGear');
-        // send user to profile page after successful login
-        const slug = slugifyName('FitGear') || 'fitgear';
-        window.location.href = `/profile/${slug}`;
-      } else {
-        alert('Invalid email or password. Try demo@vendorsmarket.test / password123');
-      }
+      fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      })
+        .then(async (res) => {
+          if (!res.ok) {
+            const body = await res.json().catch(() => ({}));
+            throw new Error(body.error || 'Invalid credentials');
+          }
+          return res.json();
+        })
+        .then((user) => {
+          localStorage.setItem('isLoggedIn', '1');
+          localStorage.setItem('currentUserEmail', user.email || email);
+          const uname = user.username || '';
+          const shop = user.shopName || '';
+          const slugSource = uname || shop;
+          localStorage.setItem('loggedInVendorUsername', uname);
+          localStorage.setItem('loggedInVendorName', uname || shop);
+          localStorage.setItem('activeVendorName', uname || shop);
+          const slug = slugifyName(slugSource) || slugSource;
+          window.location.href = `/profile/${slug}`;
+        })
+        .catch((err) => {
+          alert(err.message || 'Login failed');
+        });
     });
   } else {
     // On signup page, just prevent submit and hint about demo credentials
@@ -208,7 +230,7 @@ function initHomepageCategorySwitch() {
 
 
 // ------------------------------------------------------
-// PROFILE PAGE – TAB SWITCHING
+// PROFILE PAGE | TAB SWITCHING
 // ------------------------------------------------------
 function initProfileTabs() {
   const tabs = document.querySelectorAll('.profile-tab');
@@ -231,7 +253,7 @@ function initProfileTabs() {
   });
 }
 
-// PROFILE PAGE – DATA BINDING
+// PROFILE PAGE | DATA BINDING
 async function initProfilePage() {
   const bannerEl = document.getElementById('profileBanner');
   const shopNameEl = document.getElementById('profileShopName');
@@ -264,7 +286,7 @@ async function initProfilePage() {
   // load profiles
   let profiles = [];
   try {
-    const res = await fetch('/data/profiles.json');
+    const res = await fetch('/api/profiles');
     if (res.ok) {
       profiles = await res.json();
     }
@@ -290,14 +312,20 @@ async function initProfilePage() {
     return;
   }
 
-  const activeVendorName = profile.name;
+  const activeVendorName = profile.username || profile.name;
   localStorage.setItem('activeVendorName', activeVendorName);
 
   // apply profile info
   if (profile) {
     shopNameEl.textContent = profile.shopName || profile.name;
-    ownerNameEl.textContent = profile.ownerName ? `@${profile.ownerName}` : (profile.id === 'sweet-treats' ? '@sweettreats' : '@fitgear');
-    const rawLocation = profile.location || (profile.id === 'sweet-treats' ? 'Lagos, NG' : 'Abuja, NG');
+    const uname = profile.username || profile.id || profile.name || 'vendor';
+    const fullName = profile.ownerName || '';
+    if (ownerNameEl) {
+      ownerNameEl.innerHTML = fullName
+        ? `@${uname}<br>${fullName}`
+        : `@${uname}`;
+    }
+    const rawLocation = profile.location || 'Based locally';
     locationEl.textContent = `Based in ${rawLocation}`;
     if (bannerEl && profile.banner) {
       bannerEl.src = profile.banner || '/images/default-banner.jpg';
@@ -318,18 +346,39 @@ async function initProfilePage() {
       const parts = [];
       if (wa) parts.push(`WhatsApp: ${wa}`);
       if (ig) parts.push(`Instagram: ${ig}`);
-      contactEl.textContent = parts.join(' • ');
+      contactEl.textContent = parts.join(' | ');
     }
   }
 
   // Determine ownership: is the logged-in user viewing their own shop?
   const isLoggedIn = localStorage.getItem('isLoggedIn') === '1';
-  const loggedInVendor = localStorage.getItem('loggedInVendorName');
-  const isOwnProfile = !!(isLoggedIn && profile && loggedInVendor && loggedInVendor === profile.name);
+  const loggedInVendorUsername = localStorage.getItem('loggedInVendorUsername');
+  const loggedInVendorName = localStorage.getItem('loggedInVendorName');
+  const profileUsername = profile ? (profile.username || profile.id || '') : '';
+  const profileDisplayName = profile ? (profile.name || profile.shopName || '') : '';
+  const isOwnProfile = !!(
+    isLoggedIn &&
+    profile &&
+    (
+      (loggedInVendorUsername && profileUsername === loggedInVendorUsername) ||
+      (loggedInVendorName && (profileDisplayName === loggedInVendorName || profileUsername === loggedInVendorName))
+    )
+  );
 
   // load and render products owned by this seller
   const products = await loadProducts();
-  const owned = products.filter(p => p.vendor === (profile ? profile.name : activeVendorName));
+  const owned = products.filter(p => {
+    const vendorUsername = p.vendorUsername || p.vendor || '';
+    const vendorName = p.vendor || '';
+    const profileUsername = profile ? (profile.username || profile.id || '') : '';
+    const profileName = profile ? (profile.name || profile.shopName || '') : activeVendorName;
+    return (
+      (profileUsername && vendorUsername === profileUsername) ||
+      (profileUsername && vendorName === profileUsername) ||
+      (vendorUsername && profileName && vendorUsername === slugifyName(profileName)) ||
+      (vendorName && profileName && vendorName === profileName)
+    );
+  });
   productsGrid.innerHTML = '';
   owned.forEach(p => {
     const card = createProductCard(p);
@@ -371,6 +420,10 @@ async function initProfilePage() {
 
           // Set up a one-time confirm handler for this specific card
           const handleConfirm = () => {
+            // call API to delete product
+            if (p.id) {
+              fetch(`/api/products/${p.id}`, { method: 'DELETE' }).catch(() => {});
+            }
             if (card.parentElement) {
               card.parentElement.removeChild(card);
             }
@@ -440,16 +493,28 @@ async function initProfilePage() {
   }
 
   // Add-product card: only for own profile
-  if (isOwnProfile && productsGrid) {
-    const addCard = document.createElement('button');
-    addCard.type = 'button';
-    addCard.className = 'profile-add-product-card';
-    addCard.innerHTML = `
-      <span class="profile-add-product-circle">
-          <img src="/icons/add.png" alt="Add" class="profile-add-product-card-icon" data-blue="/icons/add.png" data-brown="/icons/add-orange.png">
-      </span>
-    `;
-    productsGrid.appendChild(addCard);
+    if (isOwnProfile && productsGrid) {
+      const addWrapper = document.createElement('div');
+      addWrapper.className = 'product-card add-product-slot';
+
+      const addCard = document.createElement('button');
+      addCard.type = 'button';
+      addCard.className = 'profile-add-product-card';
+      const theme = localStorage.getItem('activeTheme') || 'food';
+      const addIcon = theme === 'food' ? '/icons/add-orange.png' : '/icons/add.png';
+      addCard.innerHTML = `
+        <span class="profile-add-product-circle">
+            <img src="${addIcon}" alt="Add" class="profile-add-product-card-icon" data-blue="/icons/add.png" data-brown="/icons/add-orange.png">
+        </span>
+      `;
+
+      addCard.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.location.href = '/add-product';
+      });
+
+    addWrapper.appendChild(addCard);
+    productsGrid.appendChild(addWrapper);
   }
 
   // Load existing seller feedback from JSON file + localStorage and render it
@@ -472,7 +537,7 @@ async function initProfilePage() {
     // Seed feedback from JSON file
     let seedEntries = [];
     try {
-      const seedRes = await fetch('/data/feedback.json');
+      const seedRes = await fetch('/api/feedback');
       if (seedRes.ok) {
         const allSeed = await seedRes.json();
         if (Array.isArray(allSeed)) {
@@ -578,7 +643,7 @@ function initFeedbackModal() {
 
 
 // ------------------------------------------------------
-// PRODUCT CARDS – EXTENDED BLUR BACKGROUND
+// PRODUCT CARDS | EXTENDED BLUR BACKGROUND
 // ------------------------------------------------------
 function initProductCardBackgrounds() {
   const cards = document.querySelectorAll('.product-card');
@@ -607,7 +672,7 @@ async function loadProducts() {
   if (ALL_PRODUCTS.length) return ALL_PRODUCTS;
 
   try {
-    const res = await fetch('/data/products.json');
+    const res = await fetch('/api/products');
     if (!res.ok) return [];
     const data = await res.json();
     ALL_PRODUCTS = Array.isArray(data) ? data : [];
@@ -635,9 +700,8 @@ function createProductCard(product) {
       <h3>${product.name}</h3>
       <p class="price">&#8358;${product.price.toLocaleString()}</p>
       ${typeof product.ratingValue === 'number' && typeof product.ratingCount === 'number'
-          ? `<p class="rating">⭐<span id="productRatingValue">${product.ratingValue.toFixed(1)}</span> (<span id="productRatingCount">${product.ratingCount}</span>)</p>`
+          ? `<p class="rating"><span class="rating-star">&#9733;</span><span id="productRatingValue">${product.ratingValue.toFixed(1)}</span> (<span id="productRatingCount">${product.ratingCount}</span>)</p>`
         : ''}
-      <p class="details"> ${product.vendor}</p>
     </div>
   `;
 
@@ -712,7 +776,7 @@ if (document.readyState === 'loading') {
   runAllInitializers();
 }
 
-// PROFILE NAV – LOGIN GUARD
+// PROFILE NAV | LOGIN GUARD
 function initProfileNavGuard() {
   const navProfileLinks = document.querySelectorAll('nav.bottom-nav a[href^="/profile"]');
   if (!navProfileLinks.length) return;
@@ -729,11 +793,13 @@ function initProfileNavGuard() {
       }
 
       e.preventDefault();
-      const loggedInVendor = localStorage.getItem('loggedInVendorName');
-      if (loggedInVendor) {
-        localStorage.setItem('activeVendorName', loggedInVendor);
-        const slug = slugifyName(loggedInVendor);
-        window.location.href = `/profile/${slug}`;
+      const loggedInVendorUsername = localStorage.getItem('loggedInVendorUsername');
+      const loggedInVendorName = localStorage.getItem('loggedInVendorName');
+      const targetSlug = slugifyName(loggedInVendorUsername || loggedInVendorName || '');
+
+      if (targetSlug) {
+        if (loggedInVendorName) localStorage.setItem('activeVendorName', loggedInVendorName);
+        window.location.href = `/profile/${targetSlug}`;
         return;
       }
 
@@ -823,7 +889,7 @@ function showSellerFeedbackPopup(vendorName) {
   commentInput.value = '';
   let selected = null;
 
-  // build 1–5 rating buttons reusing the same visual style
+  // build 1|5 rating buttons reusing the same visual style
   for (let i = 1; i <= 5; i++) {
     const btn = document.createElement('button');
     btn.type = 'button';
@@ -850,62 +916,44 @@ function showSellerFeedbackPopup(vendorName) {
   confirmBtn.onclick = () => {
     if (!selected) return;
 
-    const ratingKey = `sellerRating_${vendorName}`;
-    const listKey = `sellerFeedback_${vendorName}`;
-
-    // Aggregate rating using same formula as products
-    const ratingStored = localStorage.getItem(ratingKey);
-    let currentValue = 0;
-    let currentCount = 0;
-    if (ratingStored) {
-      try {
-        const parsed = JSON.parse(ratingStored);
-        currentValue = Number(parsed.value) || 0;
-        currentCount = Number(parsed.count) || 0;
-      } catch (e) {
-        currentValue = 0;
-        currentCount = 0;
-      }
-    }
-
-    const total = currentValue * currentCount + selected;
-    const newCount = currentCount + 1;
-    const newValue = total / newCount;
-
-    const ratingPayload = {
-      value: newValue,
-      count: newCount
-    };
-    localStorage.setItem(ratingKey, JSON.stringify(ratingPayload));
-
-    // Append this feedback entry to list
-    const listStored = localStorage.getItem(listKey);
-    let entries = [];
-    if (listStored) {
-      try {
-        entries = JSON.parse(listStored);
-        if (!Array.isArray(entries)) entries = [];
-      } catch (e) {
-        entries = [];
-      }
-    }
-
     const comment = commentInput.value.trim();
-    const now = new Date();
-    const entry = {
-      rating: selected,
-      comment,
-      createdAt: now.toISOString()
-    };
-    entries.push(entry);
-    localStorage.setItem(listKey, JSON.stringify(entries));
 
-    // Update UI list immediately if we are on the profile page
-    const emptyEl = document.getElementById('profileFeedbackEmpty');
-    const listEl = document.getElementById('profileFeedbackList');
-    if (emptyEl && listEl) {
-      renderSellerFeedbackList(entries, emptyEl, listEl, newValue, newCount);
-    }
+    // Persist feedback
+    fetch('/api/feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        vendor_username: vendorName,
+        rating: selected,
+        message: comment
+      })
+    }).catch(() => {});
+
+    // Persist vendor rating
+    fetch('/api/ratings/vendor', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ vendor_username: vendorName, rating: selected })
+    })
+      .then(res => res.json().catch(() => null))
+      .then((payload) => {
+        const emptyEl = document.getElementById('profileFeedbackEmpty');
+        const listEl = document.getElementById('profileFeedbackList');
+        if (emptyEl && listEl) {
+          // Re-fetch feedback list to reflect latest
+          fetch('/api/feedback')
+            .then(r => r.json().catch(() => []))
+            .then(all => {
+              const entries = Array.isArray(all)
+                ? all.filter(item => item.sellerId === vendorName || item.sellerName === vendorName || item.vendor_username === vendorName)
+                : [];
+              const avg = payload?.rating_value ?? (entries.length ? entries.reduce((s,e)=>s+(Number(e.rating)||0),0)/entries.length : null);
+              const cnt = payload?.rating_count ?? entries.length;
+              renderSellerFeedbackList(entries, emptyEl, listEl, avg, cnt);
+            });
+        }
+      })
+      .catch(() => {});
 
     showRatingToast('Thanks for your seller feedback!');
     close();
@@ -925,10 +973,10 @@ function renderSellerFeedbackList(entries, emptyEl, listEl, avgValue, count) {
 
   // If average rating info was provided, show summary text; otherwise derive from stored rating if available
   if (typeof avgValue === 'number' && typeof count === 'number') {
-    emptyEl.textContent = `? ${avgValue.toFixed(1)} (${count} rating${count === 1 ? '' : 's'})`;
+    emptyEl.innerHTML = `<span class="rating-star">&#9733;</span> ${avgValue.toFixed(1)} (${count} rating${count === 1 ? '' : 's'})`;
   } else {
     // Fallback: show simple count
-    emptyEl.textContent = `? Seller has ${entries.length} feedback${entries.length === 1 ? '' : 's'}`;
+    emptyEl.textContent = `Seller has ${entries.length} feedback${entries.length === 1 ? '' : 's'}`;
   }
 
   listEl.innerHTML = '';
@@ -953,7 +1001,7 @@ function renderSellerFeedbackList(entries, emptyEl, listEl, avgValue, count) {
 
     li.innerHTML = `
       <div class="profile-feedback-item-header">
-        <span class="profile-feedback-item-rating">? ${entry.rating}</span>
+        <span class="profile-feedback-item-rating"><span class="rating-star">&#9733;</span> ${entry.rating}</span>
         <span class="profile-feedback-item-date">${dateLabel}</span>
       </div>
       ${comment ? `<p class="profile-feedback-item-comment">${comment}</p>` : ''}
@@ -1009,7 +1057,7 @@ async function initProductDetailPage() {
 
   if (sellerRatingValue === null && typeof fetch === 'function') {
     try {
-      const response = await fetch('/data/feedback.json');
+      const response = await fetch('/api/feedback');
       if (response.ok) {
         const seedEntries = await response.json();
         if (Array.isArray(seedEntries)) {
@@ -1075,10 +1123,10 @@ async function initProductDetailPage() {
     <div class="product-detail-meta">
       <p class="price">&#8358;${product.price.toLocaleString()}</p>
       ${typeof product.ratingValue === 'number' && typeof product.ratingCount === 'number'
-        ? `<p class="rating">⭐<span id="productRatingValue">${product.ratingValue.toFixed(1)}</span> (<span id="productRatingCount">${product.ratingCount}</span>) <button id="rateProductBtn" class="rate-link" type="button">Rate</button></p>`
+        ? `<p class="rating">&#9733;<span id="productRatingValue">${product.ratingValue.toFixed(1)}</span> (<span id="productRatingCount">${product.ratingCount}</span>) <button id="rateProductBtn" class="rate-link" type="button">Rate</button></p>`
         : ''}
       <p class="product-detail-vendor">
-        Sold by ${product.vendorShopName || product.vendor}
+        Sold by ${product.vendorShopName}
       </p>
     </div>
     ${product.description ? `<p class="product-detail-description">${product.description}</p>` : ''}
@@ -1090,7 +1138,7 @@ async function initProductDetailPage() {
         <span class="product-detail-seller-name">
           ${product.vendorShopName || product.vendor}
           ${typeof sellerRatingValue === 'number' && typeof sellerRatingCount === 'number'
-            ? `<span class="product-detail-seller-rating"> · ⭐ ${sellerRatingValue.toFixed(1)} (${sellerRatingCount})</span>`
+            ? `<span class="product-detail-seller-rating">&#9733; ${sellerRatingValue.toFixed(1)} (${sellerRatingCount})</span>`
             : ''}
         </span>
         <span class="product-detail-seller-extra">${product.sellerDetails || 'Trusted local vendor'}</span>
@@ -1285,7 +1333,7 @@ function showRatingPopup(product, onRated) {
     close();
   };
 
-  confirmBtn.onclick = () => {
+  confirmBtn.onclick = async () => {
     if (!selected) return;
     const currentValue = Number(product.ratingValue) || 0;
     const currentCount = Number(product.ratingCount) || 0;
@@ -1300,6 +1348,24 @@ function showRatingPopup(product, onRated) {
     const countEl = document.getElementById('productRatingCount');
     if (valueEl) valueEl.textContent = newValue.toFixed(1);
     if (countEl) countEl.textContent = String(newCount);
+
+    // Persist rating to Supabase and sync with DB response
+    try {
+      const res = await fetch('/api/ratings/product', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ product_id: product.id, rating: selected })
+      });
+      const payload = await res.json().catch(() => null);
+      if (res.ok && payload && typeof payload.rating_value === 'number' && typeof payload.rating_count === 'number') {
+        product.ratingValue = payload.rating_value;
+        product.ratingCount = payload.rating_count;
+        if (valueEl) valueEl.textContent = payload.rating_value.toFixed(1);
+        if (countEl) countEl.textContent = String(payload.rating_count);
+      }
+    } catch (e) {
+      // ignore network errors; optimistic UI already updated
+    }
 
     if (typeof onRated === 'function') {
       onRated(selected);

@@ -35,3 +35,12 @@ html, body {
     opacity: 1;
   }
 }
+
+.rating-star {
+  color: #f5a623; /* gold star */
+}
+
+.details-vendor {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
