@@ -13,7 +13,7 @@ export default function SearchPage() {
   const { products = [] } = useProducts();
   const { profiles = [] } = useProfiles();
   const { theme, setTheme } = useThemeIcons("food");
-  const [profileHref, setProfileHref] = useState("/profile");
+  const [profileHref, setProfileHref] = useState("/login");
   const [query, setQuery] = useState("");
   const router = useRouter();
 
@@ -50,7 +50,7 @@ export default function SearchPage() {
     if (vendor?.username) {
       setProfileHref(`/profile/${vendor.username}`);
     } else {
-      setProfileHref("/profile");
+      setProfileHref("/login");
     }
   }, [vendor]);
 

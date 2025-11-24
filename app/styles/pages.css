@@ -585,7 +585,7 @@ body.scrolled .hero-image {
 .profile-location {
   font-size: 0.9rem;
   color: var(--color-muted);
-  margin: 2px 0;
+  margin: 0;
 }
 
 .profile-contact {
@@ -935,6 +935,46 @@ body.scrolled .hero-image {
 
 .file-actions-row .btn-secondary {
   padding: 0.45rem 0.8rem;
+}
+
+.signup-image-preview {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 0.5rem 0;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  background: #f8f8f8;
+}
+
+.signup-image-preview.wide {
+  width: 220px;
+  height: 120px;
+}
+
+.signup-image-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.preview-delete-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(255,255,255,0.95);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  cursor: pointer;
 }
 
 .file-input-hidden {

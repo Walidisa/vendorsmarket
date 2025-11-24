@@ -26,7 +26,7 @@ const subCategories = {
     { value: 'jallabiya', label: 'Jallabiyas & Abayas' },
     { value: 'hijabs', label: 'Hijabs & Veils' },
     { value: 'shirts', label: 'Shirts & Gowns' },
-    { value: 'materials', label: 'Textiles & Fabrics' },
+    { value: 'materials', label: 'Textile, Fabrics & Traditional Clothing' },
     { value: 'skincare', label: 'Hair Products, Skincare, Perfumes & More' },
     { value: 'trousers', label: 'Trousers & Sweatpants' },
     { value: 'hats', label: 'Hats' },

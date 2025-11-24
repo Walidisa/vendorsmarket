@@ -29,7 +29,7 @@ const SUBROWS = {
     { value: "jallabiya", label: "Jallabiyas & Abayas" },
     { value: "hijabs", label: "Hijabs & Veils" },
     { value: "shirts", label: "Shirts & Gowns" },
-    { value: "materials", label: "Textiles & Fabrics" },
+    { value: "materials", label: "Textile, Fabrics & Traditional Clothing" },
     { value: "skincare", label: "Hair Products, Skincare, Perfumes & More" },
     { value: "trousers", label: "Trousers & Sweatpants" },
     { value: "hats", label: "Hats" },
@@ -45,7 +45,7 @@ export default function Homepage() {
   const { products = [] } = useProducts();
   const router = useRouter();
   const { theme, setTheme } = useThemeIcons("food");
-  const [profileHref, setProfileHref] = useState("/profile");
+  const [profileHref, setProfileHref] = useState("/login");
   const [activeCategory, setActiveCategory] = useState("food");
 
   useEffect(() => {
@@ -59,7 +59,7 @@ export default function Homepage() {
     if (vendor?.username) {
       setProfileHref(`/profile/${vendor.username}`);
     } else {
-      setProfileHref("/profile");
+      setProfileHref("/login");
     }
   }, [vendor]);
 

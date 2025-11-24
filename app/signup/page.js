@@ -27,6 +27,10 @@ export default function SignupPage() {
   const profileInputRef = useRef(null);
   const bannerInputRef = useRef(null);
   const passwordRef = useRef(null);
+  const [profilePreview, setProfilePreview] = useState('');
+  const [bannerPreview, setBannerPreview] = useState('');
+  const prevProfileUrl = useRef(null);
+  const prevBannerUrl = useRef(null);
   const [profileFile, setProfileFile] = useState(null);
   const [bannerFile, setBannerFile] = useState(null);
   const [passwordError, setPasswordError] = useState(false);
@@ -37,6 +41,22 @@ export default function SignupPage() {
     setTheme(t);
   }, []);
 
+  useEffect(() => {
+    if (!profileFile && form.profile_pic) {
+      setProfilePreview(form.profile_pic);
+    } else if (!profileFile && !form.profile_pic) {
+      setProfilePreview('');
+    }
+  }, [profileFile, form.profile_pic]);
+
+  useEffect(() => {
+    if (!bannerFile && form.banner_pic) {
+      setBannerPreview(form.banner_pic);
+    } else if (!bannerFile && !form.banner_pic) {
+      setBannerPreview('');
+    }
+  }, [bannerFile, form.banner_pic]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -44,12 +64,44 @@ export default function SignupPage() {
 
   const handleProfileFile = (e) => {
     const file = e.target.files?.[0] || null;
+    if (file && !file.type.startsWith('image/')) {
+      alert('Only image files are allowed.');
+      e.target.value = '';
+      return;
+    }
+    if (file && file.size > 400 * 1024) {
+      alert('Max size is 400KB per image.');
+      e.target.value = '';
+      return;
+    }
     setProfileFile(file);
+    if (prevProfileUrl.current && prevProfileUrl.current.startsWith('blob:')) {
+      URL.revokeObjectURL(prevProfileUrl.current);
+    }
+    const url = file ? URL.createObjectURL(file) : '';
+    prevProfileUrl.current = url;
+    setProfilePreview(url);
   };
 
   const handleBannerFile = (e) => {
     const file = e.target.files?.[0] || null;
+    if (file && !file.type.startsWith('image/')) {
+      alert('Only image files are allowed.');
+      e.target.value = '';
+      return;
+    }
+    if (file && file.size > 400 * 1024) {
+      alert('Max size is 400KB per image.');
+      e.target.value = '';
+      return;
+    }
     setBannerFile(file);
+    if (prevBannerUrl.current && prevBannerUrl.current.startsWith('blob:')) {
+      URL.revokeObjectURL(prevBannerUrl.current);
+    }
+    const url = file ? URL.createObjectURL(file) : '';
+    prevBannerUrl.current = url;
+    setBannerPreview(url);
   };
 
   const handleSubmit = async (e) => {
@@ -204,27 +256,32 @@ export default function SignupPage() {
             accept="image/*"
             onChange={handleProfileFile}
           />
+          {profilePreview ? (
+            <div className="signup-image-preview square">
+              <img src={profilePreview} alt="Profile preview" />
+              <button
+                type="button"
+                className="preview-delete-btn"
+                onClick={() => {
+                  if (prevProfileUrl.current && prevProfileUrl.current.startsWith('blob:')) {
+                    URL.revokeObjectURL(prevProfileUrl.current);
+                  }
+                  prevProfileUrl.current = null;
+                  setProfilePreview('');
+                  setProfileFile(null);
+                  setForm((prev) => ({ ...prev, profile_pic: '' }));
+                }}
+                aria-label="Remove profile image"
+              >
+                <img src="/icons/delete.png" alt="Remove" className="profile-card-btn-icon" />
+              </button>
+            </div>
+          ) : null}
           <div className="file-actions-row">
             {!profileFile && !form.profile_pic && (
               <button type="button" className="btn-secondary" onClick={() => profileInputRef.current?.click()}>
                 Choose profile
               </button>
-            )}
-            {(profileFile || form.profile_pic) && (
-              <>
-                <span className="file-name">{profileFile?.name || form.profile_pic}</span>
-                <button
-                  type="button"
-                  className="profile-card-btn profile-card-delete file-remove-btn"
-                  onClick={() => {
-                    setProfileFile(null);
-                    setForm((prev) => ({ ...prev, profile_pic: '' }));
-                  }}
-                  aria-label="Remove profile image"
-                >
-                  <img src="/icons/delete.png" alt="Remove" className="profile-card-btn-icon" />
-                </button>
-              </>
             )}
           </div>
         </label>
@@ -239,27 +296,32 @@ export default function SignupPage() {
             accept="image/*"
             onChange={handleBannerFile}
           />
+          {bannerPreview ? (
+            <div className="signup-image-preview wide">
+              <img src={bannerPreview} alt="Banner preview" />
+              <button
+                type="button"
+                className="preview-delete-btn"
+                onClick={() => {
+                  if (prevBannerUrl.current && prevBannerUrl.current.startsWith('blob:')) {
+                    URL.revokeObjectURL(prevBannerUrl.current);
+                  }
+                  prevBannerUrl.current = null;
+                  setBannerPreview('');
+                  setBannerFile(null);
+                  setForm((prev) => ({ ...prev, banner_pic: '' }));
+                }}
+                aria-label="Remove banner image"
+              >
+                <img src="/icons/delete.png" alt="Remove" className="profile-card-btn-icon" />
+              </button>
+            </div>
+          ) : null}
           <div className="file-actions-row">
             {!bannerFile && !form.banner_pic && (
               <button type="button" className="btn-secondary" onClick={() => bannerInputRef.current?.click()}>
                 Choose banner
               </button>
-            )}
-            {(bannerFile || form.banner_pic) && (
-              <>
-                <span className="file-name">{bannerFile?.name || form.banner_pic}</span>
-                <button
-                  type="button"
-                  className="profile-card-btn profile-card-delete file-remove-btn"
-                  onClick={() => {
-                    setBannerFile(null);
-                    setForm((prev) => ({ ...prev, banner_pic: '' }));
-                  }}
-                  aria-label="Remove banner image"
-                >
-                  <img src="/icons/delete.png" alt="Remove" className="profile-card-btn-icon" />
-                </button>
-              </>
             )}
           </div>
         </label>

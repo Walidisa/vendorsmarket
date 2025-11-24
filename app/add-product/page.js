@@ -28,7 +28,7 @@ const subCategories = {
     { value: 'jallabiya', label: 'Jallabiyas & Abayas' },
     { value: 'hijabs', label: 'Hijabs & Veils' },
     { value: 'shirts', label: 'Shirts & Gowns' },
-    { value: 'materials', label: 'Textiles & Fabrics' },
+    { value: 'materials', label: 'Textile, Fabrics & Traditional Clothing' },
     { value: 'skincare', label: 'Hair Products, Skincare, Perfumes & More' },
     { value: 'trousers', label: 'Trousers & Sweatpants' },
     { value: 'hats', label: 'Hats' },
@@ -50,6 +50,9 @@ export default function AddProductPage() {
     description: '',
   });
   const [status, setStatus] = useState('');
+  const [productCount, setProductCount] = useState(0);
+  const [limitModalOpen, setLimitModalOpen] = useState(false);
+  const [galleryLimitOpen, setGalleryLimitOpen] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
   const { theme } = useThemeIcons('food');
   const [coverFile, setCoverFile] = useState(null);
@@ -92,6 +95,16 @@ export default function AddProductPage() {
         const vendor = profiles.find((p) => p.userId === userId) || null;
         if (vendor) {
           setSessionVendor(vendor);
+          try {
+            const prodRes = await fetch('/api/products');
+            const prodData = prodRes.ok ? await prodRes.json() : [];
+            const mine = prodData.filter(
+              (p) => (p.vendorUsername || p.vendor_username || p.vendor) === vendor.username
+            );
+            setProductCount(mine.length);
+          } catch (_) {
+            setProductCount(0);
+          }
         } else {
           setError('No vendor profile found for this account.');
         }
@@ -104,15 +117,45 @@ export default function AddProductPage() {
     loadSessionVendor();
   }, []);
 
+  // If limit reached, show the modal as soon as count is known
+  useEffect(() => {
+    if (productCount >= 20) {
+      setLimitModalOpen(true);
+      setStatus('You have reached the 20 product limit. Delete an existing product to add a new one.');
+    }
+  }, [productCount]);
+
   const handleCoverFile = (e) => {
     const file = e.target.files?.[0] || null;
+    if (file && !file.type.startsWith('image/')) {
+      alert('Only image files are allowed.');
+      e.target.value = '';
+      return;
+    }
+    if (file && file.size > 400 * 1024) {
+      alert('Max size is 400KB per image.');
+      e.target.value = '';
+      return;
+    }
     setCoverFile(file);
   };
 
   const handleGalleryFiles = (e) => {
     const files = Array.from(e.target.files || []);
-    if (!files.length) return;
-    setGalleryFiles((prev) => [...prev, ...files]);
+    const valid = files.filter((f) => f.type.startsWith('image/') && f.size <= 400 * 1024);
+    if (valid.length !== files.length) {
+      alert('Only image files up to 400KB are allowed.');
+    }
+    if (!valid.length) return;
+    const current = galleryFiles.length;
+    const available = Math.max(0, 3 - current);
+    if (available <= 0) {
+      setGalleryLimitOpen(true);
+      return;
+    }
+    const toAdd = valid.slice(0, available);
+    if (!toAdd.length) return;
+    setGalleryFiles((prev) => [...prev, ...toAdd]);
   };
 
   const handleChange = (e) => {
@@ -124,6 +167,11 @@ export default function AddProductPage() {
     e.preventDefault();
     if (!sessionVendor?.username) {
       setStatus('You must be logged in as a vendor to add products.');
+      return;
+    }
+    if (productCount >= 20) {
+      setStatus('You have reached the 20 product limit. Delete an existing product to add a new one.');
+      setLimitModalOpen(true);
       return;
     }
     setStatus('Saving...');
@@ -320,7 +368,7 @@ export default function AddProductPage() {
         </label>
 
         <label>
-          Gallery Images (comma-separated)
+          Gallery Images (Maximum 3 images)
           <input name="images" value={Array.isArray(form.images) ? form.images.join(', ') : form.images} onChange={handleChange} placeholder="img1.jpg, img2.jpg" />
           <input
             ref={galleryInputRef}
@@ -389,6 +437,60 @@ export default function AddProductPage() {
         <button type="submit">Save product</button>
         {status && <p className="form-status">{status}</p>}
       </form>
+
+      {limitModalOpen && (
+        <div
+          className="rating-overlay is-visible"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 1000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'rgba(0,0,0,0.45)',
+          }}
+        >
+          <div className="rating-dialog" style={{ maxWidth: '320px', textAlign: 'center' }}>
+            <h2 style={{ marginBottom: '6px' }}>Product limit reached</h2>
+            <p className="rating-dialog-sub" style={{ marginBottom: '14px' }}>
+              You can only have 20 products. Delete an existing product to add a new one.
+            </p>
+            <div className="rating-dialog-actions" style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+              <button type="button" className="rating-confirm" onClick={() => setLimitModalOpen(false)}>
+                Got it
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {galleryLimitOpen && (
+        <div
+          className="rating-overlay is-visible"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 1000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'rgba(0,0,0,0.45)',
+          }}
+        >
+          <div className="rating-dialog" style={{ maxWidth: '320px', textAlign: 'center' }}>
+            <h2 style={{ marginBottom: '6px' }}>Image limit reached</h2>
+            <p className="rating-dialog-sub" style={{ marginBottom: '14px' }}>
+              You can only attach up to 3 images per product. Remove one to add another.
+            </p>
+            <div className="rating-dialog-actions" style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+              <button type="button" className="rating-confirm" onClick={() => setGalleryLimitOpen(false)}>
+                Got it
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {successOpen && (
         <div className="add-product-success-overlay">

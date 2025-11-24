@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -92,8 +92,21 @@ export default function ProfilePage({ params }) {
     slugify(sessionVendor.username) === slugify(profile.username);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut().catch(() => {});
-    router.replace("/homepage");
+    try {
+      await supabase.auth.signOut({ scope: "global" });
+    } catch (_) {
+      await supabase.auth.signOut().catch(() => {});
+    }
+    if (typeof window !== "undefined") {
+      // Clear any cached Supabase tokens
+      Object.keys(localStorage).forEach((k) => {
+        if (k.toLowerCase().includes("supabase")) localStorage.removeItem(k);
+      });
+      // Hard reload to ensure UI reflects the cleared session
+      window.location.href = "/homepage";
+    } else {
+      router.replace("/homepage");
+    }
   };
 
   const handleDeleteProduct = async () => {
@@ -111,10 +124,6 @@ export default function ProfilePage({ params }) {
 
   const handleSendFeedback = async () => {
     if (!profile || !feedbackRating) return;
-    if (!sessionUserId) {
-      router.push("/login");
-      return;
-    }
     setFeedbackModalOpen(false);
     try {
       await fetch("/api/feedback", {
@@ -157,11 +166,22 @@ export default function ProfilePage({ params }) {
   const errorNow = error || profilesError?.message || productsError?.message || feedbackError?.message;
 
   if (loadingNow) {
-    return <div style={{ padding: "1.5rem" }}>Loading profile…</div>;
+    return <div style={{ padding: "1.5rem" }}>Loading profile...</div>;
   }
 
   if (errorNow || !profile) {
-    return <div style={{ padding: "1.5rem" }}>{errorNow || "Profile does not exist"}</div>;
+    return (
+      <div
+        style={{
+          padding: "2rem",
+          textAlign: "center",
+          fontSize: "1.25rem",
+          fontWeight: 700,
+        }}
+      >
+        {errorNow || "Profile does not exist"}
+      </div>
+    );
   }
 
   return (
@@ -198,6 +218,7 @@ export default function ProfilePage({ params }) {
                       className="profile-shop-edit-btn"
                       id="profileEditProfileBtn"
                       aria-label="Edit profile details"
+                      onClick={() => router.push("/edit-profile")}
                     >
                       <img
                         src={theme === "clothing" ? "/icons/edit.png" : "/icons/edit-orange.png"}
@@ -290,24 +311,18 @@ export default function ProfilePage({ params }) {
                 </p>
                 <FeedbackList feedback={feedbackList} />
                 {!isOwner && (
-                  <button
-                    type="button"
-                    className="btn-primary"
-                    id="profileFeedbackBtn"
-                    onClick={() => {
-                      if (!sessionUserId) {
-                        router.push("/login");
-                      } else {
-                        setFeedbackModalOpen(true);
-                      }
-                    }}
-                  >
-                    {sessionUserId ? "Leave seller feedback" : "Login to leave feedback"}
-                  </button>
-                )}
-              </div>
-            </section>
-          )}
+                <button
+                  type="button"
+                  className="btn-primary"
+                  id="profileFeedbackBtn"
+                  onClick={() => setFeedbackModalOpen(true)}
+                >
+                  Leave feedback
+                </button>
+              )}
+            </div>
+          </section>
+        )}
 
           <div className="profile-logout-wrapper">
             {isOwner && sessionUserId && (
@@ -354,7 +369,7 @@ export default function ProfilePage({ params }) {
         >
           <div className="rating-dialog">
             <h2>Delete product?</h2>
-            <p className="rating-dialog-sub">This will remove the product from your profile. You can’t undo this.</p>
+            <p className="rating-dialog-sub">This will remove the product from your profile. You canâ€™t undo this.</p>
             <div className="rating-dialog-actions">
               <button type="button" className="rating-cancel" onClick={() => setDeleteModalOpen(false)}>
                 Cancel
@@ -388,7 +403,7 @@ export default function ProfilePage({ params }) {
           <div className="rating-dialog" style={{ maxWidth: "300px", textAlign: "center" }}>
             <h2 style={{ marginBottom: "6px" }}>Log out?</h2>
             <p className="rating-dialog-sub" style={{ marginBottom: "14px" }}>
-              You’ll need to sign back in to manage your shop.
+              Youâ€™ll need to sign back in to manage your shop.
             </p>
             <div
               className="rating-dialog-actions"
@@ -458,3 +473,12 @@ export default function ProfilePage({ params }) {
     </>
   );
 }
+
+
+
+
+
+
+
+
+
