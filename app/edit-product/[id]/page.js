@@ -1,17 +1,15 @@
-﻿'use client';
+'use client';
 
-import { useState, useMemo, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import { uploadImage } from '../../lib/uploadImage';
-import { supabase } from '../../lib/supabaseClient';
-import { useThemeIcons } from '../../lib/useThemeIcons';
+import { useEffect, useMemo, useState, useRef } from 'react';
+import { useRouter, useParams } from 'next/navigation';
+import { uploadImage } from '../../../lib/uploadImage';
+import { supabase } from '../../../lib/supabaseClient';
 
 const mainCategories = [
   { value: 'food', label: 'Food, Drinks, Snacks & Utensils' },
   { value: 'clothing', label: 'Clothing & accessories' },
 ];
 
-// Subcategories as shown on the homepage
 const subCategories = {
   food: [
     { value: 'snacks', label: 'Meatpie, Spring Rolls, Puff Puff & More Fried Snacks' },
@@ -39,7 +37,11 @@ const subCategories = {
   ],
 };
 
-export default function AddProductPage() {
+export default function EditProductPage() {
+  const params = useParams();
+  const productId = params?.id;
+  const router = useRouter();
+
   const [form, setForm] = useState({
     name: '',
     price: '',
@@ -50,8 +52,7 @@ export default function AddProductPage() {
     description: '',
   });
   const [status, setStatus] = useState('');
-  const [successOpen, setSuccessOpen] = useState(false);
-  const { theme } = useThemeIcons('food');
+  const [theme, setTheme] = useState('food');
   const [coverFile, setCoverFile] = useState(null);
   const [galleryFiles, setGalleryFiles] = useState([]);
   const coverInputRef = useRef(null);
@@ -59,9 +60,13 @@ export default function AddProductPage() {
   const [sessionVendor, setSessionVendor] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const router = useRouter();
 
   const subOptions = useMemo(() => subCategories[form.main_category] || [], [form.main_category]);
+
+  useEffect(() => {
+    const t = typeof window !== 'undefined' ? (localStorage.getItem('activeTheme') || 'food') : 'food';
+    setTheme(t);
+  }, []);
 
   useEffect(() => {
     // Reset subcategory to first option when main changes
@@ -74,10 +79,7 @@ export default function AddProductPage() {
   }, [form.main_category]);
 
   useEffect(() => {
-    // theme handled by useThemeIcons
-    //
-
-    async function loadSessionVendor() {
+    async function load() {
       setLoading(true);
       setError('');
       const { data } = await supabase.auth.getSession();
@@ -87,22 +89,44 @@ export default function AddProductPage() {
         return;
       }
       try {
-        const res = await fetch('/api/profiles');
-        const profiles = res.ok ? await res.json() : [];
+        const [profilesRes, productsRes] = await Promise.all([
+          fetch('/api/profiles'),
+          fetch('/api/products'),
+        ]);
+        const profiles = profilesRes.ok ? await profilesRes.json() : [];
         const vendor = profiles.find((p) => p.userId === userId) || null;
-        if (vendor) {
-          setSessionVendor(vendor);
-        } else {
+        if (!vendor) {
           setError('No vendor profile found for this account.');
+          setLoading(false);
+          return;
         }
+        setSessionVendor(vendor);
+
+        const products = productsRes.ok ? await productsRes.json() : [];
+        const prod = products.find((p) => p.id === productId) || null;
+        if (!prod) {
+          setError('Product not found.');
+          setLoading(false);
+          return;
+        }
+
+        setForm({
+          name: prod.name || '',
+          price: prod.price || '',
+          main_category: prod.mainCategory || prod.main_category || 'food',
+          subcategory: prod.subCategory || prod.subcategory || (prod.mainCategory === 'clothing' ? subCategories.clothing[0].value : subCategories.food[0].value),
+          cover_image: prod.cover_image || prod.image || '',
+          images: Array.isArray(prod.images) ? prod.images.filter((img) => img !== (prod.cover_image || prod.image)) : [],
+          description: prod.description || '',
+        });
       } catch (e) {
-        setError('Failed to load your profile.');
+        setError('Failed to load product.');
       } finally {
         setLoading(false);
       }
     }
-    loadSessionVendor();
-  }, []);
+    load();
+  }, [productId, router]);
 
   const handleCoverFile = (e) => {
     const file = e.target.files?.[0] || null;
@@ -115,6 +139,18 @@ export default function AddProductPage() {
     setGalleryFiles((prev) => [...prev, ...files]);
   };
 
+  const handleRemoveExistingImage = (idx) => {
+    if (!Array.isArray(form.images)) return;
+    setForm((prev) => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== idx),
+    }));
+  };
+
+  const handleRemoveNewFile = (idx) => {
+    setGalleryFiles((prev) => prev.filter((_, i) => i !== idx));
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -122,8 +158,8 @@ export default function AddProductPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!sessionVendor?.username) {
-      setStatus('You must be logged in as a vendor to add products.');
+    if (!sessionVendor?.username || !productId) {
+      setStatus('You must be logged in as a vendor to edit products.');
       return;
     }
     setStatus('Saving...');
@@ -150,27 +186,20 @@ export default function AddProductPage() {
       return;
     }
 
-    const vendorUsername = sessionVendor?.username || '';
-    const vendorUserId = sessionVendor?.userId || '';
-    if (!vendorUsername || !vendorUserId) {
-      setStatus('Missing vendor information. Please log in again.');
-      return;
-    }
-
     const payload = {
       name: form.name,
       price: Number(form.price) || 0,
       main_category: form.main_category,
       subcategory: form.subcategory,
-      vendor_username: vendorUsername,
-      user_id: vendorUserId,
+      vendor_username: sessionVendor.username,
+      user_id: sessionVendor.userId,
       cover_image: coverPath,
       images: galleryPaths,
       description: form.description,
     };
 
-    const res = await fetch('/api/products', {
-      method: 'POST',
+    const res = await fetch(`/api/products/${productId}`, {
+      method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
@@ -181,41 +210,19 @@ export default function AddProductPage() {
       return;
     }
 
-    setStatus('');
-    setSuccessOpen(true);
-    setForm({
-      name: '',
-      price: '',
-      main_category: form.main_category,
-      subcategory: subOptions[0]?.value || '',
-      cover_image: '',
-      images: '',
-      description: '',
-    });
-    setCoverFile(null);
-    setGalleryFiles([]);
-  };
-
-  const handleAddAnother = () => {
-    setSuccessOpen(false);
-  };
-
-  const handleGoBack = () => {
-    const uname = sessionVendor?.username || '';
-    const slug = uname ? uname : '';
-    window.location.href = slug ? `/profile/${slug}` : '/homepage';
+    router.replace(`/profile/${sessionVendor.username}`);
   };
 
   if (loading) {
-    return <div style={{ padding: '1.5rem' }}>Loadingâ€¦</div>;
+    return <div style={{ padding: '1.5rem' }}>Loading…</div>;
   }
 
   if (error) {
     return (
       <div style={{ padding: '1.5rem' }}>
         <p>{error}</p>
-        <button type="button" className="btn-primary" onClick={() => router.replace('/login')}>
-          Go to login
+        <button type="button" className="btn-primary" onClick={() => router.replace('/homepage')}>
+          Go Home
         </button>
       </div>
     );
@@ -224,14 +231,14 @@ export default function AddProductPage() {
   return (
     <div className="page add-product-page">
       <div className="add-product-header">
-        <button type="button" className="back-button" onClick={() => window.history.back()}>
+        <button type="button" className="back-button" onClick={() => router.back()}>
           <img
             src={theme === 'clothing' ? '/icons/back.png' : '/icons/back-orange.png'}
             alt="Back"
             className="back-icon"
           />
         </button>
-        <h1 className="add-product-title">Add Product</h1>
+        <h1 className="add-product-title">Edit Product</h1>
       </div>
       <form className="add-product-form" onSubmit={handleSubmit}>
         <label>
@@ -352,6 +359,31 @@ export default function AddProductPage() {
               </>
             )}
           </div>
+          {Array.isArray(form.images) && form.images.length > 0 && (
+            <ul className="file-list">
+              {form.images.map((img, idx) => (
+                <li key={`${img}-${idx}`} className="file-list-item">
+                  <div style={{ position: 'relative', width: '64px', height: '64px' }}>
+                    <img
+                      src={img}
+                      alt={img}
+                      className="file-thumb"
+                      style={{ width: '64px', height: '64px', objectFit: 'cover', borderRadius: '8px' }}
+                    />
+                    <button
+                      type="button"
+                      className="profile-card-btn profile-card-delete file-remove-btn"
+                      style={{ position: 'absolute', top: '-8px', right: '-8px' }}
+                      onClick={() => handleRemoveExistingImage(idx)}
+                      aria-label="Remove image"
+                    >
+                      <img src="/icons/delete.png" alt="Remove" className="profile-card-btn-icon" />
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
           {galleryFiles.length > 0 && (
             <ul className="file-list">
               {galleryFiles.map((file, idx) => (
@@ -367,9 +399,7 @@ export default function AddProductPage() {
                       type="button"
                       className="profile-card-btn profile-card-delete file-remove-btn"
                       style={{ position: 'absolute', top: '-8px', right: '-8px' }}
-                      onClick={() =>
-                        setGalleryFiles((prev) => prev.filter((_, i) => i !== idx))
-                      }
+                      onClick={() => handleRemoveNewFile(idx)}
                       aria-label="Remove image"
                     >
                       <img src="/icons/delete.png" alt="Remove" className="profile-card-btn-icon" />
@@ -386,30 +416,9 @@ export default function AddProductPage() {
           <textarea name="description" rows="4" value={form.description} onChange={handleChange} />
         </label>
 
-        <button type="submit">Save product</button>
+        <button type="submit">Save changes</button>
         {status && <p className="form-status">{status}</p>}
       </form>
-
-      {successOpen && (
-        <div className="add-product-success-overlay">
-          <div className="add-product-success-dialog">
-            <div className="success-icon">&#10003;</div>
-            <h2>Product added!</h2>
-            <p>Do you want to add another product or go back to your profile?</p>
-            <div className="success-actions">
-              <button type="button" className="btn-secondary" onClick={handleGoBack}>
-                Go Back
-              </button>
-              <button type="button" className="btn-primary" onClick={handleAddAnother}>
-                Add Another
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
-
-
-

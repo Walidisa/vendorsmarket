@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server';
 import { supabaseServer } from '../../../lib/supabaseServer.js';
 
+export const revalidate = 0;
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+
 export async function GET() {
   const { data, error } = await supabaseServer
     .from('feedback')
@@ -31,7 +35,11 @@ export async function GET() {
     createdAt: row.created_at || null,
   }));
 
-  return NextResponse.json(feedback);
+  return NextResponse.json(feedback, {
+    headers: {
+      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+    },
+  });
 }
 
 export async function POST(request) {
@@ -39,9 +47,21 @@ export async function POST(request) {
   const vendorUsername = body?.vendor_username || body?.vendorUsername || '';
   const message = body?.message || body?.comment || '';
   const rating = Number(body?.rating) || 0;
+  let vendorUserId = body?.vendor_user_id || body?.vendorUserId || null;
 
   if (!vendorUsername || !rating) {
     return NextResponse.json({ error: 'vendor_username and rating are required.' }, { status: 400 });
+  }
+
+  if (!vendorUserId && vendorUsername) {
+    const { data: vendorRow } = await supabaseServer
+      .from('vendors')
+      .select('user_id')
+      .eq('username', vendorUsername)
+      .maybeSingle();
+    if (vendorRow?.user_id) {
+      vendorUserId = vendorRow.user_id;
+    }
   }
 
   const { data, error } = await supabaseServer
@@ -50,6 +70,7 @@ export async function POST(request) {
       vendor_username: vendorUsername,
       message,
       rating,
+      vendor_user_id: vendorUserId,
     })
     .select('id, vendor_username, message, rating, created_at')
     .single();

@@ -11,23 +11,27 @@ const toAssetUrl = (path) => {
   if (/^https?:\/\//i.test(trimmed)) return trimmed;
   if (trimmed.startsWith('/')) return trimmed; // already a local/static path
 
+  const normalized = trimmed.startsWith(`${STORAGE_BUCKET}/`)
+    ? trimmed.replace(`${STORAGE_BUCKET}/`, '')
+    : trimmed;
+
   // Try Supabase Storage public URL first
-  const { data } = getPublicUrl(supabaseServer, trimmed);
+  const { data } = getPublicUrl(supabaseServer, normalized);
   const supaUrl = data?.publicUrl;
 
   // Fallback to local /images copies if present
-  const filename = trimmed.split('/').pop();
+  const filename = normalized.split('/').pop();
   const localFallback =
-    trimmed.startsWith('products/') || trimmed.startsWith('vendors/')
+    normalized.startsWith('products/') || normalized.startsWith('vendors/')
       ? `/images/${filename}`
       : '';
 
   const manualPublic =
     process.env.NEXT_PUBLIC_SUPABASE_URL
-      ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${STORAGE_BUCKET}/${trimmed}`
+      ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${STORAGE_BUCKET}/${normalized}`
       : '';
 
-  return supaUrl || manualPublic || localFallback || trimmed;
+  return supaUrl || manualPublic || localFallback || normalized;
 };
 
 export async function GET() {
@@ -55,6 +59,21 @@ export async function GET() {
     return NextResponse.json({ error: vendorError.message }, { status: 500 });
   }
 
+  // Aggregate vendor ratings from feedback as a fallback if vendor.rating_value/count are not set
+  const feedbackByVendor = new Map();
+  const { data: feedbackRows } = await supabaseServer
+    .from('feedback')
+    .select('vendor_username, rating');
+  if (Array.isArray(feedbackRows)) {
+    feedbackRows.forEach((row) => {
+      const key = row.vendor_username;
+      const val = Number(row.rating) || 0;
+      if (!key) return;
+      const current = feedbackByVendor.get(key) || { total: 0, count: 0 };
+      feedbackByVendor.set(key, { total: current.total + val, count: current.count + 1 });
+    });
+  }
+
   const vendorsByUsername = new Map();
   (vendorRows || []).forEach((v) => {
     vendorsByUsername.set(v.username, v);
@@ -74,7 +93,8 @@ export async function GET() {
         description,
         rating_value,
         rating_count,
-        vendor_username
+        vendor_username,
+        user_id
       `,
     )
     .order('created_at', { ascending: false });
@@ -113,14 +133,29 @@ export async function GET() {
       vendor: vendor.username || vendor.shop_name || row.vendor_username || '',
       vendorUsername: vendor.username || row.vendor_username || '',
       vendorShopName: vendor.shop_name || vendor.username || row.vendor_username || '',
-      sellerAvatar: vendor.profile_pic ? toAssetUrl(vendor.profile_pic) : '',
+      vendorFullName: vendor.full_name || '',
+      vendorUserId: vendor.user_id || null,
+      sellerAvatar: vendor.profile_pic
+        ? toAssetUrl(vendor.profile_pic)
+        : toAssetUrl('vendors/default-seller.jpg'),
       image: cover,
       images: images.length ? images : (cover ? [cover] : []),
       description: row.description || '',
       ratingValue: Number(row.rating_value) || 0,
       ratingCount: Number(row.rating_count) || 0,
-      vendorRatingValue: Number(vendor.rating_value) || 0,
-      vendorRatingCount: Number(vendor.rating_count) || 0,
+      vendorRatingValue: (() => {
+        const direct = Number(vendor.rating_value);
+        if (direct) return direct;
+        const agg = feedbackByVendor.get(vendor.username || row.vendor_username);
+        return agg && agg.count > 0 ? agg.total / agg.count : 0;
+      })(),
+      vendorRatingCount: (() => {
+        const direct = Number(vendor.rating_count);
+        if (direct) return direct;
+        const agg = feedbackByVendor.get(vendor.username || row.vendor_username);
+        return agg?.count || 0;
+      })(),
+      ownerUserId: row.user_id || vendor.user_id || null,
       vendorLocation: vendor.location || '',
       whatsapp: vendor.whatsapp || '',
       instagram: vendor.instagram || '',
@@ -146,9 +181,22 @@ export async function POST(request) {
   const coverImage = body.cover_image || body.coverImage || '';
   const images = Array.isArray(body.images) ? body.images : [];
   const description = body.description || '';
+  let userId = body.user_id || body.userId || null;
 
   if (!name || !vendorUsername || !mainCategory || !subcategory) {
     return NextResponse.json({ error: 'name, vendor_username, main_category, and subcategory are required.' }, { status: 400 });
+  }
+
+  // If we don't have a user_id, attempt to resolve it from the vendor username for RLS compatibility
+  if (!userId && vendorUsername) {
+    const { data: vendorRow } = await supabaseServer
+      .from('vendors')
+      .select('user_id')
+      .eq('username', vendorUsername)
+      .maybeSingle();
+    if (vendorRow?.user_id) {
+      userId = vendorRow.user_id;
+    }
   }
 
   const { data, error } = await supabaseServer
@@ -162,6 +210,7 @@ export async function POST(request) {
       cover_image: coverImage,
       images,
       description,
+      user_id: userId,
     })
     .select('*')
     .single();

@@ -1,4 +1,4 @@
-/* BUTTONS */
+﻿/* BUTTONS */
 .btn-primary,
 .btn-secondary {
   padding: 0.9rem 1.2rem;
@@ -123,9 +123,59 @@
 /* PRODUCT GRID */
 .product-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 1.2rem;
   margin-top: 10px;
+}
+
+.search-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.2rem;
+  margin-top: 10px;
+}
+
+.vendor-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1.2rem;
+  margin-top: 10px;
+}
+
+.vendor-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 16px;
+}
+
+.vendor-avatar-wrapper {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-bottom: 12px;
+  border: 2px solid rgba(0,0,0,0.08);
+}
+
+.vendor-avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.vendor-info h3.vendor-name {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.2;
+}
+
+.vendor-info .vendor-username {
+  margin: 4px 0 0;
+  color: var(--color-muted);
+  font-size: 0.9rem;
 }
 
 /* PRODUCT CARDS */
@@ -195,7 +245,7 @@
   height: 130px;           /* shorter uniform height for images */
   object-fit: cover;       /* keeps images uniform */
   border-radius: 12px;     /* optional rounded corners inside box */
-  background: #ffffff; 
+  background: #ffffff;
 }
 
 /* Product Info */
@@ -205,12 +255,11 @@
 }
 
 .product-info h3 {
-  font-size: 0.9rem; /* slightly larger title on profile */
+  font-size: 0.95rem; /* bump size slightly to avoid clipping */
   font-weight: 600;
   color: var(--color-text);
-  margin-bottom: 0;
-  margin-top: 1px; /* no extra gap below name */
-  line-height: 2; /* tighter line box without changing font size */
+  margin: 0 0 2px;
+  line-height: 1.25;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis; /* long names show as "..." */
@@ -249,9 +298,8 @@
   font-size: 0.95rem;
   font-weight: 700;
   color: var(--color-primary);
-  margin-top: 0;  /* keep price snug under name */
-  margin-bottom: 0;
-  line-height: 1.0;
+  margin: 0 0 2px;
+  line-height: 1.1;
 }
 
 .product-info .details {
@@ -280,6 +328,7 @@
     font-size: 0.82rem;
     color: var(--color-muted);
     line-height: 1.0;
+    margin: 7px 0;
 }
 
 /* SUBCATEGORY ROWS ON HOMEPAGE */
@@ -455,7 +504,7 @@
 }
 
 /* ACTIVE PAGE */
-/* ACTIVE NAV ITEM – circle highlight */
+/* ACTIVE NAV ITEM â€“ circle highlight */
 /* Wrapper so pseudo-element works */
 .nav-icon-wrapper {
   position: relative;
@@ -850,3 +899,8 @@
   transform: scale(0.97);
   box-shadow: 0 1px 4px rgba(0,0,0,0.08);
 }
+.vendor-name-line { margin: 0; font-size: 0.78rem; color: var(--color-muted); text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
+
+.input-error { border: 2px solid #b22222; box-shadow: 0 0 0 2px rgba(178,34,34,0.18); }
+
+.input-error-text { color: #b22222; font-size: 0.85rem; margin-top: 4px; }

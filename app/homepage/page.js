@@ -1,236 +1,160 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import Script from "next/script";
+import { useRouter } from "next/navigation";
+import { ProductCard } from "../components/ProductCard";
+import { useProducts } from "../../lib/useData";
+import { useSessionVendor } from "../../lib/useSessionVendor";
+import { useThemeIcons } from "../../lib/useThemeIcons";
+
+const CATEGORIES = [
+  { value: "food", label: "Food & snacks", icon: "/icons/food.png" },
+  { value: "clothing", label: "Clothing & accessories", icon: "/icons/clothes.png" },
+];
+
+const SUBROWS = {
+  food: [
+    { value: "snacks", label: "Meatpie, Spring Rolls, Puff Puff & More Fried Snacks" },
+    { value: "shawarma", label: "Shawarma, Wraps, Sandwiches & More" },
+    { value: "meals", label: "Full Meals" },
+    { value: "drinks", label: "Drinks, Popcorn, Sweets & More" },
+    { value: "cakes", label: "Cakes, Donuts, Cinnamon Rolls & More Tasty Treats" },
+    { value: "spices", label: "Yaji, Spices, Garri & More" },
+    { value: "kitchenware", label: "Kitchenware" },
+    { value: "food-others", label: "Other Food Items" },
+  ],
+  clothing: [
+    { value: "shoes", label: "Shoes" },
+    { value: "jallabiya", label: "Jallabiyas & Abayas" },
+    { value: "hijabs", label: "Hijabs & Veils" },
+    { value: "shirts", label: "Shirts & Gowns" },
+    { value: "materials", label: "Textiles & Fabrics" },
+    { value: "skincare", label: "Hair Products, Skincare, Perfumes & More" },
+    { value: "trousers", label: "Trousers & Sweatpants" },
+    { value: "hats", label: "Hats" },
+    { value: "bags", label: "Bags" },
+    { value: "watches", label: "Watches, Jewelry, Glasses & More" },
+    { value: "tech", label: "Tech & Phone Accessories" },
+    { value: "clothing-others", label: "Other Clothing & Accessories" },
+  ],
+};
 
 export default function Homepage() {
+  const { vendor } = useSessionVendor();
+  const { products = [] } = useProducts();
+  const router = useRouter();
+  const { theme, setTheme } = useThemeIcons("food");
+  const [profileHref, setProfileHref] = useState("/profile");
+  const [activeCategory, setActiveCategory] = useState("food");
+
   useEffect(() => {
-    if (typeof window !== "undefined" && typeof window.runAllInitializers === "function") {
-      window.runAllInitializers();
+    const saved = typeof window !== "undefined" ? localStorage.getItem("activeTheme") : null;
+    const initial = saved === "clothing" ? "clothing" : "food";
+    setActiveCategory(initial);
+    setTheme(initial);
+  }, [setTheme]);
+
+  useEffect(() => {
+    if (vendor?.username) {
+      setProfileHref(`/profile/${vendor.username}`);
+    } else {
+      setProfileHref("/profile");
     }
-  }, []);
+  }, [vendor]);
+
+  const grouped = useMemo(() => {
+    const cat = activeCategory;
+    const rows = SUBROWS[cat] || [];
+    const filtered = products.filter((p) => p.mainCategory === cat);
+    const bySub = new Map();
+    rows.forEach((row) => bySub.set(row.value, []));
+    filtered.forEach((p) => {
+      const arr = bySub.get(p.subCategory);
+      if (arr) arr.push(p);
+    });
+    return rows.map((row) => ({
+      ...row,
+      items: bySub.get(row.value) || [],
+    }));
+  }, [products, activeCategory]);
+
+  const handleSeeAll = (main, sub, title) => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("subcategoryMain", main);
+      localStorage.setItem("subcategorySlug", sub);
+      localStorage.setItem("subcategoryTitle", title || sub);
+    }
+    router.push("/category");
+  };
+
+  const handleProductClick = (id) => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("activeProductId", id);
+    }
+    router.push(`/product?id=${id}`);
+  };
 
   return (
     <>
       <div className="page-transition">
         <div className="page">
           <div className="category-toggle-icons">
-            <button className="category-icon-btn active" data-category="food">
-              <div className="category-icon-wrapper">
-                <img src="/icons/food.png" className="category-icon-large" alt="" />
-              </div>
-              <span className="category-label">Food &amp; snacks</span>
-            </button>
-
-            <button className="category-icon-btn" data-category="clothing">
-              <div className="category-icon-wrapper">
-                <img src="/icons/clothes.png" className="category-icon-large" alt="" />
-              </div>
-              <span className="category-label">Clothing &amp; accessories</span>
-            </button>
+            {CATEGORIES.map((cat) => (
+              <button
+                key={cat.value}
+                className={`category-icon-btn${activeCategory === cat.value ? " active" : ""}`}
+                data-category={cat.value}
+                onClick={() => {
+                  setActiveCategory(cat.value);
+                  setTheme(cat.value);
+                  if (typeof window !== "undefined") {
+                    localStorage.setItem("activeTheme", cat.value);
+                  }
+                }}
+              >
+                <div className="category-icon-wrapper">
+                  <img src={cat.icon} className="category-icon-large" alt="" />
+                </div>
+                <span className="category-label">{cat.label}</span>
+              </button>
+            ))}
           </div>
 
           <section className="subcategory-rows" id="subcategoryRows">
-            <div className="subcategory-row" data-category="food" data-subcategory="snacks">
-              <header className="subcategory-row-header">
-                <h2 className="subcategory-title">Meatpie, Spring Rolls, Puff Puff &amp; More Fried Snacks</h2>
-                <button className="subcategory-see-all" data-subcategory="snacks">
-                  See all
-                </button>
-              </header>
-              <div className="subcategory-row-scroll" data-products-group="food:snacks"></div>
-            </div>
-
-            <div className="subcategory-row" data-category="food" data-subcategory="shawarma">
-              <header className="subcategory-row-header">
-                <h2 className="subcategory-title">Shawarma, Wraps, Sandwiches &amp; More</h2>
-                <button className="subcategory-see-all" data-subcategory="shawarma">
-                  See all
-                </button>
-              </header>
-              <div className="subcategory-row-scroll" data-products-group="food:shawarma"></div>
-            </div>
-
-            <div className="subcategory-row" data-category="food" data-subcategory="meals">
-              <header className="subcategory-row-header">
-                <h2 className="subcategory-title">Full Meals</h2>
-                <button className="subcategory-see-all" data-subcategory="meals">
-                  See all
-                </button>
-              </header>
-              <div className="subcategory-row-scroll" data-products-group="food:meals"></div>
-            </div>
-
-            <div className="subcategory-row" data-category="food" data-subcategory="drinks">
-              <header className="subcategory-row-header">
-                <h2 className="subcategory-title">Drinks, Popcorn, Sweets &amp; More</h2>
-                <button className="subcategory-see-all" data-subcategory="drinks">
-                  See all
-                </button>
-              </header>
-              <div className="subcategory-row-scroll" data-products-group="food:drinks"></div>
-            </div>
-
-            <div className="subcategory-row" data-category="food" data-subcategory="cakes">
-              <header className="subcategory-row-header">
-                <h2 className="subcategory-title">Cakes, Donuts, Cinnamon Rolls &amp; More Tasty Treats</h2>
-                <button className="subcategory-see-all" data-subcategory="cakes">
-                  See all
-                </button>
-              </header>
-              <div className="subcategory-row-scroll" data-products-group="food:cakes"></div>
-            </div>
-
-            <div className="subcategory-row" data-category="food" data-subcategory="spices">
-              <header className="subcategory-row-header">
-                <h2 className="subcategory-title">Yaji, Spices, Garri &amp; More</h2>
-                <button className="subcategory-see-all" data-subcategory="spices">
-                  See all
-                </button>
-              </header>
-              <div className="subcategory-row-scroll" data-products-group="food:spices"></div>
-            </div>
-
-            <div className="subcategory-row" data-category="food" data-subcategory="kitchenware">
-              <header className="subcategory-row-header">
-                <h2 className="subcategory-title">Kitchenware</h2>
-                <button className="subcategory-see-all" data-subcategory="kitchenware">
-                  See all
-                </button>
-              </header>
-              <div className="subcategory-row-scroll" data-products-group="food:kitchenware"></div>
-            </div>
-
-            <div className="subcategory-row" data-category="food" data-subcategory="food-others">
-              <header className="subcategory-row-header">
-                <h2 className="subcategory-title">Other Food Items</h2>
-                <button className="subcategory-see-all" data-subcategory="food-others">
-                  See all
-                </button>
-              </header>
-              <div className="subcategory-row-scroll" data-products-group="food:food-others"></div>
-            </div>
-
-            <div className="subcategory-row" data-category="clothing" data-subcategory="shoes">
-              <header className="subcategory-row-header">
-                <h2 className="subcategory-title">Shoes</h2>
-                <button className="subcategory-see-all" data-subcategory="shoes">
-                  See all
-                </button>
-              </header>
-              <div className="subcategory-row-scroll" data-products-group="clothing:shoes"></div>
-            </div>
-
-            <div className="subcategory-row" data-category="clothing" data-subcategory="jallabiya">
-              <header className="subcategory-row-header">
-                <h2 className="subcategory-title">Jallabiyas &amp; Abayas</h2>
-                <button className="subcategory-see-all" data-subcategory="jallabiya">
-                  See all
-                </button>
-              </header>
-              <div className="subcategory-row-scroll" data-products-group="clothing:jallabiya"></div>
-            </div>
-
-            <div className="subcategory-row" data-category="clothing" data-subcategory="hijabs">
-              <header className="subcategory-row-header">
-                <h2 className="subcategory-title">Hijabs &amp; Veils</h2>
-                <button className="subcategory-see-all" data-subcategory="hijabs">
-                  See all
-                </button>
-              </header>
-              <div className="subcategory-row-scroll" data-products-group="clothing:hijabs"></div>
-            </div>
-
-            <div className="subcategory-row" data-category="clothing" data-subcategory="shirts">
-              <header className="subcategory-row-header">
-                <h2 className="subcategory-title">Shirts &amp; Gowns</h2>
-                <button className="subcategory-see-all" data-subcategory="shirts">
-                  See all
-                </button>
-              </header>
-              <div className="subcategory-row-scroll" data-products-group="clothing:shirts"></div>
-            </div>
-
-            <div className="subcategory-row" data-category="clothing" data-subcategory="materials">
-              <header className="subcategory-row-header">
-                <h2 className="subcategory-title">Textiles &amp; Fabrics</h2>
-                <button className="subcategory-see-all" data-subcategory="materials">
-                  See all
-                </button>
-              </header>
-              <div className="subcategory-row-scroll" data-products-group="clothing:materials"></div>
-            </div>
-
-            <div className="subcategory-row" data-category="clothing" data-subcategory="skincare">
-              <header className="subcategory-row-header">
-                <h2 className="subcategory-title">Hair Products, Skincare, Perfumes &amp; More</h2>
-                <button className="subcategory-see-all" data-subcategory="skincare">
-                  See all
-                </button>
-              </header>
-              <div className="subcategory-row-scroll" data-products-group="clothing:skincare"></div>
-            </div>
-
-            <div className="subcategory-row" data-category="clothing" data-subcategory="trousers">
-              <header className="subcategory-row-header">
-                <h2 className="subcategory-title">Trousers &amp; Sweatpants</h2>
-                <button className="subcategory-see-all" data-subcategory="trousers">
-                  See all
-                </button>
-              </header>
-              <div className="subcategory-row-scroll" data-products-group="clothing:trousers"></div>
-            </div>
-
-            <div className="subcategory-row" data-category="clothing" data-subcategory="hats">
-              <header className="subcategory-row-header">
-                <h2 className="subcategory-title">Hats</h2>
-                <button className="subcategory-see-all" data-subcategory="hats">
-                  See all
-                </button>
-              </header>
-              <div className="subcategory-row-scroll" data-products-group="clothing:hats"></div>
-            </div>
-
-            <div className="subcategory-row" data-category="clothing" data-subcategory="bags">
-              <header className="subcategory-row-header">
-                <h2 className="subcategory-title">Bags</h2>
-                <button className="subcategory-see-all" data-subcategory="bags">
-                  See all
-                </button>
-              </header>
-              <div className="subcategory-row-scroll" data-products-group="clothing:bags"></div>
-            </div>
-
-            <div className="subcategory-row" data-category="clothing" data-subcategory="watches">
-              <header className="subcategory-row-header">
-                <h2 className="subcategory-title">Watches, Jewelry, Glasses &amp; More</h2>
-                <button className="subcategory-see-all" data-subcategory="watches">
-                  See all
-                </button>
-              </header>
-              <div className="subcategory-row-scroll" data-products-group="clothing:watches"></div>
-            </div>
-
-            <div className="subcategory-row" data-category="clothing" data-subcategory="tech">
-              <header className="subcategory-row-header">
-                <h2 className="subcategory-title">Tech &amp; Phone Accessories</h2>
-                <button className="subcategory-see-all" data-subcategory="tech">
-                  See all
-                </button>
-              </header>
-              <div className="subcategory-row-scroll" data-products-group="clothing:tech"></div>
-            </div>
-
-            <div className="subcategory-row" data-category="clothing" data-subcategory="clothing-others">
-              <header className="subcategory-row-header">
-                <h2 className="subcategory-title">Other Clothing &amp; Accessories</h2>
-                <button className="subcategory-see-all" data-subcategory="clothing-others">
-                  See all
-                </button>
-              </header>
-              <div className="subcategory-row-scroll" data-products-group="clothing:clothing-others"></div>
-            </div>
+            {grouped.map((row) => (
+              <div
+                key={`${activeCategory}-${row.value}`}
+                className="subcategory-row"
+                data-category={activeCategory}
+                data-subcategory={row.value}
+                style={{ display: activeCategory === activeCategory ? "block" : "none" }}
+              >
+                <header className="subcategory-row-header">
+                  <h2 className="subcategory-title">{row.label}</h2>
+                  <button
+                    className="subcategory-see-all"
+                    data-subcategory={row.value}
+                    onClick={() => handleSeeAll(activeCategory, row.value, row.label)}
+                  >
+                    See all
+                  </button>
+                </header>
+                <div className="subcategory-row-scroll" data-products-group={`${activeCategory}:${row.value}`}>
+                  {row.items.map((p) => (
+                    <ProductCard
+                      key={p.id}
+                      product={p}
+                      theme={theme}
+                      onClick={() => handleProductClick(p.id)}
+                    />
+                  ))}
+                  {!row.items.length ? (
+                    <p className="subcategory-empty">No products yet.</p>
+                  ) : null}
+                </div>
+              </div>
+            ))}
           </section>
         </div>
       </div>
@@ -262,7 +186,7 @@ export default function Homepage() {
           <span>Search</span>
         </Link>
 
-        <Link href="/profile" className="nav-item">
+        <Link href={profileHref} className="nav-item">
           <span className="nav-icon-wrapper">
             <img
               src="/icons/profile.png"
@@ -275,7 +199,6 @@ export default function Homepage() {
           <span>Profile</span>
         </Link>
       </nav>
-      <Script src="/scripts/main.js" strategy="afterInteractive" />
     </>
   );
 }

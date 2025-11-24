@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
-import Script from "next/script";
-import Link from "next/link";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { supabase } from "../../lib/supabaseClient";
 
 function slugify(name) {
   return (name || "")
@@ -14,35 +13,43 @@ function slugify(name) {
 
 export default function ProfileLanding() {
   const router = useRouter();
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    const isLoggedIn = localStorage.getItem("isLoggedIn") === "1";
-    const loggedInVendor = localStorage.getItem("loggedInVendorName");
+    let active = true;
+    async function go() {
+      try {
+        const { data } = await supabase.auth.getSession();
+        const userId = data?.session?.user?.id || null;
+        if (!userId) {
+          router.replace("/login");
+          return;
+        }
 
-    if (!isLoggedIn) {
-      router.replace("/login");
-      return;
+        const res = await fetch("/api/profiles", { cache: "no-store" });
+        const profiles = res.ok ? await res.json() : [];
+        const vendor = profiles.find((p) => p.userId === userId) || null;
+        if (!vendor) {
+          router.replace("/login");
+          return;
+        }
+        const slug = slugify(vendor.username || "");
+        if (!slug) {
+          router.replace("/login");
+          return;
+        }
+        if (!active) return;
+        router.replace(`/profile/${slug}`);
+      } catch (e) {
+        setError("Failed to resolve profile.");
+        router.replace("/login");
+      }
     }
-
-    const vendorName = loggedInVendor || localStorage.getItem("activeVendorName");
-    if (!vendorName) {
-      router.replace("/login");
-      return;
-    }
-
-    const slug = slugify(vendorName) || "";
-    if (!slug) {
-      router.replace("/login");
-      return;
-    }
-    localStorage.setItem("activeVendorName", vendorName);
-    router.replace(`/profile/${slug}`);
+    go();
+    return () => {
+      active = false;
+    };
   }, [router]);
 
-  return (
-    <>
-      <p style={{ padding: "1rem" }}>Loading profile…</p>
-      <Script src="/scripts/main.js" strategy="afterInteractive" />
-    </>
-  );
+  return <p style={{ padding: "1rem" }}>{error || "Loading profile…"}</p>;
 }

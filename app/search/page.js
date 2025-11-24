@@ -1,20 +1,98 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import Script from "next/script";
+import { useRouter } from "next/navigation";
+import { useProducts, useProfiles } from "../../lib/useData";
+import { ProductCard } from "../components/ProductCard";
+import { useSessionVendor } from "../../lib/useSessionVendor";
+import { useThemeIcons } from "../../lib/useThemeIcons";
 
 export default function SearchPage() {
+  const { vendor } = useSessionVendor();
+  const { products = [] } = useProducts();
+  const { profiles = [] } = useProfiles();
+  const { theme, setTheme } = useThemeIcons("food");
+  const [profileHref, setProfileHref] = useState("/profile");
+  const [query, setQuery] = useState("");
+  const router = useRouter();
+
+  const vendors = useMemo(() => {
+    const map = new Map();
+    profiles.forEach((prof) => {
+      const key = prof.username || "";
+      if (!key) return;
+      if (!map.has(key)) {
+        map.set(key, {
+          username: prof.username,
+          shopName: prof.shopName || prof.username,
+          fullName: prof.ownerName || "",
+          avatar: prof.avatar || "/images/default-seller.jpg",
+        });
+      }
+    });
+    products.forEach((p) => {
+      const key = p.vendorUsername || p.vendor || "";
+      if (!key) return;
+      if (!map.has(key)) {
+        map.set(key, {
+          username: p.vendorUsername || "",
+          shopName: p.vendorShopName || p.vendor || "",
+          fullName: p.vendorFullName || "",
+          avatar: p.sellerAvatar || "/images/default-seller.jpg",
+        });
+      }
+    });
+    return Array.from(map.values());
+  }, [products, profiles]);
+
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      window.applySavedBodyTheme?.();
-      window.updateNavIconsByTheme?.();
-      // Only run search-relevant inits to avoid duplicate global bindings
-      window.initPageTransitions?.();
-      window.initProfileNavGuard?.();
-      window.initFeedbackModal?.();
+    if (vendor?.username) {
+      setProfileHref(`/profile/${vendor.username}`);
+    } else {
+      setProfileHref("/profile");
     }
-  }, []);
+  }, [vendor]);
+
+  const filtered = useMemo(() => {
+    const term = query.trim().toLowerCase();
+    if (!term) return [];
+    return products.filter((p) => {
+      const haystack = [
+        p.name,
+        p.description,
+        p.vendorShopName,
+        p.vendorUsername,
+        p.vendorFullName,
+        p.vendorLocation,
+        p.mainCategory,
+        p.subCategory,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      return haystack.includes(term);
+    });
+  }, [products, query]);
+
+  const filteredVendors = useMemo(() => {
+    const term = query.trim().toLowerCase();
+    if (!term) return [];
+    return vendors.filter((v) => {
+      const haystack = [v.shopName, v.username, v.fullName]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      return haystack.includes(term);
+    });
+  }, [vendors, query]);
+
+  const handleProductClick = (id) => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("activeProductId", id);
+    }
+    router.push(`/product?id=${id}`);
+  };
 
   return (
     <>
@@ -25,65 +103,58 @@ export default function SearchPage() {
             <p>Find items across all vendors.</p>
           </div>
 
-          <form className="search-form">
-            <input type="text" className="search-input" placeholder="Search for anything..." />
+          <form
+            className="search-form"
+            onSubmit={(e) => {
+              e.preventDefault();
+            }}
+          >
+            <input
+              type="text"
+              className="search-input"
+              placeholder="Search for anything..."
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value);
+              }}
+            />
             <button type="submit" className="search-btn">
               Search
             </button>
           </form>
 
-          <div className="search-chips">
-            <button className="search-chip">Meatpie, Spring Rolls, Puff Puff</button>
-            <button className="search-chip">Shawarma, Wraps &amp; Sandwiches</button>
-            <button className="search-chip">Full Meals</button>
-            <button className="search-chip">Drinks, Popcorn &amp; Sweets</button>
-            <button className="search-chip">Cakes &amp; Treats</button>
-            <button className="search-chip">Yaji, Spices &amp; Garri</button>
-            <button className="search-chip">Kitchenware</button>
-            <button className="search-chip">Other Food Items</button>
+          {filteredVendors.length > 0 && (
+            <section className="vendor-grid">
+              {filteredVendors.map((v) => (
+                <div
+                  key={v.username}
+                  className="product-card vendor-card"
+                  onClick={() => router.push(v.username ? `/profile/${v.username}` : "/login")}
+                >
+                  <div className="vendor-avatar-wrapper">
+                    <img src={v.avatar} alt={v.shopName || v.username} className="vendor-avatar" />
+                  </div>
+                  <div className="vendor-info">
+                    <h3 className="vendor-name">{v.shopName || v.username}</h3>
+                    <p className="vendor-username">@{v.username}</p>
+                  </div>
+                </div>
+              ))}
+            </section>
+          )}
 
-            <button className="search-chip">Shoes</button>
-            <button className="search-chip">Jallabiyas &amp; Abayas</button>
-            <button className="search-chip">Hijabs &amp; Veils</button>
-            <button className="search-chip">Shirts &amp; Gowns</button>
-            <button className="search-chip">Textiles &amp; Fabrics</button>
-            <button className="search-chip">Skincare, Perfumes &amp; More</button>
-            <button className="search-chip">Trousers &amp; Sweatpants</button>
-            <button className="search-chip">Hats</button>
-            <button className="search-chip">Bags</button>
-            <button className="search-chip">Watches, Jewelry &amp; More</button>
-            <button className="search-chip">Tech &amp; Phone Accessories</button>
-            <button className="search-chip">Other Clothing &amp; Accessories</button>
-          </div>
-
-          <section className="product-grid">
-            <article className="product-card">
-              <img src="/images/shoes.jpg" className="product-image" alt="Running Shoes" />
-              <div className="product-info">
-                <h3>Running Shoes</h3>
-                <p className="price">&#8358;49,999</p>
-                <p className="details">In Stock • Seller: FitGear</p>
-              </div>
-            </article>
-
-            <article className="product-card">
-              <img src="/images/hat.jpg" className="product-image" alt="Casual Hat" />
-              <div className="product-info">
-                <h3>Casual Hat</h3>
-                <p className="price">&#8358;19,999</p>
-                <p className="details">In Stock • Seller: StreetStyle</p>
-              </div>
-            </article>
-
-            <article className="product-card">
-              <img src="/images/shirt.jpg" className="product-image" alt="Graphic T-Shirt" />
-              <div className="product-info">
-                <h3>Graphic T-Shirt</h3>
-                <p className="price">&#8358;24,999</p>
-                <p className="details">In Stock • Seller: PrintHub</p>
-              </div>
-            </article>
-          </section>
+          {filtered.length > 0 && (
+            <section className="product-grid search-grid">
+              {filtered.map((p) => (
+                <ProductCard
+                  key={p.id}
+                  product={p}
+                  theme={theme}
+                  onClick={() => handleProductClick(p.id)}
+                />
+              ))}
+            </section>
+          )}
         </div>
       </div>
 
@@ -114,7 +185,7 @@ export default function SearchPage() {
           <span>Search</span>
         </Link>
 
-        <Link href="/profile" className="nav-item">
+        <Link href={profileHref} className="nav-item">
           <span className="nav-icon-wrapper">
             <img
               src="/icons/profile.png"
@@ -127,7 +198,6 @@ export default function SearchPage() {
           <span>Profile</span>
         </Link>
       </nav>
-      <Script src="/scripts/main.js" strategy="afterInteractive" />
     </>
   );
 }

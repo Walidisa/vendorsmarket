@@ -1,25 +1,41 @@
-import { NextResponse } from 'next/server';
+﻿import { NextResponse } from 'next/server';
 import { supabaseServer } from '../../../lib/supabaseServer.js';
-import { getPublicUrl } from '../../../lib/storage.js';
+import { getPublicUrl, STORAGE_BUCKET } from '../../../lib/storage.js';
+
+export const revalidate = 0;
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
 
 const toAssetUrl = (path) => {
   if (!path) return '';
-  const trimmed = String(path).trim();
-  if (/^https?:\/\//i.test(trimmed)) return trimmed;
-  if (trimmed.startsWith('/')) return trimmed; // already a local/static path
+  let key = String(path).trim();
+  if (/^https?:\/\//i.test(key)) return key;
+  if (key.startsWith('/')) return key; // already a local/static path
+
+  // Strip bucket prefixes if present (public/publicc)
+  if (key.startsWith(`${STORAGE_BUCKET}/`)) {
+    key = key.replace(`${STORAGE_BUCKET}/`, '');
+  } else if (key.startsWith('public/')) {
+    key = key.replace('public/', '');
+  }
 
   // Try Supabase Storage public URL first
-  const { data } = getPublicUrl(supabaseServer, trimmed);
+  const { data } = getPublicUrl(supabaseServer, key);
   const supaUrl = data?.publicUrl;
 
   // Fallback to local /images copies if present
-  const filename = trimmed.split('/').pop();
+  const filename = key.split('/').pop();
   const localFallback =
-    trimmed.startsWith('vendors/') || trimmed.startsWith('products/')
+    key.startsWith('vendors/') || key.startsWith('products/')
       ? `/images/${filename}`
       : '';
 
-  return supaUrl || localFallback || trimmed;
+  const manualPublic =
+    process.env.NEXT_PUBLIC_SUPABASE_URL
+      ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${STORAGE_BUCKET}/${key}`
+      : '';
+
+  return supaUrl || manualPublic || localFallback || key;
 };
 
 export async function GET() {
@@ -52,13 +68,14 @@ export async function GET() {
 
   const profiles = (vendors || []).map((v) => ({
     id: v.username,
-    username: v.username,
-    name: v.shop_name || v.username,
+    username: v.username,              // handle / slug source
+    name: v.full_name || '',   // display full name
     shopName: v.shop_name || v.username,
-    ownerName: v.full_name || v.username,
+    userId: v.user_id || null,
+    ownerName: v.full_name || '',      // full name shown under handle
     location: v.location || '',
-    avatar: toAssetUrl(v.profile_pic),
-    banner: toAssetUrl(v.banner_pic),
+    avatar: toAssetUrl(v.profile_pic || 'vendors/default-seller.jpg'),
+    banner: toAssetUrl(v.banner_pic || 'vendors/default-banner.jpg'),
     whatsapp: v.whatsapp || '',
     instagram: v.instagram || '',
     tagline: v.motto || '',
@@ -69,5 +86,9 @@ export async function GET() {
     category: '', // not tracked in DB; leave blank
   }));
 
-  return NextResponse.json(profiles);
+  return NextResponse.json(profiles, {
+    headers: {
+      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+    },
+  });
 }

@@ -10,6 +10,18 @@ export async function POST(request) {
     return NextResponse.json({ error: 'Email and password are required.' }, { status: 400 });
   }
 
+  // Verify against Supabase Auth
+  const { data: authData, error: authError } = await supabaseServer.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (authError || !authData?.user) {
+    return NextResponse.json({ error: 'Invalid credentials.' }, { status: 401 });
+  }
+
+  const userId = authData.user.id;
+
   const { data, error } = await supabaseServer
     .from('vendors')
     .select(
@@ -18,7 +30,7 @@ export async function POST(request) {
         shop_name,
         full_name,
         email,
-        password,
+        user_id,
         profile_pic,
         banner_pic,
         motto,
@@ -28,8 +40,7 @@ export async function POST(request) {
         instagram
       `,
     )
-    .eq('email', email)
-    .eq('password', password)
+    .eq('user_id', userId)
     .maybeSingle();
 
   if (error) {
@@ -37,10 +48,13 @@ export async function POST(request) {
   }
 
   if (!data) {
-    return NextResponse.json({ error: 'Invalid credentials.' }, { status: 401 });
+    return NextResponse.json({ error: 'Vendor profile not found for this user.' }, { status: 404 });
   }
 
   return NextResponse.json({
+    accessToken: authData.session?.access_token,
+    refreshToken: authData.session?.refresh_token,
+    userId,
     username: data.username,
     shopName: data.shop_name,
     fullName: data.full_name,

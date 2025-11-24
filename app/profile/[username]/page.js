@@ -1,41 +1,167 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Script from "next/script";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { supabase } from "../../../lib/supabaseClient";
+import { useSessionVendor } from "../../../lib/useSessionVendor";
+import { useProfiles, useProducts, useFeedback } from "../../../lib/useData";
+import { useThemeIcons } from "../../../lib/useThemeIcons";
+import { ProductCard } from "../../components/ProductCard";
+import { AddProductCard } from "../../components/AddProductCard";
+import { FeedbackList } from "../../components/FeedbackList";
+import { RatingModal } from "../../components/RatingModal";
+import { slugify } from "../../components/slugify";
 
 export default function ProfilePage({ params }) {
-  const username = params?.username;
-  const [ready, setReady] = useState(false);
+  const router = useRouter();
+  const usernameSlug = (params?.username || "").toLowerCase();
+
+  const [profile, setProfile] = useState(null);
+  const [ownedProducts, setOwnedProducts] = useState([]);
+  const [feedbackList, setFeedbackList] = useState([]);
+  const loading = false;
+  const [error, setError] = useState("");
+  const [tab, setTab] = useState("products");
+  const [isOwner, setIsOwner] = useState(false);
+  const { theme } = useThemeIcons("food");
+
+  const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
+  const [feedbackRating, setFeedbackRating] = useState(null);
+  const [feedbackComment, setFeedbackComment] = useState("");
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState(null);
+  const [logoutModalOpen, setLogoutModalOpen] = useState(false);
+  const [toast, setToast] = useState("");
+  const { sessionUserId, vendor: sessionVendor } = useSessionVendor();
+  const { profiles, isLoading: profilesLoading, error: profilesError } = useProfiles();
+  const { products: allProducts, isLoading: productsLoading, error: productsError } = useProducts();
+  const { feedback: feedbackData, isLoading: feedbackLoading, error: feedbackError } = useFeedback();
 
   useEffect(() => {
-    if (!username) return;
+    if (profile && sessionUserId) {
+      setIsOwner(!!(profile.userId && sessionUserId === profile.userId));
+    } else {
+      setIsOwner(false);
+    }
+  }, [profile, sessionUserId]);
 
-    const vendorName = username
-      .split("-")
-      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-      .join(" ");
-    localStorage.setItem("activeVendorName", vendorName);
+  useEffect(() => {
+    const foundProfile =
+      profiles.find((p) => {
+        const u = (p.username || "").toLowerCase();
+        const s = slugify(p.username || p.id || "");
+        return u === usernameSlug || s === usernameSlug;
+      }) || null;
+    setProfile(foundProfile || null);
+  }, [profiles, usernameSlug]);
 
-    const run = () => {
-      if (typeof window === "undefined") return;
-      window.applySavedBodyTheme?.();
-      window.updateNavIconsByTheme?.();
-      window.initProfileTabs?.();
-      window.initProfilePage?.();
-      window.initProfileNavGuard?.();
-      window.initProductCardBackgrounds?.();
-      setReady(true);
-    };
+  useEffect(() => {
+    if (!profile) {
+      setOwnedProducts([]);
+      return;
+    }
+    const owned = allProducts.filter(
+      (p) => slugify(p.vendorUsername || p.vendor || "") === slugify(profile.username || "")
+    );
+    setOwnedProducts(owned);
+  }, [allProducts, profile]);
 
-    // Run once now and once after a short delay to ensure DOM is ready
-    run();
-    const timer = setTimeout(run, 120);
-    return () => clearTimeout(timer);
-  }, [username]);
+  useEffect(() => {
+    if (!profile) {
+      setFeedbackList([]);
+      return;
+    }
+    const vendorFeedback = feedbackData.filter(
+      (f) =>
+        slugify(f.sellerId || f.vendor_username || "") === slugify(profile.username || "")
+    );
+    setFeedbackList(vendorFeedback);
+  }, [feedbackData, profile]);
 
-  if (!ready) {
-    return <div style={{ minHeight: "100vh", background: "#fff" }} />;
+  const avgRating = useMemo(() => {
+    const vals = feedbackList.map((f) => Number(f.rating) || 0);
+    if (!vals.length) return { value: null, count: 0 };
+    const total = vals.reduce((s, v) => s + v, 0);
+    return { value: total / vals.length, count: vals.length };
+  }, [feedbackList]);
+
+  const isProfileOwnerSlug =
+    sessionVendor?.username &&
+    profile?.username &&
+    slugify(sessionVendor.username) === slugify(profile.username);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut().catch(() => {});
+    router.replace("/homepage");
+  };
+
+  const handleDeleteProduct = async () => {
+    if (!deleteTargetId) return;
+    try {
+      await fetch(`/api/products/${deleteTargetId}`, { method: "DELETE" });
+      setOwnedProducts((prev) => prev.filter((p) => p.id !== deleteTargetId));
+    } catch (e) {
+      // ignore
+    } finally {
+      setDeleteTargetId(null);
+      setDeleteModalOpen(false);
+    }
+  };
+
+  const handleSendFeedback = async () => {
+    if (!profile || !feedbackRating) return;
+    if (!sessionUserId) {
+      router.push("/login");
+      return;
+    }
+    setFeedbackModalOpen(false);
+    try {
+      await fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          vendor_username: profile.username,
+          rating: feedbackRating,
+          message: feedbackComment,
+        }),
+      });
+      await fetch("/api/ratings/vendor", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          vendor_username: profile.username,
+          rating: feedbackRating,
+        }),
+      });
+      setFeedbackList((prev) => [
+        ...prev,
+        {
+          rating: feedbackRating,
+          comment: feedbackComment,
+          sellerId: profile.username,
+          sellerName: profile.shopName,
+          createdAt: new Date().toISOString(),
+        },
+      ]);
+      setFeedbackRating(null);
+      setFeedbackComment("");
+      setToast("Thanks for your feedback!");
+      setTimeout(() => setToast(""), 2000);
+    } catch (e) {
+      // ignore
+    }
+  };
+
+  const loadingNow = profilesLoading || productsLoading || feedbackLoading || loading;
+  const errorNow = error || profilesError?.message || productsError?.message || feedbackError?.message;
+
+  if (loadingNow) {
+    return <div style={{ padding: "1.5rem" }}>Loading profile…</div>;
+  }
+
+  if (errorNow || !profile) {
+    return <div style={{ padding: "1.5rem" }}>{errorNow || "Profile does not exist"}</div>;
   }
 
   return (
@@ -44,152 +170,255 @@ export default function ProfilePage({ params }) {
         <div className="page">
           <section className="profile-header">
             <div className="profile-banner">
-              <img src="" className="profile-banner-image" alt="" id="profileBanner" />
+              <img
+                src={profile.banner || "/images/default-banner.jpg"}
+                className="profile-banner-image"
+                alt={profile.shopName || profile.username}
+              />
             </div>
 
             <div className="profile-info-row">
               <div className="profile-avatar-wrapper profile-avatar-left">
-                <img src="" className="profile-avatar" alt="Shop owner" id="profileAvatar" />
+                <img
+                  src={profile.avatar || "/images/default-seller.jpg"}
+                  className="profile-avatar"
+                  alt="Shop owner"
+                  id="profileAvatar"
+                />
               </div>
 
               <div className="profile-info-text">
                 <div className="profile-shop-header-row">
                   <h1 className="profile-shop-name" id="profileShopName">
-                    Shop Name
+                    {profile.shopName || profile.username}
                   </h1>
-                  <button
-                    type="button"
-                    className="profile-shop-edit-btn"
-                    id="profileEditProfileBtn"
-                    aria-label="Edit profile details"
-                  >
-                    <img
-                      src="/icons/edit.png"
-                      alt="Edit profile"
-                      className="profile-shop-edit-icon"
-                      data-blue="/icons/edit.png"
-                      data-brown="/icons/edit-orange.png"
-                    />
-                  </button>
+                  {isOwner && (
+                    <button
+                      type="button"
+                      className="profile-shop-edit-btn"
+                      id="profileEditProfileBtn"
+                      aria-label="Edit profile details"
+                    >
+                      <img
+                        src={theme === "clothing" ? "/icons/edit.png" : "/icons/edit-orange.png"}
+                        alt="Edit profile"
+                        className="profile-shop-edit-icon"
+                      />
+                    </button>
+                  )}
                 </div>
                 <p className="profile-name" id="profileOwnerName">
-                  @username
+                  @{profile.username}
+                  {profile.ownerName ? <><br />{profile.ownerName}</> : null}
                 </p>
                 <p className="profile-location" id="profileLocation">
-                  Location
+                  {profile.location ? `Based in ${profile.location}` : "Based locally"}
                 </p>
                 <p className="profile-contact" id="profileContact">
-                  Contact
+                  {[profile.whatsapp, profile.instagram].filter(Boolean).join(" | ")}
                 </p>
               </div>
             </div>
           </section>
 
           <div className="profile-tabs">
-            <button className="profile-tab is-active" data-tab="products">
+            <button
+              className={`profile-tab ${tab === "products" ? "is-active" : ""}`}
+              onClick={() => setTab("products")}
+            >
               Products
             </button>
-            <button className="profile-tab" data-tab="about">
+            <button
+              className={`profile-tab ${tab === "about" ? "is-active" : ""}`}
+              onClick={() => setTab("about")}
+            >
               About &amp; Reviews
             </button>
           </div>
 
-          <section className="profile-tab-panel is-active" id="tab-products">
-            <div className="product-grid" id="profileProductsGrid"></div>
-          </section>
+          {tab === "products" && (
+            <section className="profile-tab-panel is-active" id="tab-products">
+              <div className="product-grid" id="profileProductsGrid">
+                {isOwner && (
+                  <AddProductCard
+                    theme={theme}
+                    onClick={() => router.push("/add-product")}
+                  />
+                )}
 
-          <section className="profile-tab-panel" id="tab-about">
-            <div className="profile-about">
-              <h2>About this shop</h2>
-              <p id="profileAboutText"></p>
-            </div>
+                {ownedProducts.map((p) => (
+                  <ProductCard
+                    key={p.id}
+                    product={p}
+                    theme={theme}
+                    isOwner={isOwner}
+                    showVendor={false}
+                    onClick={() => {
+                      if (typeof window !== "undefined") {
+                        localStorage.setItem("activeProductId", p.id);
+                      }
+                      router.push(`/product?id=${p.id}`);
+                    }}
+                    onEdit={() => router.push(`/edit-product/${p.id}`)}
+                    onDelete={() => {
+                      setDeleteTargetId(p.id);
+                      setDeleteModalOpen(true);
+                    }}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
 
-            <div className="profile-feedback" id="profileFeedbackSection">
-              <h2>Feedback &amp; Ratings</h2>
-              <p className="profile-feedback-empty" id="profileFeedbackEmpty">
-                No feedback yet.
-              </p>
-              <ul className="profile-feedback-list" id="profileFeedbackList"></ul>
-              <button type="button" className="btn-primary" id="profileFeedbackBtn">
-                Leave seller feedback
+          {tab === "about" && (
+            <section className="profile-tab-panel is-active" id="tab-about">
+              <div className="profile-about">
+                <h2>About this shop</h2>
+                <p id="profileAboutText">{profile.aboutDescription || profile.tagline || "No description yet."}</p>
+              </div>
+
+              <div className="profile-feedback" id="profileFeedbackSection">
+                <h2>Feedback &amp; Ratings</h2>
+                <p className="profile-feedback-empty" id="profileFeedbackEmpty">
+                  {typeof avgRating.value === "number"
+                    ? (
+                      <span>
+                        <span className="rating-star">&#9733;</span> {avgRating.value.toFixed(1)} ({avgRating.count} rating{avgRating.count === 1 ? "" : "s"})
+                      </span>
+                    )
+                    : "No feedback yet."}
+                </p>
+                <FeedbackList feedback={feedbackList} />
+                {!isOwner && (
+                  <button
+                    type="button"
+                    className="btn-primary"
+                    id="profileFeedbackBtn"
+                    onClick={() => {
+                      if (!sessionUserId) {
+                        router.push("/login");
+                      } else {
+                        setFeedbackModalOpen(true);
+                      }
+                    }}
+                  >
+                    {sessionUserId ? "Leave seller feedback" : "Login to leave feedback"}
+                  </button>
+                )}
+              </div>
+            </section>
+          )}
+
+          <div className="profile-logout-wrapper">
+            {isOwner && sessionUserId && (
+              <button
+                type="button"
+                id="profileLogoutBtn"
+                className="profile-logout-btn"
+                onClick={() => setLogoutModalOpen(true)}
+              >
+                Log out
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <RatingModal
+        open={feedbackModalOpen}
+        title="Rate this seller"
+        subtitle="Share a quick rating and (optional) comment."
+        selected={feedbackRating}
+        onSelect={(val) => setFeedbackRating(val)}
+        comment={feedbackComment}
+        onCommentChange={setFeedbackComment}
+        confirmLabel="Send"
+        confirmDisabled={!feedbackRating}
+        onCancel={() => setFeedbackModalOpen(false)}
+        onConfirm={handleSendFeedback}
+        usePortal={false}
+      />
+
+      {deleteModalOpen && (
+        <div
+          className="rating-overlay is-visible"
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 1000,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: "rgba(0,0,0,0.45)",
+          }}
+        >
+          <div className="rating-dialog">
+            <h2>Delete product?</h2>
+            <p className="rating-dialog-sub">This will remove the product from your profile. You can’t undo this.</p>
+            <div className="rating-dialog-actions">
+              <button type="button" className="rating-cancel" onClick={() => setDeleteModalOpen(false)}>
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="rating-confirm"
+                onClick={handleDeleteProduct}
+                disabled={!deleteTargetId}
+              >
+                Delete
               </button>
             </div>
-          </section>
-          <div className="profile-logout-wrapper">
-            <button type="button" id="profileLogoutBtn" className="profile-logout-btn">
-              Log out
-            </button>
           </div>
         </div>
-      </div>
+      )}
 
-      <div className="feedback-overlay" id="logoutOverlay" aria-hidden="true">
-        <div className="feedback-backdrop"></div>
-
+      {logoutModalOpen && (
         <div
-          className="feedback-modal"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="logoutTitle"
-          style={{ maxWidth: "360px" }}
+          className="rating-overlay is-visible"
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 1000,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: "rgba(0,0,0,0.45)",
+          }}
         >
-          <button className="feedback-close" id="logoutCloseBtn" aria-label="Close logout dialog"></button>
-
-          <h2 id="logoutTitle" className="feedback-title" style={{ textAlign: "center" }}>
-            Log out?
-          </h2>
-          <p className="feedback-subtitle" style={{ textAlign: "center" }}>
-            Are you sure you want to log out of Vendors Market?
-          </p>
-
-          <div className="logout-actions">
-            <button type="button" className="btn-secondary" id="logoutCancelBtn">
-              Cancel
-            </button>
-            <button type="button" className="btn-primary logout-confirm-btn" id="logoutConfirmBtn">
-              Log out
-            </button>
+          <div className="rating-dialog" style={{ maxWidth: "300px", textAlign: "center" }}>
+            <h2 style={{ marginBottom: "6px" }}>Log out?</h2>
+            <p className="rating-dialog-sub" style={{ marginBottom: "14px" }}>
+              You’ll need to sign back in to manage your shop.
+            </p>
+            <div
+              className="rating-dialog-actions"
+              style={{ display: "flex", gap: "10px", justifyContent: "center" }}
+            >
+              <button type="button" className="rating-cancel" onClick={() => setLogoutModalOpen(false)}>
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="rating-confirm"
+                style={{ background: "#d6453d" }}
+                onClick={handleLogout}
+              >
+                Log out
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
-      <div className="feedback-overlay" id="deleteProductOverlay" aria-hidden="true">
-        <div className="feedback-backdrop"></div>
+      {toast && <div className="rating-toast is-visible">{toast}</div>}
 
-        <div
-          className="feedback-modal"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="deleteProductTitle"
-        >
-          <button className="feedback-close" id="deleteProductCloseBtn" aria-label="Close delete dialog"></button>
-
-          <h2 id="deleteProductTitle" className="feedback-title" style={{ textAlign: "center" }}>
-            Delete product?
-          </h2>
-          <p className="feedback-subtitle" style={{ textAlign: "center" }}>
-            This will remove the product from your profile. You can’t undo this action.
-          </p>
-
-          <div className="logout-actions">
-            <button type="button" className="btn-secondary" id="deleteProductCancelBtn">
-              Cancel
-            </button>
-            <button type="button" className="btn-primary logout-confirm-btn" id="deleteProductConfirmBtn">
-              Delete
-            </button>
-          </div>
-        </div>
-      </div>
 
       <nav className="bottom-nav">
         <Link href="/homepage" className="nav-item">
           <span className="nav-icon-wrapper">
             <img
-              src="/icons/home.png"
+              src={theme === "clothing" ? "/icons/home.png" : "/icons/home-lightbrown.png"}
               className="nav-icon"
-              data-blue="/icons/home.png"
-              data-brown="/icons/home-lightbrown.png"
               alt=""
             />
           </span>
@@ -199,30 +428,33 @@ export default function ProfilePage({ params }) {
         <Link href="/search" className="nav-item">
           <span className="nav-icon-wrapper">
             <img
-              src="/icons/search.png"
+              src={theme === "clothing" ? "/icons/search.png" : "/icons/search-lightbrown.png"}
               className="nav-icon"
-              data-blue="/icons/search.png"
-              data-brown="/icons/search-lightbrown.png"
               alt=""
             />
           </span>
           <span>Search</span>
         </Link>
 
-        <Link href={`/profile/${username}`} className="nav-item" id="bottomNavProfileLink">
+        <Link
+          href={
+            sessionVendor?.username
+              ? `/profile/${sessionVendor.username}`
+              : "/login"
+          }
+          className={`nav-item${isProfileOwnerSlug ? " active" : ""}`}
+          id="bottomNavProfileLink"
+        >
           <span className="nav-icon-wrapper">
             <img
-              src="/icons/profile.png"
+              src={theme === "clothing" ? "/icons/profile.png" : "/icons/profile-lightbrown.png"}
               className="nav-icon"
-              data-blue="/icons/profile.png"
-              data-brown="/icons/profile-lightbrown.png"
               alt=""
             />
           </span>
           <span>Profile</span>
         </Link>
       </nav>
-      <Script src="/scripts/main.js" strategy="afterInteractive" />
     </>
   );
 }
