@@ -1,4 +1,62 @@
-﻿/* BUTTONS */
+﻿/* HERO SHELL STYLE CARDS */
+.card-grid {
+  /* ...existing code... */
+}
+
+/* HERO SHELL STYLE CARDS */
+.card-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.2rem;
+  margin-top: 25px;
+  justify-items: center;
+}
+
+.card.theme-food,
+.card.theme-clothing {
+  width: 85%;
+  margin-left: auto;
+  margin-right: auto;
+  background: #c58a64;
+  color: #fff;
+  border: none;
+  box-shadow: 0 4px 18px rgba(197,138,100,0.10);
+  padding: 2.1rem 1.5rem 2.1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.card.theme-clothing {
+  background: var(--color-primary);
+  box-shadow: 0 4px 18px rgba(13,59,102,0.10);
+}
+.card.theme-food h2,
+.card.theme-clothing h2 {
+  text-align: center;
+  width: 100%;
+}
+.card.theme-food p,
+.card.theme-clothing p {
+  text-align: justify;
+  width: 100%;
+}
+.card.theme-food h2,
+.card.theme-food p,
+.card.theme-clothing h2,
+.card.theme-clothing p {
+  color: #fff;
+}
+.card.theme-food h2,
+.card.theme-clothing h2 {
+  font-size: 1.45rem;
+  line-height: 1.18;
+}
+.card.theme-food p,
+.card.theme-clothing p {
+  font-size: 1.08rem;
+  line-height: 1.7;
+}
+/* BUTTONS */
 .btn-primary,
 .btn-secondary {
   padding: 0.9rem 1.2rem;
@@ -92,23 +150,23 @@
 
 .card {
   background: var(--card-bg);
-  padding: 1.3rem 1.3rem 3.8rem; /* extra bottom for icon */
-  border-radius: var(--radius-card);
-  border: 1px solid rgba(0,0,0,0.08);
-  box-shadow: var(--shadow-card);
+  padding: 1.1rem 1.25rem 1.1rem;
+  border-radius: 18px;
+  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.05);
   position: relative;
 }
 
 .card h2 {
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   font-weight: 700;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .card p {
   color: var(--color-muted);
-  font-size: 0.95rem;
-  line-height: 1.4;
+  font-size: 0.9rem;
+  line-height: 1.5;
 }
 
 /* Card Icon */
@@ -178,6 +236,35 @@
   font-size: 0.9rem;
 }
 
+/* RATING / CONFIRM MODALS (delete product, logout) */
+.rating-dialog {
+  max-width: 320px;
+  width: 90%;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 16px 18px 14px;
+  text-align: center;
+}
+
+.rating-dialog-sub {
+  font-size: 0.95rem;
+  color: var(--color-muted);
+  margin: 8px 0 16px;
+}
+
+.rating-dialog-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.rating-cancel,
+.rating-confirm {
+  flex: 1;
+  padding: 10px 0;
+  border-radius: 999px;
+}
+
 /* PRODUCT CARDS */
 .product-card {
   background: transparent;
@@ -239,7 +326,7 @@
 
 .product-image {
   position: relative;
-  z-index: 1;              /* sharp on top of the blur */
+  z-index: 1;
   display: block;
   width: 100%;
   height: 130px;           /* shorter uniform height for images */
@@ -298,14 +385,15 @@
   font-size: 0.95rem;
   font-weight: 700;
   color: var(--color-primary);
-  margin: 0 0 2px;
+  margin: 3px 0 3px;
   line-height: 1.1;
 }
 
 .product-info .details {
   font-size: 0.74rem;
   color: var(--color-muted);
-  line-height: 1.05;
+  line-height: 1.2;
+  margin: 3px 0 3px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -313,8 +401,8 @@
 
 /* Vendor label on cards */
 .product-info .details-vendor {
-  font-size: 0.78rem;            /* slightly reduced to avoid clipping */
-  font-weight: 600;              /* closer to the older style */
+  font-size: 0.82rem;
+  font-weight: 600;              /* keep shop name visibly bolder on cards */
   color: var(--color-muted);     /* muted tone to match other meta text */
   line-height: 1.2;
   white-space: normal;           /* allow wrapping */
@@ -322,6 +410,7 @@
   display: -webkit-box;
   -webkit-line-clamp: 2;         /* up to 2 lines before truncating */
   -webkit-box-orient: vertical;
+  margin: 4px 0 2px;
 }
 
 .product-info .rating {
@@ -383,20 +472,6 @@
 }
 
 /* AUTH PAGES (LOGIN / SIGNUP) */
-.auth-hero {
-  margin-bottom: 18px;
-  text-align: center;
-}
-
-.auth-hero h1 {
-  font-size: 1.8rem;
-}
-
-.auth-hero p {
-  font-size: 0.95rem;
-  color: var(--color-muted);
-}
-
 /* Auth card wrapper */
 .auth-card {
   background: var(--card-bg);
@@ -404,6 +479,7 @@
   box-shadow: var(--shadow-card);
   border: 1px solid rgba(0,0,0,0.08);
   padding: 1.4rem 1.3rem 1.6rem;
+  margin-top: 150px;
 }
 
 /* Form layout */
@@ -504,7 +580,7 @@
 }
 
 /* ACTIVE PAGE */
-/* ACTIVE NAV ITEM â€“ circle highlight */
+/* ACTIVE NAV ITEM – circle highlight */
 /* Wrapper so pseudo-element works */
 .nav-icon-wrapper {
   position: relative;
@@ -899,8 +975,50 @@
   transform: scale(0.97);
   box-shadow: 0 1px 4px rgba(0,0,0,0.08);
 }
-.vendor-name-line { margin: 0; font-size: 0.78rem; color: var(--color-muted); text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
+.vendor-name-line { margin: 0; font-size: 0.78rem; color: var(--color-muted); text-overflow: ellipsis; overflow: hidden; white-space: nowrap; font-weight: 600; }
 
 .input-error { border: 2px solid #b22222; box-shadow: 0 0 0 2px rgba(178,34,34,0.18); }
 
 .input-error-text { color: #b22222; font-size: 0.85rem; margin-top: 4px; }
+
+/* Image cropper */
+.crop-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.crop-dialog {
+  background: #fff;
+  border-radius: 16px;
+  padding: 12px;
+  width: min(480px, 90vw);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.2);
+}
+
+.cropper-wrapper {
+  position: relative;
+  width: 100%;
+  height: 300px;
+  background: #111;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.crop-actions {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.crop-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+

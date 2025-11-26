@@ -1,6 +1,7 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import dynamic from 'next/dynamic';
 import { uploadImage } from '../../lib/uploadImage';
 
 const initialForm = {
@@ -33,8 +34,11 @@ export default function SignupPage() {
   const prevBannerUrl = useRef(null);
   const [profileFile, setProfileFile] = useState(null);
   const [bannerFile, setBannerFile] = useState(null);
+  const [cropProfileFile, setCropProfileFile] = useState(null);
+  const [cropBannerFile, setCropBannerFile] = useState(null);
   const [passwordError, setPasswordError] = useState(false);
   const [passwordErrorMsg, setPasswordErrorMsg] = useState('');
+  const CropperModal = dynamic(() => import('../components/ImageCropper').then(mod => mod.ImageCropper), { ssr: false });
 
   useEffect(() => {
     const t = typeof window !== 'undefined' ? (localStorage.getItem('activeTheme') || 'food') : 'food';
@@ -74,13 +78,7 @@ export default function SignupPage() {
       e.target.value = '';
       return;
     }
-    setProfileFile(file);
-    if (prevProfileUrl.current && prevProfileUrl.current.startsWith('blob:')) {
-      URL.revokeObjectURL(prevProfileUrl.current);
-    }
-    const url = file ? URL.createObjectURL(file) : '';
-    prevProfileUrl.current = url;
-    setProfilePreview(url);
+    setCropProfileFile(file);
   };
 
   const handleBannerFile = (e) => {
@@ -95,13 +93,7 @@ export default function SignupPage() {
       e.target.value = '';
       return;
     }
-    setBannerFile(file);
-    if (prevBannerUrl.current && prevBannerUrl.current.startsWith('blob:')) {
-      URL.revokeObjectURL(prevBannerUrl.current);
-    }
-    const url = file ? URL.createObjectURL(file) : '';
-    prevBannerUrl.current = url;
-    setBannerPreview(url);
+    setCropBannerFile(file);
   };
 
   const handleSubmit = async (e) => {
@@ -330,10 +322,10 @@ export default function SignupPage() {
         {status && <p className="form-status">{status}</p>}
       </form>
 
-      {successOpen && (
+            {successOpen && (
         <div className="add-product-success-overlay">
           <div className="add-product-success-dialog">
-            <div className="success-icon">✓</div>
+            <div className="success-icon">✅</div>
             <h2>Account created!</h2>
             <p>You can now log in and start adding products.</p>
             <div className="success-actions">
@@ -343,6 +335,42 @@ export default function SignupPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {cropProfileFile && (
+        <CropperModal
+          file={cropProfileFile}
+          aspect={1}
+          onCancel={() => setCropProfileFile(null)}
+          onCropped={(cropped) => {
+            setProfileFile(cropped);
+            if (prevProfileUrl.current && prevProfileUrl.current.startsWith('blob:')) {
+              URL.revokeObjectURL(prevProfileUrl.current);
+            }
+            const url = URL.createObjectURL(cropped);
+            prevProfileUrl.current = url;
+            setProfilePreview(url);
+            setCropProfileFile(null);
+          }}
+        />
+      )}
+
+      {cropBannerFile && (
+        <CropperModal
+          file={cropBannerFile}
+          aspect={16 / 9}
+          onCancel={() => setCropBannerFile(null)}
+          onCropped={(cropped) => {
+            setBannerFile(cropped);
+            if (prevBannerUrl.current && prevBannerUrl.current.startsWith('blob:')) {
+              URL.revokeObjectURL(prevBannerUrl.current);
+            }
+            const url = URL.createObjectURL(cropped);
+            prevBannerUrl.current = url;
+            setBannerPreview(url);
+            setCropBannerFile(null);
+          }}
+        />
       )}
     </div>
   );

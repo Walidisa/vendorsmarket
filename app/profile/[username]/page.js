@@ -369,7 +369,7 @@ export default function ProfilePage({ params }) {
         >
           <div className="rating-dialog">
             <h2>Delete product?</h2>
-            <p className="rating-dialog-sub">This will remove the product from your profile. You canâ€™t undo this.</p>
+            <p className="rating-dialog-sub">This will remove the product from your profile. You can't undo this.</p>
             <div className="rating-dialog-actions">
               <button type="button" className="rating-cancel" onClick={() => setDeleteModalOpen(false)}>
                 Cancel
@@ -403,7 +403,7 @@ export default function ProfilePage({ params }) {
           <div className="rating-dialog" style={{ maxWidth: "300px", textAlign: "center" }}>
             <h2 style={{ marginBottom: "6px" }}>Log out?</h2>
             <p className="rating-dialog-sub" style={{ marginBottom: "14px" }}>
-              Youâ€™ll need to sign back in to manage your shop.
+              You'll need to sign back in to manage your shop.
             </p>
             <div
               className="rating-dialog-actions"

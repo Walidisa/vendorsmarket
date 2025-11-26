@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { uploadImage } from '../../lib/uploadImage';
 import { supabase } from '../../lib/supabaseClient';
 import { useThemeIcons } from '../../lib/useThemeIcons';
+import dynamic from 'next/dynamic';
 
 const mainCategories = [
   { value: 'food', label: 'Food, Drinks, Snacks & Utensils' },
@@ -57,12 +58,14 @@ export default function AddProductPage() {
   const { theme } = useThemeIcons('food');
   const [coverFile, setCoverFile] = useState(null);
   const [galleryFiles, setGalleryFiles] = useState([]);
+  const [cropCoverFile, setCropCoverFile] = useState(null);
   const coverInputRef = useRef(null);
   const galleryInputRef = useRef(null);
   const [sessionVendor, setSessionVendor] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const router = useRouter();
+  const CropperModal = dynamic(() => import('../components/ImageCropper').then(mod => mod.ImageCropper), { ssr: false });
 
   const subOptions = useMemo(() => subCategories[form.main_category] || [], [form.main_category]);
 
@@ -137,7 +140,7 @@ export default function AddProductPage() {
       e.target.value = '';
       return;
     }
-    setCoverFile(file);
+    setCropCoverFile(file);
   };
 
   const handleGalleryFiles = (e) => {
@@ -255,7 +258,7 @@ export default function AddProductPage() {
   };
 
   if (loading) {
-    return <div style={{ padding: '1.5rem' }}>Loadingâ€¦</div>;
+    return <div style={{ padding: '1.5rem' }}>Loading...</div>;
   }
 
   if (error) {
@@ -508,6 +511,18 @@ export default function AddProductPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {cropCoverFile && (
+        <CropperModal
+          file={cropCoverFile}
+          aspect={4 / 3}
+          onCancel={() => setCropCoverFile(null)}
+          onCropped={(cropped) => {
+            setCoverFile(cropped);
+            setCropCoverFile(null);
+          }}
+        />
       )}
     </div>
   );

@@ -53,12 +53,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="page">
-      <header className="page-hero auth-hero">
-        <h1>Welcome back</h1>
-        <p>Log in to manage your shop or keep browsing local products.</p>
-      </header>
-
+    <div className="page auth-page">
       <section className="auth-card">
         <form className="auth-form" data-react-login="1" onSubmit={handleSubmit}>
           <label className="input-label" htmlFor="login-email">

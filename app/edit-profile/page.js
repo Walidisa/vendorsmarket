@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useSessionVendor } from "../../lib/useSessionVendor";
 import { uploadImage } from "../../lib/uploadImage";
@@ -33,6 +34,8 @@ export default function EditProfilePage() {
   const [status, setStatus] = useState("");
   const [profileFile, setProfileFile] = useState(null);
   const [bannerFile, setBannerFile] = useState(null);
+  const [cropProfileFile, setCropProfileFile] = useState(null);
+  const [cropBannerFile, setCropBannerFile] = useState(null);
   const [profilePreview, setProfilePreview] = useState("");
   const [bannerPreview, setBannerPreview] = useState("");
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -41,6 +44,9 @@ export default function EditProfilePage() {
   const profileInputRef = useRef(null);
   const bannerInputRef = useRef(null);
   const passwordSectionRef = useRef(null);
+  const CropperModal = dynamic(() => import("../components/ImageCropper").then((mod) => mod.ImageCropper), {
+    ssr: false,
+  });
 
   useEffect(() => {
     if (!loading && !vendor) {
@@ -85,13 +91,7 @@ export default function EditProfilePage() {
       e.target.value = "";
       return;
     }
-    setProfileFile(file);
-    if (prevProfileUrl.current && prevProfileUrl.current.startsWith("blob:")) {
-      URL.revokeObjectURL(prevProfileUrl.current);
-    }
-    const url = file ? URL.createObjectURL(file) : "";
-    prevProfileUrl.current = url;
-    setProfilePreview(url);
+    setCropProfileFile(file);
   };
 
   const handleBannerFile = (e) => {
@@ -106,13 +106,7 @@ export default function EditProfilePage() {
       e.target.value = "";
       return;
     }
-    setBannerFile(file);
-    if (prevBannerUrl.current && prevBannerUrl.current.startsWith("blob:")) {
-      URL.revokeObjectURL(prevBannerUrl.current);
-    }
-    const url = file ? URL.createObjectURL(file) : "";
-    prevBannerUrl.current = url;
-    setBannerPreview(url);
+    setCropBannerFile(file);
   };
 
   const handleSubmit = async (e) => {
@@ -169,9 +163,20 @@ export default function EditProfilePage() {
       payload.password = newPassword;
     }
 
+    // include auth token so the API can verify ownership
+    const { data: sessionData } = await supabase.auth.getSession();
+    const accessToken = sessionData?.session?.access_token;
+    if (!accessToken) {
+      setStatus("No active session. Please log in again.");
+      return;
+    }
+
     const res = await fetch(`/api/vendors/${vendor.username}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
       body: JSON.stringify(payload),
     });
 
@@ -481,6 +486,42 @@ export default function EditProfilePage() {
             </div>
           </div>
         </div>
+      )}
+
+      {cropProfileFile && (
+        <CropperModal
+          file={cropProfileFile}
+          aspect={1}
+          onCancel={() => setCropProfileFile(null)}
+          onCropped={(cropped) => {
+            setProfileFile(cropped);
+            if (prevProfileUrl.current && prevProfileUrl.current.startsWith("blob:")) {
+              URL.revokeObjectURL(prevProfileUrl.current);
+            }
+            const url = URL.createObjectURL(cropped);
+            prevProfileUrl.current = url;
+            setProfilePreview(url);
+            setCropProfileFile(null);
+          }}
+        />
+      )}
+
+      {cropBannerFile && (
+        <CropperModal
+          file={cropBannerFile}
+          aspect={16 / 9}
+          onCancel={() => setCropBannerFile(null)}
+          onCropped={(cropped) => {
+            setBannerFile(cropped);
+            if (prevBannerUrl.current && prevBannerUrl.current.startsWith("blob:")) {
+              URL.revokeObjectURL(prevBannerUrl.current);
+            }
+            const url = URL.createObjectURL(cropped);
+            prevBannerUrl.current = url;
+            setBannerPreview(url);
+            setCropBannerFile(null);
+          }}
+        />
       )}
     </div>
   );
