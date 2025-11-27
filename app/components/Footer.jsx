@@ -1,12 +1,42 @@
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+
 export default function Footer() {
+  const [open, setOpen] = useState(false);
+
+  const close = useCallback(() => setOpen(false), []);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") close();
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [open, close]);
+
   return (
     <div id="site-footer">
-      <div className="feedback-overlay" id="feedbackOverlay" aria-hidden="true">
+      <div
+        className={`feedback-overlay${open ? " is-open" : ""}`}
+        id="feedbackOverlay"
+        aria-hidden={open ? "false" : "true"}
+        onClick={(e) => {
+          if (e.target === e.currentTarget) close();
+        }}
+      >
         <div className="feedback-backdrop"></div>
 
         <div className="feedback-modal" role="dialog" aria-modal="true" aria-labelledby="feedbackTitle">
-          <button className="feedback-close" id="closeFeedback" aria-label="Close feedback form">
-            A-
+          <button
+            className="feedback-close"
+            id="closeFeedback"
+            aria-label="Close feedback form"
+            type="button"
+            onClick={close}
+          >
+            <img src="/icons/close.png" alt="Close" className="feedback-close-icon" />
           </button>
 
           <h2 id="feedbackTitle" className="feedback-title">
@@ -37,7 +67,14 @@ export default function Footer() {
               placeholder="Share your feedback or question..."
             ></textarea>
 
-            <button type="submit" className="btn-primary feedback-submit">
+            <button
+              type="submit"
+              className="btn-primary feedback-submit"
+              onClick={(e) => {
+                e.preventDefault();
+                close();
+              }}
+            >
               Send feedback
             </button>
           </form>
@@ -57,7 +94,12 @@ export default function Footer() {
           <a href="#">Help</a>
         </div>
 
-        <button className="footer-feedback-btn" id="openFeedback">
+        <button
+          className="footer-feedback-btn"
+          id="openFeedback"
+          type="button"
+          onClick={() => setOpen(true)}
+        >
           Contact &amp; Feedback
         </button>
 
