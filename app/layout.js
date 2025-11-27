@@ -6,6 +6,7 @@ import "./styles/themes.css";
 import Footer from "./components/Footer";
 import RouteLoader from "./components/RouteLoader";
 import { Suspense } from "react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata = {
   title: "VendorsMarket",
@@ -21,6 +22,7 @@ export default function RootLayout({ children }) {
           <Suspense fallback={null}>{children}</Suspense>
         </main>
         <Footer />
+        <SpeedInsights />
       </body>
     </html>
   );
