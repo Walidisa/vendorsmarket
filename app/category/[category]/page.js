@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Script from "next/script";
 import { ProductCard } from "../../components/ProductCard";
+import { useThemeIcons } from "../../../lib/useThemeIcons";
 
 export default function CategoryPage() {
   const params = useParams();
@@ -12,6 +13,7 @@ export default function CategoryPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const subcategory = params?.category || "";
+  const { theme } = useThemeIcons("food");
 
   const normalize = (val) => (val ? String(val).toLowerCase() : "");
   const activeSub = normalize(subcategory);
@@ -81,7 +83,7 @@ export default function CategoryPage() {
               onClick={() => router.back()}
             >
               <img
-                src="/icons/back.png"
+                src={theme === "clothing" ? "/icons/back.png" : "/icons/back-orange.png"}
                 alt="Back"
                 className="back-icon"
                 data-blue="/icons/back.png"
