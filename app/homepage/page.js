@@ -44,13 +44,13 @@ export default function Homepage() {
   const { vendor } = useSessionVendor();
   const { products = [] } = useProducts();
   const router = useRouter();
-  const { theme, setTheme } = useThemeIcons("food");
+  const { theme, setTheme } = useThemeIcons("clothing");
   const [profileHref, setProfileHref] = useState("/login");
-  const [activeCategory, setActiveCategory] = useState("food");
+  const [activeCategory, setActiveCategory] = useState("clothing");
 
   useEffect(() => {
     const saved = typeof window !== "undefined" ? localStorage.getItem("activeTheme") : null;
-    const initial = saved === "clothing" ? "clothing" : "food";
+    const initial = saved === "food" ? "food" : "clothing";
     setActiveCategory(initial);
     setTheme(initial);
   }, [setTheme]);

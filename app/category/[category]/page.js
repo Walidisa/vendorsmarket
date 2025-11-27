@@ -13,7 +13,7 @@ export default function CategoryPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const subcategory = params?.category || "";
-  const { theme } = useThemeIcons("food");
+  const { theme } = useThemeIcons("clothing");
 
   const normalize = (val) => (val ? String(val).toLowerCase() : "");
   const activeSub = normalize(subcategory);

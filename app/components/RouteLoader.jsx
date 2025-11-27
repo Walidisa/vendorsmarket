@@ -12,14 +12,14 @@ export default function RouteLoader() {
 
   const refreshThemeAndColors = () => {
     if (typeof window === "undefined") return;
-    const theme = localStorage.getItem("activeTheme") || "food";
+    const theme = localStorage.getItem("activeTheme") || "clothing";
     document.body.classList.remove("theme-food", "theme-clothing");
     document.body.classList.add(theme === "food" ? "theme-food" : "theme-clothing");
     const style = getComputedStyle(document.body);
     const primaryVar = style.getPropertyValue("--color-primary").trim();
     const primaryLightVar = style.getPropertyValue("--color-primary-light").trim();
-    const primary = primaryVar || "#8A624A";
-    const primaryLight = primaryLightVar || "#A98163";
+    const primary = primaryVar || "#0d3b66";
+    const primaryLight = primaryLightVar || "#144a82";
     setColors({ primary, primaryLight });
   };
 

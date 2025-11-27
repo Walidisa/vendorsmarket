@@ -22,7 +22,7 @@ const initialForm = {
 export default function SignupPage() {
   const [form, setForm] = useState(initialForm);
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [theme, setTheme] = useState('food');
+  const [theme, setTheme] = useState('clothing');
   const [status, setStatus] = useState('');
   const [successOpen, setSuccessOpen] = useState(false);
   const profileInputRef = useRef(null);
@@ -41,7 +41,7 @@ export default function SignupPage() {
   const CropperModal = dynamic(() => import('../components/ImageCropper').then(mod => mod.ImageCropper), { ssr: false });
 
   useEffect(() => {
-    const t = typeof window !== 'undefined' ? (localStorage.getItem('activeTheme') || 'food') : 'food';
+    const t = typeof window !== 'undefined' ? (localStorage.getItem('activeTheme') || 'clothing') : 'clothing';
     setTheme(t);
   }, []);
 

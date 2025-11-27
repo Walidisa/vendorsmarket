@@ -55,7 +55,7 @@ export default function AddProductPage() {
   const [limitModalOpen, setLimitModalOpen] = useState(false);
   const [galleryLimitOpen, setGalleryLimitOpen] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
-  const { theme } = useThemeIcons('food');
+  const { theme } = useThemeIcons('clothing');
   const [coverFile, setCoverFile] = useState(null);
   const [galleryFiles, setGalleryFiles] = useState([]);
   const [cropCoverFile, setCropCoverFile] = useState(null);

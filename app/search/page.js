@@ -12,7 +12,7 @@ export default function SearchPage() {
   const { vendor } = useSessionVendor();
   const { products = [] } = useProducts();
   const { profiles = [] } = useProfiles();
-  const { theme, setTheme } = useThemeIcons("food");
+  const { theme, setTheme } = useThemeIcons("clothing");
   const [profileHref, setProfileHref] = useState("/login");
   const [query, setQuery] = useState("");
   const router = useRouter();

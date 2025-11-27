@@ -24,7 +24,7 @@ export default function ProfilePage({ params }) {
   const [error, setError] = useState("");
   const [tab, setTab] = useState("products");
   const [isOwner, setIsOwner] = useState(false);
-  const { theme } = useThemeIcons("food");
+  const { theme } = useThemeIcons("clothing");
 
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
   const [feedbackRating, setFeedbackRating] = useState(null);

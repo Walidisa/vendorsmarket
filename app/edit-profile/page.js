@@ -11,7 +11,7 @@ import { supabase } from "../../lib/supabaseClient";
 export default function EditProfilePage() {
   const router = useRouter();
   const { vendor, sessionUserId, loading } = useSessionVendor();
-  const { theme } = useThemeIcons("food");
+  const { theme } = useThemeIcons("clothing");
 
   const [form, setForm] = useState({
     username: "",

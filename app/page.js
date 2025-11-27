@@ -11,9 +11,9 @@ export default function Page() {
     "Affordable and easily accessible products",
   ];
   const [slideIndex, setSlideIndex] = useState(0);
-  const [heroTheme, setHeroTheme] = useState("food");
+  const [heroTheme, setHeroTheme] = useState("clothing");
   const [landingProducts, setLandingProducts] = useState([]);
-  const [landingCategory, setLandingCategory] = useState("food");
+  const [landingCategory, setLandingCategory] = useState("clothing");
   const [featuredVendors, setFeaturedVendors] = useState([]);
   const [heroVisible, setHeroVisible] = useState(true);
   const [cardsVisible, setCardsVisible] = useState(false);

@@ -52,7 +52,7 @@ export default function EditProductPage() {
     description: '',
   });
   const [status, setStatus] = useState('');
-  const [theme, setTheme] = useState('food');
+  const [theme, setTheme] = useState('clothing');
   const [coverFile, setCoverFile] = useState(null);
   const [galleryFiles, setGalleryFiles] = useState([]);
   const coverInputRef = useRef(null);
@@ -64,7 +64,7 @@ export default function EditProductPage() {
   const subOptions = useMemo(() => subCategories[form.main_category] || [], [form.main_category]);
 
   useEffect(() => {
-    const t = typeof window !== 'undefined' ? (localStorage.getItem('activeTheme') || 'food') : 'food';
+    const t = typeof window !== 'undefined' ? (localStorage.getItem('activeTheme') || 'clothing') : 'clothing';
     setTheme(t);
   }, []);
 

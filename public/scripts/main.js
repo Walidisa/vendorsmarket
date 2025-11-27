@@ -17,13 +17,13 @@ function initPageTransitions() {
 }
 
 function applySavedBodyTheme() {
-  const theme = localStorage.getItem('activeTheme') || 'food';
+  const theme = localStorage.getItem('activeTheme') || 'clothing';
   document.body.classList.remove('theme-food', 'theme-clothing');
   document.body.classList.add(theme === 'food' ? 'theme-food' : 'theme-clothing');
 }
 
 function updateNavIconsByTheme() {
-  const theme = localStorage.getItem('activeTheme') || 'food';
+  const theme = localStorage.getItem('activeTheme') || 'clothing';
   const swap = (selector) => {
     document.querySelectorAll(selector).forEach((icon) => {
       const brown = icon.dataset.brown;

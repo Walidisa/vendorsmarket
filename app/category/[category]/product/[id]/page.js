@@ -51,7 +51,7 @@ export default function ProductPage() {
   const [storedRating, setStoredRating] = useState(null);
   const [toast, setToast] = useState("");
   const [mounted, setMounted] = useState(false);
-  const { theme } = useThemeIcons(category || "food");
+  const { theme } = useThemeIcons(category || "clothing");
 
   useEffect(() => {
     if (typeof window !== "undefined") {
