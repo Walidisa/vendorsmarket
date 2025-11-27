@@ -1,29 +1,32 @@
 "use client";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
-import Script from "next/script";
+const SUBCATEGORIES = [
+  "snacks", "shawarma", "meals", "drinks", "cakes", "spices", "kitchenware", "food-others",
+  "shoes", "jallabiya", "hijabs", "shirts", "materials", "skincare", "trousers", "hats", "bags", "watches", "tech", "clothing-others"
+];
 
-export default function CategoryPage() {
+export default function CategoryIndexPage() {
+  const [subs, setSubs] = useState(SUBCATEGORIES);
+  // Optionally, fetch subcategories dynamically from /api/products
+  // useEffect(() => { ... }, []);
   return (
-    <>
-      <div className="page-transition">
-        <div className="page">
-          <header className="subcategory-page-header">
-            <button className="back-button" id="subcategoryBackBtn" aria-label="Back to home">
-              <img
-                src="/icons/back.png"
-                alt="Back"
-                className="back-icon"
-                data-blue="/icons/back.png"
-                data-brown="/icons/back-orange.png"
-              />
-            </button>
-            <h1 id="subcategoryTitle">Products</h1>
-          </header>
-
-          <section className="subcategory-page-grid" id="subcategoryPageGrid"></section>
-        </div>
+    <div className="page-transition">
+      <div className="page">
+        <header className="subcategory-page-header">
+          <h1>All Subcategories</h1>
+        </header>
+        <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+          {subs.map((sub) => (
+            <li key={sub} style={{ margin: "12px 0" }}>
+              <Link href={`/category/${sub}`} className="see-all-link">
+                {sub.charAt(0).toUpperCase() + sub.slice(1)}
+              </Link>
+            </li>
+          ))}
+        </ul>
       </div>
-      <Script src="/scripts/main.js" strategy="afterInteractive" />
-    </>
+    </div>
   );
 }

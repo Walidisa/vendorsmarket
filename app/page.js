@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Script from "next/script";
 
@@ -15,6 +15,11 @@ export default function Page() {
   const [landingProducts, setLandingProducts] = useState([]);
   const [landingCategory, setLandingCategory] = useState("food");
   const [featuredVendors, setFeaturedVendors] = useState([]);
+  const [heroVisible, setHeroVisible] = useState(true);
+  const [cardsVisible, setCardsVisible] = useState(false);
+
+  const heroRef = useRef(null);
+  const cardsRef = useRef(null);
 
   useEffect(() => {
     const onScroll = () => {
@@ -76,10 +81,31 @@ export default function Page() {
     loadVendors();
   }, []);
 
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.target === heroRef.current) {
+            setHeroVisible(entry.isIntersecting);
+          }
+          if (entry.target === cardsRef.current) {
+            setCardsVisible(entry.isIntersecting);
+          }
+        });
+      },
+      { threshold: [0, 0.25, 0.5, 0.75, 1] }
+    );
+
+    if (heroRef.current) observer.observe(heroRef.current);
+    if (cardsRef.current) observer.observe(cardsRef.current);
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <>
       <div className="page">
-        <div className={`hero-shell theme-${heroTheme}`}>
+        <div ref={heroRef} className={`hero-shell theme-${heroTheme} fade-section${heroVisible ? " visible" : ""}`}>
           <header className="site-header">
             <div className="site-logo">vendorsmarket.ng</div>
           </header>
@@ -139,55 +165,70 @@ export default function Page() {
             </button>
           </div>
 
-          <div className="landing-slider subcategory-row-scroll">
-            {(landingProducts || [])
+          {/* Group products by subcategory and show a 'See all' button for each */}
+          {(() => {
+            const grouped = {};
+            (landingProducts || [])
               .filter((p) => (p.mainCategory || p.main_category) === landingCategory)
-              .sort((a, b) => {
-                const ra = Number(a.rating_value || a.ratingValue || 0);
-                const rb = Number(b.rating_value || b.ratingValue || 0);
-                const ca = Number(a.rating_count || a.ratingCount || 0);
-                const cb = Number(b.rating_count || b.ratingCount || 0);
-                // prioritize rating value, then count
-                if (rb !== ra) return rb - ra;
-                return cb - ca;
-              })
-              .slice(0, 7)
-              .map((p) => {
-                const cover =
-                  p.coverImage ||
-                  p.cover_image ||
-                  (Array.isArray(p.images) && p.images.length ? p.images[0] : null) ||
-                  "/images/default-product.jpg";
-                const vendorName =
-                  p.vendorShopName ||
-                  p.shop_name ||
-                  p.shopName ||
-                  p.vendorName ||
-                  p.vendor_username ||
-                  p.vendorUsername ||
-                  "";
-                const ratingVal = Number(p.rating_value || p.ratingValue || 0);
-                const ratingCnt = Number(p.rating_count || p.ratingCount || 0);
-                return (
-                  <div key={p.id} className="product-card">
-                    <div className="product-image-wrapper">
-                      <div className="product-image-box">
-                        <img src={cover} alt={p.name} className="product-image" />
-                      </div>
-                    </div>
-                    <div className="product-info">
-                      <h3>{p.name}</h3>
-                      <p className="price">₦{Number(p.price || 0).toLocaleString()}</p>
-                      <p className="details-vendor">{vendorName}</p>
-                      <p className="details">
-                        <span className="rating-star">★</span>{" "}
-                        {ratingVal > 0 ? ratingVal.toFixed(1) : "0.0"} ({ratingCnt})
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
-          </div>
+              .forEach((p) => {
+                const sub = p.subcategory || p.sub_category || "other";
+                if (!grouped[sub]) grouped[sub] = [];
+                grouped[sub].push(p);
+              });
+            return Object.entries(grouped).map(([sub, products]) => (
+              <div key={sub} style={{ marginBottom: 24 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                </div>
+                <div className="landing-slider subcategory-row-scroll">
+                  {products
+                    .sort((a, b) => {
+                      const ra = Number(a.rating_value || a.ratingValue || 0);
+                      const rb = Number(b.rating_value || b.ratingValue || 0);
+                      const ca = Number(a.rating_count || a.ratingCount || 0);
+                      const cb = Number(b.rating_count || b.ratingCount || 0);
+                      if (rb !== ra) return rb - ra;
+                      return cb - ca;
+                    })
+                    .slice(0, 7)
+                    .map((p) => {
+                      const cover =
+                        p.coverImage ||
+                        p.cover_image ||
+                        (Array.isArray(p.images) && p.images.length ? p.images[0] : null) ||
+                        "/images/default-product.jpg";
+                      const vendorName =
+                        p.vendorShopName ||
+                        p.shop_name ||
+                        p.shopName ||
+                        p.vendorName ||
+                        p.vendor_username ||
+                        p.vendorUsername ||
+                        "";
+                      const ratingVal = Number(p.rating_value || p.ratingValue || 0);
+                      const ratingCnt = Number(p.rating_count || p.ratingCount || 0);
+                      return (
+                        <div key={p.id} className="product-card">
+                          <div className="product-image-wrapper">
+                            <div className="product-image-box">
+                              <img src={cover} alt={p.name} className="product-image" />
+                            </div>
+                          </div>
+                          <div className="product-info">
+                            <h3>{p.name}</h3>
+                            <p className="price">₦{Number(p.price || 0).toLocaleString()}</p>
+                            <p className="details-vendor">{vendorName}</p>
+                            <p className="details">
+                              <span className="rating-star">★</span>{" "}
+                              {ratingVal > 0 ? ratingVal.toFixed(1) : "0.0"} ({ratingCnt})
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
+            ));
+          })()}
         </section>
 
         {featuredVendors.length > 0 && (
@@ -213,7 +254,7 @@ export default function Page() {
           </section>
         )}
 
-        <section className="card-grid">
+        <section ref={cardsRef} className={`card-grid fade-section${cardsVisible ? " visible" : ""}`}>
           <article className={`card theme-${heroTheme}`}>
             <h2>One home for your favourite vendors</h2>
             <p>

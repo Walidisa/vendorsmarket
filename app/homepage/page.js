@@ -85,7 +85,7 @@ export default function Homepage() {
       localStorage.setItem("subcategorySlug", sub);
       localStorage.setItem("subcategoryTitle", title || sub);
     }
-    router.push("/category");
+    router.push(`/category/${sub}`);
   };
 
   const handleProductClick = (id) => {
