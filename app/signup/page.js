@@ -46,8 +46,9 @@ export default function SignupPage() {
   const formatWhatsApp = (val) => {
     const digits = (val || '').replace(/\D/g, '');
     if (!digits) return '+234 ';
-    const country = digits.slice(0, 3);
-    const rest = digits.slice(3);
+    // Keep +234 default; if user typed a country code, respect the first 3 digits
+    const country = digits.slice(0, 3) || '234';
+    const rest = digits.slice(3, 13); // up to 10 more digits
     const parts = [`+${country}`];
     if (rest.length) parts.push(rest.slice(0, 3));
     if (rest.length > 3) parts.push(rest.slice(3, 6));
@@ -155,8 +156,14 @@ export default function SignupPage() {
       return;
     }
 
-    if (!(form.whatsapp || '').trim()) {
+    const formattedWhatsApp = formatWhatsApp(form.whatsapp);
+    const whatsappDigits = formattedWhatsApp.replace(/\D/g, '');
+    if (!whatsappDigits) {
       setStatus('WhatsApp number is required.');
+      return;
+    }
+    if (whatsappDigits.length < 10) {
+      setStatus('Enter a valid WhatsApp number in the format +234 000 000 0000.');
       return;
     }
 
@@ -205,6 +212,7 @@ export default function SignupPage() {
     const payload = {
       ...form,
       username,
+      whatsapp: formattedWhatsApp,
       profile_pic: profilePath,
       banner_pic: bannerPath,
     };
@@ -314,9 +322,9 @@ export default function SignupPage() {
             onChange={handleChange}
             required
             inputMode="tel"
-            pattern="\\+[0-9 ]+"
             placeholder="+234 000 000 0000"
             onFocus={handleWhatsAppFocus}
+            title="Format: +234 000 000 0000"
           />
         </label>
         <label>
