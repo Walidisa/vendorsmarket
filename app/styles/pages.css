@@ -655,6 +655,7 @@ body.scrolled .hero-image {
   font-size: 0.9rem;
   color: var(--color-muted);
   line-height: 1.5;
+  white-space: pre-line;
 }
 
 /* Add-product card inside profile product grid */
