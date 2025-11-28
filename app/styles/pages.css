@@ -1023,7 +1023,30 @@ body.scrolled .hero-image {
 
 .form-status {
   font-size: 0.9rem;
-  color: #333;
+  color: #c62828;
+  background: #fdecea;
+  border: 1px solid #f5c6c4;
+  border-radius: 12px;
+  padding: 0.6rem 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+}
+
+.form-status::before {
+  content: "!";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #c62828;
+  color: #ffffff;
+  font-size: 0.85rem;
+  line-height: 1;
+  flex-shrink: 0;
 }
 
 /* SIGNUP PAGE */

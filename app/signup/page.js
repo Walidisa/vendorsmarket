@@ -38,7 +38,22 @@ export default function SignupPage() {
   const [cropBannerFile, setCropBannerFile] = useState(null);
   const [passwordError, setPasswordError] = useState(false);
   const [passwordErrorMsg, setPasswordErrorMsg] = useState('');
+  const [usernameError, setUsernameError] = useState(false);
+  const [locationError, setLocationError] = useState(false);
+  const usernameRef = useRef(null);
   const CropperModal = dynamic(() => import('../components/ImageCropper').then(mod => mod.ImageCropper), { ssr: false });
+
+  const formatWhatsApp = (val) => {
+    const digits = (val || '').replace(/\D/g, '');
+    if (!digits) return '+234 ';
+    const country = digits.slice(0, 3);
+    const rest = digits.slice(3);
+    const parts = [`+${country}`];
+    if (rest.length) parts.push(rest.slice(0, 3));
+    if (rest.length > 3) parts.push(rest.slice(3, 6));
+    if (rest.length > 6) parts.push(rest.slice(6, 10));
+    return parts.join(' ').trimEnd();
+  };
 
   useEffect(() => {
     const t = typeof window !== 'undefined' ? (localStorage.getItem('activeTheme') || 'clothing') : 'clothing';
@@ -63,7 +78,21 @@ export default function SignupPage() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    const nextVal = name === 'username' ? value.replace(/\s+/g, '').toLowerCase() : value;
+    if (name === 'username') setUsernameError(false);
+    if (name === 'location') setLocationError(false);
+    if (name === 'whatsapp') {
+      const formatted = formatWhatsApp(value);
+      setForm((prev) => ({ ...prev, [name]: formatted }));
+      return;
+    }
+    setForm((prev) => ({ ...prev, [name]: nextVal }));
+  };
+
+  const handleWhatsAppFocus = () => {
+    if (!(form.whatsapp || '').trim()) {
+      setForm((prev) => ({ ...prev, whatsapp: '+234 ' }));
+    }
   };
 
   const handleProfileFile = (e) => {
@@ -99,6 +128,8 @@ export default function SignupPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus('Saving...');
+    setUsernameError(false);
+    setLocationError(false);
     setPasswordError(false);
     setPasswordErrorMsg('');
 
@@ -113,6 +144,44 @@ export default function SignupPage() {
     const emailOk = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email.trim());
     if (!emailOk) {
       setStatus('Please enter a valid email address.');
+      return;
+    }
+
+    const username = (form.username || '').trim().toLowerCase();
+    if (!username) {
+      setStatus('Username is required.');
+      setUsernameError(true);
+      usernameRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+    if (!(form.whatsapp || '').trim()) {
+      setStatus('WhatsApp number is required.');
+      return;
+    }
+
+    if (!(form.location || '').trim()) {
+      setStatus('Location is required.');
+      setLocationError(true);
+      return;
+    }
+
+    try {
+      const availabilityRes = await fetch('/api/profiles', { cache: 'no-store' });
+      if (!availabilityRes.ok) {
+        setStatus('Unable to check username availability. Please try again.');
+        return;
+      }
+      const profiles = await availabilityRes.json();
+      const taken = Array.isArray(profiles) && profiles.some((p) => (p.username || '').toLowerCase() === username.toLowerCase());
+      if (taken) {
+        setStatus('Username already taken. Please choose another.');
+        setUsernameError(true);
+        usernameRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+    } catch (_) {
+      setStatus('Unable to check username availability. Please try again.');
       return;
     }
 
@@ -135,6 +204,7 @@ export default function SignupPage() {
 
     const payload = {
       ...form,
+      username,
       profile_pic: profilePath,
       banner_pic: bannerPath,
     };
@@ -178,8 +248,16 @@ export default function SignupPage() {
 
       <form className="add-product-form" onSubmit={handleSubmit}>
         <label>
-          Username (slug)
-          <input name="username" value={form.username} onChange={handleChange} required />
+          Username
+          <input
+            ref={usernameRef}
+            name="username"
+            value={form.username}
+            onChange={handleChange}
+            required
+            className={usernameError ? 'input-error' : ''}
+          />
+          {usernameError ? <div className="input-error-text">Username taken. Try another one.</div> : null}
         </label>
         <label>
           Shop Name
@@ -219,11 +297,27 @@ export default function SignupPage() {
         </label>
         <label>
           Location
-          <input name="location" value={form.location} onChange={handleChange} />
+          <input
+            name="location"
+            value={form.location}
+            onChange={handleChange}
+            required
+            className={locationError ? 'input-error' : ''}
+          />
+          {locationError ? <div className="input-error-text">Location is required.</div> : null}
         </label>
         <label>
           WhatsApp
-          <input name="whatsapp" value={form.whatsapp} onChange={handleChange} />
+          <input
+            name="whatsapp"
+            value={form.whatsapp}
+            onChange={handleChange}
+            required
+            inputMode="tel"
+            pattern="\\+[0-9 ]+"
+            placeholder="+234 000 000 0000"
+            onFocus={handleWhatsAppFocus}
+          />
         </label>
         <label>
           Instagram (optional)
