@@ -94,6 +94,14 @@ export default function ProfilePage({ params }) {
     .replace(/^@+/, "")
     .toLowerCase();
   const instagramHref = instagramHandle ? `https://instagram.com/${instagramHandle}` : null;
+  const bannerSrc =
+    profile?.banner && profile.banner !== "null" && profile.banner !== "undefined"
+      ? profile.banner
+      : "/images/default-banner.jpg";
+  const avatarSrc =
+    profile?.avatar && profile.avatar !== "null" && profile.avatar !== "undefined"
+      ? profile.avatar
+      : "/images/default-seller.jpg";
 
   const isProfileOwnerSlug =
     sessionVendor?.username &&
@@ -200,7 +208,7 @@ export default function ProfilePage({ params }) {
           <section className="profile-header">
             <div className="profile-banner">
               <img
-                src={profile.banner || "/images/default-banner.jpg"}
+                src={bannerSrc}
                 className="profile-banner-image"
                 alt={profile.shopName || profile.username}
               />
@@ -209,7 +217,7 @@ export default function ProfilePage({ params }) {
             <div className="profile-info-row">
               <div className="profile-avatar-wrapper profile-avatar-left">
                 <img
-                  src={profile.avatar || "/images/default-seller.jpg"}
+                  src={avatarSrc}
                   className="profile-avatar"
                   alt="Shop owner"
                   id="profileAvatar"

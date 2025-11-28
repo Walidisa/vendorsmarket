@@ -12,6 +12,11 @@ const toAssetUrl = (path) => {
   if (/^https?:\/\//i.test(key)) return key;
   if (key.startsWith('/')) return key; // already a local/static path
 
+  // Force known defaults to local images instead of storage
+  const normalized = key.toLowerCase();
+  if (normalized.includes('default-banner')) return '/images/default-banner.jpg';
+  if (normalized.includes('default-seller')) return '/images/default-seller.jpg';
+
   // Strip bucket prefixes if present (public/publicc)
   if (key.startsWith(`${STORAGE_BUCKET}/`)) {
     key = key.replace(`${STORAGE_BUCKET}/`, '');
