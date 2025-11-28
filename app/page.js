@@ -165,6 +165,8 @@ export default function Page() {
             </button>
           </div>
 
+          <h2>Most rated products</h2>
+
           {/* Group products by subcategory and show a 'See all' button for each */}
           {(() => {
             const grouped = {};

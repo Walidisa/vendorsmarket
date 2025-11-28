@@ -180,6 +180,11 @@ body, p, input, button, textarea, li {
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
 }
 
+.landing-categories h2 {
+  margin: 0 0 10px;
+  font-size: 1.2rem;
+}
+
 .pill-toggle {
   display: flex;
   position: relative;
