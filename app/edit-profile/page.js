@@ -38,12 +38,14 @@ export default function EditProfilePage() {
   const [cropBannerFile, setCropBannerFile] = useState(null);
   const [profilePreview, setProfilePreview] = useState("");
   const [bannerPreview, setBannerPreview] = useState("");
+  const [instagramError, setInstagramError] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const prevProfileUrl = useRef(null);
   const prevBannerUrl = useRef(null);
   const profileInputRef = useRef(null);
   const bannerInputRef = useRef(null);
   const passwordSectionRef = useRef(null);
+  const instagramRef = useRef(null);
   const CropperModal = dynamic(() => import("../components/ImageCropper").then((mod) => mod.ImageCropper), {
     ssr: false,
   });
@@ -63,7 +65,10 @@ export default function EditProfilePage() {
         email: vendor.email || "",
         location: vendor.location || "",
         whatsapp: vendor.whatsapp || "",
-        instagram: vendor.instagram || "",
+        instagram: (vendor.instagram || "")
+          .replace(/^https?:\/\/(www\.)?instagram\.com\//i, "")
+          .replace(/^@+/, "")
+          .toLowerCase(),
         motto: vendor.tagline || "",
         about_description: vendor.aboutDescription || "",
         profile_pic: vendor.avatar || "",
@@ -76,6 +81,10 @@ export default function EditProfilePage() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    if (name === "instagram") {
+      setInstagramError(false);
+      setStatus("");
+    }
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -143,6 +152,14 @@ export default function EditProfilePage() {
       }
     }
 
+    const rawInstagram = (form.instagram || "").trim();
+    if (rawInstagram && /https?:\/\//i.test(rawInstagram)) {
+      setStatus("Enter an Instagram username only (not a link).");
+      setInstagramError(true);
+      instagramRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+
     let profilePath = form.profile_pic;
     let bannerPath = form.banner_pic;
 
@@ -162,6 +179,7 @@ export default function EditProfilePage() {
 
     const payload = {
       ...form,
+      instagram: rawInstagram,
       profile_pic: profilePath,
       banner_pic: bannerPath,
     };
@@ -309,7 +327,14 @@ export default function EditProfilePage() {
         </label>
         <label>
           Instagram (optional)
-          <input name="instagram" value={form.instagram} onChange={handleChange} />
+          <input
+            ref={instagramRef}
+            name="instagram"
+            value={form.instagram}
+            onChange={handleChange}
+            className={instagramError ? "input-error" : ""}
+          />
+          {instagramError ? <div className="input-error-text">Enter a username (no links).</div> : null}
         </label>
         <label>
           Motto (optional)
@@ -321,8 +346,7 @@ export default function EditProfilePage() {
         </label>
 
         <label>
-          Profile Image (path or URL)
-          <input name="profile_pic" value={form.profile_pic} onChange={handleChange} />
+          Profile Image
           <input
             ref={profileInputRef}
             className="file-input-hidden"
@@ -361,8 +385,7 @@ export default function EditProfilePage() {
         </label>
 
         <label>
-          Banner Image (path or URL)
-          <input name="banner_pic" value={form.banner_pic} onChange={handleChange} />
+          Banner Image
           <input
             ref={bannerInputRef}
             className="file-input-hidden"

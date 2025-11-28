@@ -66,7 +66,10 @@ export default function LoginPage() {
             placeholder="you@example.com"
             required
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              if (status) setStatus("");
+            }}
           />
 
           <label className="input-label" htmlFor="login-password">
@@ -79,24 +82,24 @@ export default function LoginPage() {
             placeholder="********"
             required
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              if (status) setStatus("");
+            }}
           />
 
           <button type="submit" className="btn-primary auth-button">
             Log In
           </button>
-          {status ? (
-            <p
-              className={`form-status${
-                (() => {
-                  const s = status.toLowerCase();
-                  return s.startsWith('saving') || s.startsWith('logging') ? '' : ' is-error';
-                })()
-              }`}
-            >
-              {status}
-            </p>
-          ) : null}
+          {status ? (() => {
+            const s = status.trim().toLowerCase();
+            const isNeutral = s.startsWith('saving') || s.startsWith('logging');
+            return (
+              <p className={`form-status${isNeutral ? '' : ' is-error'}`}>
+                {status}
+              </p>
+            );
+          })() : null}
         </form>
 
         <p className="auth-switch">

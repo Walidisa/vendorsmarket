@@ -44,8 +44,8 @@ export default function AddProductPage() {
   const [form, setForm] = useState({
     name: '',
     price: '',
-    main_category: 'food',
-    subcategory: subCategories.food[0].value,
+    main_category: '',
+    subcategory: '',
     cover_image: '',
     images: '',
     description: '',
@@ -55,12 +55,18 @@ export default function AddProductPage() {
   const [limitModalOpen, setLimitModalOpen] = useState(false);
   const [galleryLimitOpen, setGalleryLimitOpen] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
+  const [categoryError, setCategoryError] = useState(false);
+  const [subcategoryError, setSubcategoryError] = useState(false);
+  const [coverError, setCoverError] = useState(false);
   const { theme } = useThemeIcons('clothing');
   const [coverFile, setCoverFile] = useState(null);
   const [galleryFiles, setGalleryFiles] = useState([]);
   const [cropCoverFile, setCropCoverFile] = useState(null);
   const coverInputRef = useRef(null);
   const galleryInputRef = useRef(null);
+  const mainCategoryRef = useRef(null);
+  const subcategoryRef = useRef(null);
+  const coverRef = useRef(null);
   const [sessionVendor, setSessionVendor] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -68,16 +74,6 @@ export default function AddProductPage() {
   const CropperModal = dynamic(() => import('../components/ImageCropper').then(mod => mod.ImageCropper), { ssr: false });
 
   const subOptions = useMemo(() => subCategories[form.main_category] || [], [form.main_category]);
-
-  useEffect(() => {
-    // Reset subcategory to first option when main changes
-    const options = subCategories[form.main_category] || [];
-    setForm((prev) => ({
-      ...prev,
-      subcategory: options[0]?.value || '',
-    }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [form.main_category]);
 
   useEffect(() => {
     // theme handled by useThemeIcons
@@ -130,6 +126,7 @@ export default function AddProductPage() {
 
   const handleCoverFile = (e) => {
     const file = e.target.files?.[0] || null;
+    setCoverError(false);
     if (file && !file.type.startsWith('image/')) {
       alert('Only image files are allowed.');
       e.target.value = '';
@@ -169,6 +166,15 @@ export default function AddProductPage() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    if (name === 'main_category') {
+      setCategoryError(false);
+      setSubcategoryError(false);
+      setForm((prev) => ({ ...prev, [name]: value, subcategory: '' }));
+      return;
+    }
+    if (name === 'subcategory') {
+      setSubcategoryError(false);
+    }
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -176,6 +182,24 @@ export default function AddProductPage() {
     e.preventDefault();
     if (!sessionVendor?.username) {
       setStatus('You must be logged in as a vendor to add products.');
+      return;
+    }
+    if (!(coverFile || form.cover_image)) {
+      setCoverError(true);
+      setStatus('Cover image is required.');
+      coverRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+    if (!form.main_category) {
+      setCategoryError(true);
+      setStatus('Please select a main category.');
+      mainCategoryRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+    if (!form.subcategory) {
+      setSubcategoryError(true);
+      setStatus('Please select a subcategory.');
+      subcategoryRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
     if (productCount >= 20) {
@@ -303,27 +327,44 @@ export default function AddProductPage() {
 
         <label>
           Main Category
-          <select name="main_category" value={form.main_category} onChange={handleChange}>
+          <select
+            ref={mainCategoryRef}
+            name="main_category"
+            value={form.main_category}
+            onChange={handleChange}
+            className={categoryError ? 'input-error' : ''}
+          >
+            <option value="">Select a category</option>
             {mainCategories.map((c) => (
               <option key={c.value} value={c.value}>
                 {c.label}
               </option>
             ))}
           </select>
+          {categoryError ? <div className="input-error-text">Main category is required.</div> : null}
         </label>
 
         <label>
           Subcategory
-          <select name="subcategory" value={form.subcategory} onChange={handleChange}>
+          <select
+            ref={subcategoryRef}
+            name="subcategory"
+            value={form.subcategory}
+            onChange={handleChange}
+            disabled={!form.main_category}
+            className={subcategoryError ? 'input-error' : ''}
+          >
+            <option value="">Select a subcategory</option>
             {subOptions.map((c) => (
               <option key={c.value} value={c.value}>
                 {c.label}
               </option>
             ))}
           </select>
+          {subcategoryError ? <div className="input-error-text">Subcategory is required.</div> : null}
         </label>
 
-        <label>
+        <label ref={coverRef}>
           Cover Image
           <input
             ref={coverInputRef}
@@ -336,7 +377,7 @@ export default function AddProductPage() {
             {!(coverFile || form.cover_image) && (
               <button
                 type="button"
-                className="btn-secondary"
+                className={`btn-secondary${coverError ? ' input-error' : ''}`}
                 onClick={() => coverInputRef.current?.click()}
               >
                 Choose cover
@@ -373,6 +414,7 @@ export default function AddProductPage() {
               </div>
             )}
           </div>
+          {coverError ? <div className="input-error-text">Cover image is required.</div> : null}
         </label>
 
         <label>

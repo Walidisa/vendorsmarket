@@ -39,8 +39,10 @@ export default function SignupPage() {
   const [passwordError, setPasswordError] = useState(false);
   const [passwordErrorMsg, setPasswordErrorMsg] = useState('');
   const [usernameError, setUsernameError] = useState(false);
+  const [instagramError, setInstagramError] = useState(false);
   const [locationError, setLocationError] = useState(false);
   const usernameRef = useRef(null);
+  const instagramRef = useRef(null);
   const CropperModal = dynamic(() => import('../components/ImageCropper').then(mod => mod.ImageCropper), { ssr: false });
 
   const formatWhatsApp = (val) => {
@@ -82,6 +84,8 @@ export default function SignupPage() {
     const nextVal = name === 'username' ? value.replace(/\s+/g, '').toLowerCase() : value;
     if (name === 'username') setUsernameError(false);
     if (name === 'location') setLocationError(false);
+    if (name === 'instagram') setInstagramError(false);
+    if (status) setStatus('');
     if (name === 'whatsapp') {
       const formatted = formatWhatsApp(value);
       setForm((prev) => ({ ...prev, [name]: formatted }));
@@ -179,6 +183,16 @@ export default function SignupPage() {
       return;
     }
 
+    const rawInstagram = (form.instagram || '').trim();
+    const hasInstagramLink = rawInstagram && /https?:\/\//i.test(rawInstagram);
+    if (hasInstagramLink) {
+      setStatus('Enter an Instagram username only (not a link).');
+      setInstagramError(true);
+      instagramRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+    const instagramHandle = rawInstagram ? rawInstagram.replace(/^@+/, '').toLowerCase() : '';
+
     try {
       const availabilityRes = await fetch('/api/profiles', { cache: 'no-store' });
       if (!availabilityRes.ok) {
@@ -218,6 +232,7 @@ export default function SignupPage() {
     const payload = {
       ...form,
       username,
+      instagram: instagramHandle,
       whatsapp: formattedWhatsApp,
       profile_pic: profilePath,
       banner_pic: bannerPath,
@@ -335,7 +350,14 @@ export default function SignupPage() {
         </label>
         <label>
           Instagram (optional)
-          <input name="instagram" value={form.instagram} onChange={handleChange} />
+          <input
+            ref={instagramRef}
+            name="instagram"
+            value={form.instagram}
+            onChange={handleChange}
+            className={instagramError ? 'input-error' : ''}
+          />
+          {instagramError ? <div className="input-error-text">Enter a username (no links).</div> : null}
         </label>
         <label>
           Motto (optional)
@@ -347,8 +369,7 @@ export default function SignupPage() {
         </label>
 
         <label>
-          Profile Image (path or URL)
-          <input name="profile_pic" value={form.profile_pic} onChange={handleChange} />
+          Profile Image
           <input
             ref={profileInputRef}
             className="file-input-hidden"
@@ -387,8 +408,7 @@ export default function SignupPage() {
         </label>
 
         <label>
-          Banner Image (path or URL)
-          <input name="banner_pic" value={form.banner_pic} onChange={handleChange} />
+          Banner Image
           <input
             ref={bannerInputRef}
             className="file-input-hidden"
@@ -427,18 +447,15 @@ export default function SignupPage() {
         </label>
 
         <button type="submit">Create account</button>
-        {status ? (
-          <p
-            className={`form-status${
-              (() => {
-                const s = status.toLowerCase();
-                return s.startsWith('saving') || s.startsWith('signing') ? '' : ' is-error';
-              })()
-            }`}
-          >
-            {status}
-          </p>
-        ) : null}
+        {status ? (() => {
+          const s = status.trim().toLowerCase();
+          const isNeutral = s.startsWith('saving') || s.startsWith('signing') || s.startsWith('creating');
+          return (
+            <p className={`form-status${isNeutral ? '' : ' is-error'}`}>
+              {status}
+            </p>
+          );
+        })() : null}
       </form>
 
             {successOpen && (
