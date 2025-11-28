@@ -135,19 +135,25 @@ export default function AddProductPage() {
       e.target.value = '';
       return;
     }
-    if (file && file.size > 400 * 1024) {
-      alert('Max size is 400KB per image.');
+    if (file && file.size > 5 * 1024 * 1024) {
+      alert('Max size is 5MB per image.');
       e.target.value = '';
       return;
+    }
+    if (file && file.size > 400 * 1024) {
+      setStatus('Cover image is large and will be compressed; quality may be reduced.');
     }
     setCropCoverFile(file);
   };
 
   const handleGalleryFiles = (e) => {
     const files = Array.from(e.target.files || []);
-    const valid = files.filter((f) => f.type.startsWith('image/') && f.size <= 400 * 1024);
+    const valid = files.filter((f) => f.type.startsWith('image/') && f.size <= 5 * 1024 * 1024);
     if (valid.length !== files.length) {
-      alert('Only image files up to 400KB are allowed.');
+      alert('Only image files up to 5MB are allowed.');
+    }
+    if (valid.some((f) => f.size > 400 * 1024)) {
+      setStatus('Some gallery images are large and will be compressed; quality may be reduced.');
     }
     if (!valid.length) return;
     const current = galleryFiles.length;
@@ -189,11 +195,11 @@ export default function AddProductPage() {
 
     try {
       if (coverFile) {
-        const { path } = await uploadImage(coverFile, 'products');
+        const { path } = await uploadImage(coverFile, 'products', 'Cover image');
         coverPath = path;
       }
       if (galleryFiles.length) {
-        const uploads = await Promise.all(galleryFiles.map((f) => uploadImage(f, 'products')));
+        const uploads = await Promise.all(galleryFiles.map((f, idx) => uploadImage(f, 'products', `Image ${idx + 1}`)));
         galleryPaths = [...galleryPaths, ...uploads.map((u) => u.path)];
       }
     } catch (err) {
@@ -318,8 +324,7 @@ export default function AddProductPage() {
         </label>
 
         <label>
-          Cover Image (path or URL)
-          <input name="cover_image" value={form.cover_image} onChange={handleChange} />
+          Cover Image
           <input
             ref={coverInputRef}
             className="file-input-hidden"
@@ -372,7 +377,6 @@ export default function AddProductPage() {
 
         <label>
           Gallery Images (Maximum 3 images)
-          <input name="images" value={Array.isArray(form.images) ? form.images.join(', ') : form.images} onChange={handleChange} placeholder="img1.jpg, img2.jpg" />
           <input
             ref={galleryInputRef}
             className="file-input-hidden"
@@ -438,7 +442,15 @@ export default function AddProductPage() {
         </label>
 
         <button type="submit">Save product</button>
-        {status && <p className="form-status">{status}</p>}
+        {status && (() => {
+          const lower = String(status).toLowerCase();
+          const isError = !(lower.startsWith('saving') || lower.includes('saved'));
+          return (
+            <p className={`form-status${isError ? ' is-error' : ''}`}>
+              {status}
+            </p>
+          );
+        })()}
       </form>
 
       {limitModalOpen && (

@@ -1042,9 +1042,9 @@ body.scrolled .hero-image {
 
 .form-status {
   font-size: 0.9rem;
-  color: #c62828;
-  background: #fdecea;
-  border: 1px solid #f5c6c4;
+  color: #4b5563;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
   border-radius: 12px;
   padding: 0.6rem 0.75rem;
   display: inline-flex;
@@ -1053,7 +1053,13 @@ body.scrolled .hero-image {
   font-weight: 700;
 }
 
-.form-status::before {
+.form-status.is-error {
+  color: #c62828;
+  background: #fdecea;
+  border-color: #f5c6c4;
+}
+
+.form-status.is-error::before {
   content: "!";
   display: inline-flex;
   align-items: center;

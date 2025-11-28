@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState, useRef } from 'react';
+import dynamic from 'next/dynamic';
 import { useRouter, useParams } from 'next/navigation';
 import { uploadImage } from '../../../lib/uploadImage';
 import { supabase } from '../../../lib/supabaseClient';
@@ -54,12 +55,16 @@ export default function EditProductPage() {
   const [status, setStatus] = useState('');
   const [theme, setTheme] = useState('clothing');
   const [coverFile, setCoverFile] = useState(null);
+  const [cropCoverFile, setCropCoverFile] = useState(null);
   const [galleryFiles, setGalleryFiles] = useState([]);
   const coverInputRef = useRef(null);
   const galleryInputRef = useRef(null);
   const [sessionVendor, setSessionVendor] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const CropperModal = dynamic(() => import('../../components/ImageCropper').then((mod) => mod.ImageCropper), {
+    ssr: false,
+  });
 
   const subOptions = useMemo(() => subCategories[form.main_category] || [], [form.main_category]);
 
@@ -130,13 +135,20 @@ export default function EditProductPage() {
 
   const handleCoverFile = (e) => {
     const file = e.target.files?.[0] || null;
-    setCoverFile(file);
+    setCoverFile(null);
+    setCropCoverFile(file);
+    if (file && file.size > 400 * 1024) {
+      setStatus('Cover image is large and will be compressed; quality may be reduced.');
+    }
   };
 
   const handleGalleryFiles = (e) => {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
     setGalleryFiles((prev) => [...prev, ...files]);
+    if (files.some((f) => f.size > 400 * 1024)) {
+      setStatus('Some gallery images are large and will be compressed; quality may be reduced.');
+    }
   };
 
   const handleRemoveExistingImage = (idx) => {
@@ -174,11 +186,11 @@ export default function EditProductPage() {
 
     try {
       if (coverFile) {
-        const { path } = await uploadImage(coverFile, 'products');
+        const { path } = await uploadImage(coverFile, 'products', 'Cover image');
         coverPath = path;
       }
       if (galleryFiles.length) {
-        const uploads = await Promise.all(galleryFiles.map((f) => uploadImage(f, 'products')));
+        const uploads = await Promise.all(galleryFiles.map((f, idx) => uploadImage(f, 'products', `Image ${idx + 1}`)));
         galleryPaths = [...galleryPaths, ...uploads.map((u) => u.path)];
       }
     } catch (err) {
@@ -229,6 +241,7 @@ export default function EditProductPage() {
   }
 
   return (
+    <>
     <div className="page add-product-page">
       <div className="add-product-header">
         <button type="button" className="back-button" onClick={() => router.back()}>
@@ -274,8 +287,7 @@ export default function EditProductPage() {
         </label>
 
         <label>
-          Cover Image (path or URL)
-          <input name="cover_image" value={form.cover_image} onChange={handleChange} />
+          Cover Image
           <input
             ref={coverInputRef}
             className="file-input-hidden"
@@ -328,7 +340,6 @@ export default function EditProductPage() {
 
         <label>
           Gallery Images (comma-separated)
-          <input name="images" value={Array.isArray(form.images) ? form.images.join(', ') : form.images} onChange={handleChange} placeholder="img1.jpg, img2.jpg" />
           <input
             ref={galleryInputRef}
             className="file-input-hidden"
@@ -417,8 +428,28 @@ export default function EditProductPage() {
         </label>
 
         <button type="submit">Save changes</button>
-        {status && <p className="form-status">{status}</p>}
+        {status && (() => {
+          const lower = String(status).toLowerCase();
+          const isError = !(lower.startsWith('saving') || lower.includes('saved'));
+          return (
+            <p className={`form-status${isError ? ' is-error' : ''}`}>
+              {status}
+            </p>
+          );
+        })()}
       </form>
     </div>
+      {cropCoverFile && (
+        <CropperModal
+          file={cropCoverFile}
+          aspect={4 / 3}
+          onCancel={() => setCropCoverFile(null)}
+          onCropped={(cropped) => {
+            setCoverFile(cropped);
+            setCropCoverFile(null);
+          }}
+        />
+      )}
+    </>
   );
 }

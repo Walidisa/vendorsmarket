@@ -88,7 +88,7 @@ export default function ProfilePage({ params }) {
 
   const whatsappNumber = (profile?.whatsapp || "").replace(/\D/g, "");
   const whatsappHref = whatsappNumber ? `https://wa.me/${whatsappNumber}` : null;
-  const instagramHandle = (profile?.instagram || "").replace(/^@+/, "");
+  const instagramHandle = (profile?.instagram || "").replace(/^@+/, "").toLowerCase();
   const instagramHref = instagramHandle ? `https://instagram.com/${instagramHandle}` : null;
 
   const isProfileOwnerSlug =

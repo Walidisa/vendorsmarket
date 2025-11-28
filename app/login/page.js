@@ -85,7 +85,18 @@ export default function LoginPage() {
           <button type="submit" className="btn-primary auth-button">
             Log In
           </button>
-          {status && <p className="form-status">{status}</p>}
+          {status ? (
+            <p
+              className={`form-status${
+                (() => {
+                  const s = status.toLowerCase();
+                  return s.startsWith('saving') || s.startsWith('logging') ? '' : ' is-error';
+                })()
+              }`}
+            >
+              {status}
+            </p>
+          ) : null}
         </form>
 
         <p className="auth-switch">

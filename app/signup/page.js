@@ -103,10 +103,13 @@ export default function SignupPage() {
       e.target.value = '';
       return;
     }
-    if (file && file.size > 400 * 1024) {
-      alert('Max size is 400KB per image.');
+    if (file && file.size > 5 * 1024 * 1024) {
+      alert('Max size is 5MB per image.');
       e.target.value = '';
       return;
+    }
+    if (file && file.size > 400 * 1024) {
+      setStatus('Profile image is large and will be compressed; quality may be reduced.');
     }
     setCropProfileFile(file);
   };
@@ -118,10 +121,13 @@ export default function SignupPage() {
       e.target.value = '';
       return;
     }
-    if (file && file.size > 400 * 1024) {
-      alert('Max size is 400KB per image.');
+    if (file && file.size > 5 * 1024 * 1024) {
+      alert('Max size is 5MB per image.');
       e.target.value = '';
       return;
+    }
+    if (file && file.size > 400 * 1024) {
+      setStatus('Banner image is large and will be compressed; quality may be reduced.');
     }
     setCropBannerFile(file);
   };
@@ -197,11 +203,11 @@ export default function SignupPage() {
 
     try {
       if (profileFile) {
-        const { path } = await uploadImage(profileFile, 'vendors');
+        const { path } = await uploadImage(profileFile, 'vendors', 'Profile image');
         profilePath = path;
       }
       if (bannerFile) {
-        const { path } = await uploadImage(bannerFile, 'vendors');
+        const { path } = await uploadImage(bannerFile, 'vendors', 'Banner image');
         bannerPath = path;
       }
     } catch (err) {
@@ -421,7 +427,18 @@ export default function SignupPage() {
         </label>
 
         <button type="submit">Create account</button>
-        {status && <p className="form-status">{status}</p>}
+        {status ? (
+          <p
+            className={`form-status${
+              (() => {
+                const s = status.toLowerCase();
+                return s.startsWith('saving') || s.startsWith('signing') ? '' : ' is-error';
+              })()
+            }`}
+          >
+            {status}
+          </p>
+        ) : null}
       </form>
 
             {successOpen && (
