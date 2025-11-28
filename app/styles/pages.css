@@ -53,9 +53,14 @@ body.scrolled .hero-image {
 
 .subcategory-page-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);  /* match profile grid */
-  gap: 0.5rem;                            /* match profile spacing */
-  justify-items: center;                  /* center cards like profile */
+  grid-template-columns: repeat(3, minmax(0, 1fr)); /* match profile grid behavior */
+  gap: 0.5rem;
+  justify-items: center;
+  align-items: start;
+}
+.subcategory-page-grid .product-card {
+  width: 100%;
+  max-width: 100%;
 }
 
 /* PRODUCT DETAIL PAGE */
