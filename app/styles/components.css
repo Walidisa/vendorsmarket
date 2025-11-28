@@ -288,6 +288,8 @@
   max-width: 160px; /* allow a bit more width so vendor names fit */
   display: flex;
   flex-direction: column;
+  text-decoration: none;
+  color: inherit;
 }
 
 /* Profile page product card variant: larger, but still 3 per row */

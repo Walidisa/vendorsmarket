@@ -127,10 +127,10 @@ export default function Page() {
 
             <div className="hero-actions">
               <Link href="/homepage">
-                <button className="btn-primary">Browse shops</button>
+                <button className="btn-primary">Explore all products</button>
               </Link>
               <Link href="/signup">
-                <button className="btn-secondary">Become a seller</button>
+                <button className="btn-secondary">Register as a vendor</button>
               </Link>
             </div>
           </header>
@@ -207,7 +207,16 @@ export default function Page() {
                       const ratingVal = Number(p.rating_value || p.ratingValue || 0);
                       const ratingCnt = Number(p.rating_count || p.ratingCount || 0);
                       return (
-                        <div key={p.id} className="product-card">
+                        <Link
+                          key={p.id}
+                          href={`/product?id=${p.id}`}
+                          className="product-card"
+                          onClick={() => {
+                            if (typeof window !== "undefined") {
+                              localStorage.setItem("activeProductId", p.id);
+                            }
+                          }}
+                        >
                           <div className="product-image-wrapper">
                             <div className="product-image-box">
                               <img src={cover} alt={p.name} className="product-image" />
@@ -222,7 +231,7 @@ export default function Page() {
                               {ratingVal > 0 ? ratingVal.toFixed(1) : "0.0"} ({ratingCnt})
                             </p>
                           </div>
-                        </div>
+                        </Link>
                       );
                     })}
                 </div>
