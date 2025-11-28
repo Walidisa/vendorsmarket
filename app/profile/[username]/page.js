@@ -86,6 +86,11 @@ export default function ProfilePage({ params }) {
     return { value: total / vals.length, count: vals.length };
   }, [feedbackList]);
 
+  const whatsappNumber = (profile?.whatsapp || "").replace(/\D/g, "");
+  const whatsappHref = whatsappNumber ? `https://wa.me/${whatsappNumber}` : null;
+  const instagramHandle = (profile?.instagram || "").replace(/^@+/, "");
+  const instagramHref = instagramHandle ? `https://instagram.com/${instagramHandle}` : null;
+
   const isProfileOwnerSlug =
     sessionVendor?.username &&
     profile?.username &&
@@ -235,9 +240,21 @@ export default function ProfilePage({ params }) {
                 <p className="profile-location" id="profileLocation">
                   {profile.location ? `Based in ${profile.location}` : "Based locally"}
                 </p>
-                <p className="profile-contact" id="profileContact">
-                  {[profile.whatsapp, profile.instagram].filter(Boolean).join(" | ")}
-                </p>
+                <div className="profile-contact" id="profileContact">
+                  {whatsappHref ? (
+                    <a href={whatsappHref} target="_blank" rel="noreferrer">
+                      <img src="/icons/whatsapp.png" alt="WhatsApp" className="contact-icon" />
+                      <span>{profile.whatsapp}</span>
+                    </a>
+                  ) : null}
+                  {instagramHref ? (
+                    <a href={instagramHref} target="_blank" rel="noreferrer">
+                      <img src="/icons/instagram.png" alt="Instagram" className="contact-icon" />
+                      <span>@{instagramHandle}</span>
+                    </a>
+                  ) : null}
+                  {!whatsappHref && !instagramHref ? <span>No contact links yet.</span> : null}
+                </div>
               </div>
             </div>
           </section>

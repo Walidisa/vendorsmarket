@@ -592,8 +592,26 @@ body.scrolled .hero-image {
   font-size: 0.85rem;
   color: var(--color-muted);
   margin: 2px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
+.profile-contact a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  color: var(--color-muted);
+  font-weight: 600;
+}
+
+.profile-contact .contact-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
 #profileProductsGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
