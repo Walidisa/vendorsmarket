@@ -1,21 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../lib/supabaseClient";
+import { useThemeIcons } from "../../lib/useThemeIcons";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { theme } = useThemeIcons("clothing");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState("");
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    window.applySavedBodyTheme?.();
-    window.updateNavIconsByTheme?.();
-  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -54,6 +50,18 @@ export default function LoginPage() {
 
   return (
     <div className="page auth-page">
+      <div className="add-product-header">
+        <button type="button" className="back-button" onClick={() => router.back()}>
+          <img
+            src={theme === "clothing" ? "/icons/back.png" : "/icons/back-orange.png"}
+            alt="Back"
+            className="back-icon"
+            data-blue="/icons/back.png"
+            data-brown="/icons/back-orange.png"
+          />
+        </button>
+        <h1 className="add-product-title">Log In</h1>
+      </div>
       <section className="auth-card">
         <form className="auth-form" data-react-login="1" onSubmit={handleSubmit}>
           <label className="input-label" htmlFor="login-email">
