@@ -214,15 +214,23 @@ export default function SignupPage() {
 
     let profilePath = form.profile_pic;
     let bannerPath = form.banner_pic;
+    const defaultProfile = 'vendors/default-pfp.jpg';
+    const defaultBanner = '';
 
     try {
       if (profileFile) {
         const { path } = await uploadImage(profileFile, 'vendors', 'Profile image');
         profilePath = path;
       }
+      if (!profileFile && !profilePath) {
+        profilePath = defaultProfile;
+      }
       if (bannerFile) {
         const { path } = await uploadImage(bannerFile, 'vendors', 'Banner image');
         bannerPath = path;
+      }
+      if (!bannerFile && !bannerPath) {
+        bannerPath = defaultBanner;
       }
     } catch (err) {
       setStatus(err.message || 'Upload failed');
@@ -349,7 +357,7 @@ export default function SignupPage() {
           />
         </label>
         <label>
-          Instagram (optional)
+          Instagram username (optional)
           <input
             ref={instagramRef}
             name="instagram"

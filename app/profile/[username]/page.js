@@ -95,13 +95,15 @@ export default function ProfilePage({ params }) {
     .toLowerCase();
   const instagramHref = instagramHandle ? `https://instagram.com/${instagramHandle}` : null;
   const bannerSrc =
-    profile?.banner && profile.banner !== "null" && profile.banner !== "undefined"
+    profile?.banner &&
+    profile.banner !== "null" &&
+    profile.banner !== "undefined"
       ? profile.banner
-      : "/images/default-banner.jpg";
+      : null;
   const avatarSrc =
     profile?.avatar && profile.avatar !== "null" && profile.avatar !== "undefined"
       ? profile.avatar
-      : "/images/default-seller.jpg";
+      : "";
 
   const isProfileOwnerSlug =
     sessionVendor?.username &&
@@ -207,11 +209,13 @@ export default function ProfilePage({ params }) {
         <div className="page">
           <section className="profile-header">
             <div className="profile-banner">
-              <img
-                src={bannerSrc}
-                className="profile-banner-image"
-                alt={profile.shopName || profile.username}
-              />
+              {bannerSrc ? (
+                <img
+                  src={bannerSrc}
+                  className="profile-banner-image"
+                  alt={profile.shopName || profile.username}
+                />
+              ) : null}
             </div>
 
             <div className="profile-info-row">

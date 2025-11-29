@@ -61,10 +61,10 @@ export async function PUT(request, { params }) {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
   }
 
-  // Fetch vendor to get user_id for auth updates
+  // Fetch vendor to get user_id and current asset paths for auth updates
   const { data: vendorRow, error: vendorErr } = await supabaseServer
     .from('vendors')
-    .select('user_id')
+    .select('user_id, profile_pic, banner_pic')
     .eq('username', usernameParam)
     .maybeSingle();
   if (vendorErr) {
@@ -73,6 +73,8 @@ export async function PUT(request, { params }) {
   if (!vendorRow) {
     return NextResponse.json({ error: 'Vendor not found' }, { status: 404 });
   }
+  const existingProfilePic = vendorRow.profile_pic || '';
+  const existingBannerPic = vendorRow.banner_pic || '';
 
   // Auth check: only allow owner to update
   const authUser = await getAuthUser(request);
@@ -92,8 +94,8 @@ export async function PUT(request, { params }) {
   const instagram = body.instagram || '';
   const motto = body.motto || '';
   const about = body.about_description || body.aboutDescription || '';
-  const profilePic = body.profile_pic || body.profilePic || '';
-  const bannerPic = body.banner_pic || body.bannerPic || '';
+  const profilePicRaw = body.profile_pic ?? body.profilePic;
+  const bannerPicRaw = body.banner_pic ?? body.bannerPic;
 
   const updates = {
     shop_name: shopName,
@@ -104,8 +106,6 @@ export async function PUT(request, { params }) {
     instagram,
     motto,
     about_description: about,
-    profile_pic: profilePic,
-    banner_pic: bannerPic,
   };
 
   if (!email) delete updates.email;
@@ -116,8 +116,14 @@ export async function PUT(request, { params }) {
   if (!instagram) delete updates.instagram;
   if (!motto) delete updates.motto;
   if (!about) delete updates.about_description;
-  if (!profilePic) delete updates.profile_pic;
-  if (!bannerPic) delete updates.banner_pic;
+
+  // Explicitly handle profile/banner updates so empty strings/null clear the DB field
+  if (profilePicRaw !== undefined) {
+    updates.profile_pic = (profilePicRaw ?? "").trim();
+  }
+  if (bannerPicRaw !== undefined) {
+    updates.banner_pic = (bannerPicRaw ?? "").trim();
+  }
 
   if (password) {
     updates.password = hashPassword(password);
@@ -144,6 +150,20 @@ export async function PUT(request, { params }) {
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  // Clean up storage for replaced/cleared assets
+  const storageKeysToDelete = [];
+  if (updates.profile_pic !== undefined && updates.profile_pic !== existingProfilePic) {
+    const key = toStorageKey(existingProfilePic);
+    if (key && !key.includes('default-pfp')) storageKeysToDelete.push(key);
+  }
+  if (updates.banner_pic !== undefined && updates.banner_pic !== existingBannerPic) {
+    const key = toStorageKey(existingBannerPic);
+    if (key) storageKeysToDelete.push(key);
+  }
+  if (storageKeysToDelete.length) {
+    await supabaseServer.storage.from(STORAGE_BUCKET).remove(storageKeysToDelete).catch(() => {});
   }
 
   return NextResponse.json({ updated: true });

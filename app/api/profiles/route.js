@@ -74,8 +74,8 @@ export async function GET() {
     userId: v.user_id || null,
     ownerName: v.full_name || '',      // full name shown under handle
     location: v.location || '',
-    avatar: toAssetUrl(v.profile_pic || 'vendors/default-seller.jpg'),
-    banner: toAssetUrl(v.banner_pic || 'vendors/default-banner.jpg'),
+    avatar: toAssetUrl(v.profile_pic || 'vendors/default-pfp.jpg'),
+    banner: toAssetUrl(v.banner_pic || ''),
     whatsapp: v.whatsapp || '',
     instagram: v.instagram || '',
     tagline: v.motto || '',

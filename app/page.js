@@ -250,7 +250,7 @@ export default function Page() {
                 <Link key={v.username} href={`/profile/${v.username}`} className="vendor-card">
                   <div className="vendor-avatar-wrapper">
                     <img
-                      src={v.avatar || "/images/default-seller.jpg"}
+                      src={v.avatar || "/images/default-pfp.jpg"}
                       alt={v.shopName || v.username}
                       className="vendor-avatar"
                     />

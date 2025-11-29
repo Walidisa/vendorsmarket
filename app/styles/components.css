@@ -1,7 +1,5 @@
 ﻿/* HERO SHELL STYLE CARDS */
-.card-grid {
-  /* ...existing code... */
-}
+
 
 /* HERO SHELL STYLE CARDS */
 .card-grid {
@@ -420,10 +418,12 @@
   font-weight: 600;              /* keep shop name visibly bolder on cards */
   color: var(--color-muted);     /* muted tone to match other meta text */
   line-height: 1.2;
+  max-height: 2.4em;             /* fallback clamp for non-WebKit */
   white-space: normal;           /* allow wrapping */
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2;         /* up to 2 lines before truncating */
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   margin: 4px 0 2px;
 }
@@ -494,7 +494,7 @@
   box-shadow: var(--shadow-card);
   border: 1px solid rgba(0,0,0,0.08);
   padding: 1.4rem 1.3rem 1.6rem;
-  margin-top: 150px;
+  margin-top: 130px;
 }
 
 /* Form layout */

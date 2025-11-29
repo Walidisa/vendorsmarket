@@ -27,7 +27,7 @@ export default function SearchPage() {
           username: prof.username,
           shopName: prof.shopName || prof.username,
           fullName: prof.ownerName || "",
-          avatar: prof.avatar || "/images/default-seller.jpg",
+          avatar: prof.avatar || "/images/default-pfp.jpg",
         });
       }
     });
@@ -39,7 +39,7 @@ export default function SearchPage() {
           username: p.vendorUsername || "",
           shopName: p.vendorShopName || p.vendor || "",
           fullName: p.vendorFullName || "",
-          avatar: p.sellerAvatar || "/images/default-seller.jpg",
+          avatar: p.sellerAvatar || "/images/default-pfp.jpg",
         });
       }
     });

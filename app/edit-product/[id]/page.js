@@ -5,6 +5,24 @@ import dynamic from 'next/dynamic';
 import { useRouter, useParams } from 'next/navigation';
 import { uploadImage } from '../../../lib/uploadImage';
 import { supabase } from '../../../lib/supabaseClient';
+import { STORAGE_BUCKET } from '../../../lib/storage';
+
+const extractStorageKey = (url) => {
+  if (!url) return null;
+  let key = String(url).trim();
+  if (!key) return null;
+  if (key.includes('?')) key = key.split('?')[0];
+  if (key.includes('#')) key = key.split('#')[0];
+  if (key.startsWith('http')) {
+    const marker = `/storage/v1/object/public/${STORAGE_BUCKET}/`;
+    const idx = key.indexOf(marker);
+    if (idx === -1) return null;
+    key = key.slice(idx + marker.length);
+  }
+  if (key.startsWith(`${STORAGE_BUCKET}/`)) key = key.replace(`${STORAGE_BUCKET}/`, '');
+  if (key.startsWith('/')) key = key.slice(1);
+  return key || null;
+};
 
 const mainCategories = [
   { value: 'food', label: 'Food, Drinks, Snacks & Utensils' },
@@ -57,6 +75,9 @@ export default function EditProductPage() {
   const [coverFile, setCoverFile] = useState(null);
   const [cropCoverFile, setCropCoverFile] = useState(null);
   const [galleryFiles, setGalleryFiles] = useState([]);
+  const [removedImages, setRemovedImages] = useState([]);
+  const [originalCover, setOriginalCover] = useState('');
+  const [originalGallery, setOriginalGallery] = useState([]);
   const coverInputRef = useRef(null);
   const galleryInputRef = useRef(null);
   const [sessionVendor, setSessionVendor] = useState(null);
@@ -115,15 +136,19 @@ export default function EditProductPage() {
           return;
         }
 
+        const coverImg = prod.cover_image || prod.image || '';
+        const galleryImgs = Array.isArray(prod.images) ? prod.images.filter((img) => img !== (prod.cover_image || prod.image)) : [];
         setForm({
           name: prod.name || '',
           price: prod.price || '',
           main_category: prod.mainCategory || prod.main_category || 'food',
           subcategory: prod.subCategory || prod.subcategory || (prod.mainCategory === 'clothing' ? subCategories.clothing[0].value : subCategories.food[0].value),
-          cover_image: prod.cover_image || prod.image || '',
-          images: Array.isArray(prod.images) ? prod.images.filter((img) => img !== (prod.cover_image || prod.image)) : [],
+          cover_image: coverImg,
+          images: galleryImgs,
           description: prod.description || '',
         });
+        setOriginalCover(coverImg);
+        setOriginalGallery(galleryImgs);
       } catch (e) {
         setError('Failed to load product.');
       } finally {
@@ -153,10 +178,12 @@ export default function EditProductPage() {
 
   const handleRemoveExistingImage = (idx) => {
     if (!Array.isArray(form.images)) return;
+    const removed = form.images[idx];
     setForm((prev) => ({
       ...prev,
       images: prev.images.filter((_, i) => i !== idx),
     }));
+    if (removed) setRemovedImages((prev) => [...prev, removed]);
   };
 
   const handleRemoveNewFile = (idx) => {
@@ -192,6 +219,24 @@ export default function EditProductPage() {
       if (galleryFiles.length) {
         const uploads = await Promise.all(galleryFiles.map((f, idx) => uploadImage(f, 'products', `Image ${idx + 1}`)));
         galleryPaths = [...galleryPaths, ...uploads.map((u) => u.path)];
+      }
+      const keysToDelete = [];
+      if (coverFile && originalCover) {
+        const key = extractStorageKey(originalCover);
+        if (key) keysToDelete.push(key);
+      }
+      if (removedImages.length) {
+        removedImages.forEach((img) => {
+          const k = extractStorageKey(img);
+          if (k) keysToDelete.push(k);
+        });
+      }
+      if (keysToDelete.length) {
+        await fetch('/api/storage-delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ paths: keysToDelete }),
+        }).catch(() => {});
       }
     } catch (err) {
       setStatus(err.message || 'Upload failed');

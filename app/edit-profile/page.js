@@ -7,6 +7,25 @@ import { useSessionVendor } from "../../lib/useSessionVendor";
 import { uploadImage } from "../../lib/uploadImage";
 import { useThemeIcons } from "../../lib/useThemeIcons";
 import { supabase } from "../../lib/supabaseClient";
+import { STORAGE_BUCKET } from "../../lib/storage";
+
+const extractStorageKey = (url) => {
+  if (!url) return null;
+  let key = String(url).trim();
+  if (!key) return null;
+  // Drop query/hash
+  if (key.includes('?')) key = key.split('?')[0];
+  if (key.includes('#')) key = key.split('#')[0];
+  if (key.startsWith("http")) {
+    const marker = `/storage/v1/object/public/${STORAGE_BUCKET}/`;
+    const idx = key.indexOf(marker);
+    if (idx === -1) return null;
+    key = key.slice(idx + marker.length);
+  }
+  if (key.startsWith(`${STORAGE_BUCKET}/`)) key = key.replace(`${STORAGE_BUCKET}/`, "");
+  if (key.startsWith("/")) key = key.slice(1);
+  return key || null;
+};
 
 export default function EditProfilePage() {
   const router = useRouter();
@@ -39,6 +58,8 @@ export default function EditProfilePage() {
   const [profilePreview, setProfilePreview] = useState("");
   const [bannerPreview, setBannerPreview] = useState("");
   const [instagramError, setInstagramError] = useState(false);
+  const [originalProfilePic, setOriginalProfilePic] = useState("");
+  const [originalBannerPic, setOriginalBannerPic] = useState("");
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const prevProfileUrl = useRef(null);
   const prevBannerUrl = useRef(null);
@@ -58,6 +79,8 @@ export default function EditProfilePage() {
 
   useEffect(() => {
     if (vendor) {
+      const profilePic = vendor.avatar || "";
+      const bannerPic = vendor.banner || "";
       setForm({
         username: vendor.username || "",
         shop_name: vendor.shopName || "",
@@ -65,17 +88,18 @@ export default function EditProfilePage() {
         email: vendor.email || "",
         location: vendor.location || "",
         whatsapp: vendor.whatsapp || "",
-        instagram: (vendor.instagram || "")
-          .replace(/^https?:\/\/(www\.)?instagram\.com\//i, "")
-          .replace(/^@+/, "")
-          .toLowerCase(),
+        instagram: vendor.instagram || "",
         motto: vendor.tagline || "",
         about_description: vendor.aboutDescription || "",
-        profile_pic: vendor.avatar || "",
-        banner_pic: vendor.banner || "",
+        profile_pic: profilePic,
+        banner_pic: bannerPic,
       });
-      setProfilePreview(vendor.avatar || "");
-      setBannerPreview(vendor.banner || "");
+      const isDefaultProfile =
+        profilePic.includes('default-pfp') || profilePic.includes('default-seller');
+      setProfilePreview(isDefaultProfile ? "" : profilePic);
+      setBannerPreview(bannerPic || "");
+      setOriginalProfilePic(profilePic);
+      setOriginalBannerPic(bannerPic);
     }
   }, [vendor]);
 
@@ -162,16 +186,43 @@ export default function EditProfilePage() {
 
     let profilePath = form.profile_pic;
     let bannerPath = form.banner_pic;
+    const bannerSourceForDelete =
+      !bannerFile && !bannerPath
+        ? (form.banner_pic || originalBannerPic || vendor?.banner || "")
+        : "";
+    const bannerKeyToDelete = extractStorageKey(bannerSourceForDelete);
+    const defaultProfile = 'vendors/default-pfp.jpg';
+    const defaultBanner = ''; // no forced default banner
 
     try {
       if (profileFile) {
         const { path } = await uploadImage(profileFile, "vendors", "Profile image");
         profilePath = path;
       }
+      if (!profileFile && !profilePath) {
+        profilePath = defaultProfile;
+      }
       if (bannerFile) {
         const { path } = await uploadImage(bannerFile, "vendors", "Banner image");
         bannerPath = path;
       }
+      const keysToDelete = [];
+      if (bannerKeyToDelete) keysToDelete.push(bannerKeyToDelete);
+      const profileKey = profileFile && originalProfilePic ? extractStorageKey(originalProfilePic) : null;
+      if (profileKey && !profileKey.includes('default-pfp')) keysToDelete.push(profileKey);
+      const bannerReplaceKey = bannerFile && originalBannerPic ? extractStorageKey(originalBannerPic) : null;
+      if (bannerReplaceKey && !bannerReplaceKey.includes('default-banner')) keysToDelete.push(bannerReplaceKey);
+      if (keysToDelete.length) {
+        await fetch('/api/storage-delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ paths: keysToDelete }),
+        }).catch(() => {});
+      }
+
+      // Update originals so subsequent edits know current values
+      setOriginalProfilePic(profilePath || "");
+      setOriginalBannerPic(bannerPath || "");
     } catch (err) {
       setStatus(err.message || "Upload failed");
       return;
@@ -180,8 +231,8 @@ export default function EditProfilePage() {
     const payload = {
       ...form,
       instagram: rawInstagram,
-      profile_pic: profilePath,
-      banner_pic: bannerPath,
+      profile_pic: profilePath || (profilePreview ? profilePreview : ""),
+      banner_pic: bannerPath || "",
     };
     if (showPasswordFields) {
       payload.password = newPassword;
@@ -215,6 +266,10 @@ export default function EditProfilePage() {
       router.replace(`/profile/${vendor.username}`);
     }, 600);
   };
+
+  const isDefaultProfilePic =
+    form.profile_pic &&
+    form.profile_pic.includes('default-pfp');
 
   return (
     <div className="page add-product-page">
@@ -376,7 +431,7 @@ export default function EditProfilePage() {
             </div>
           ) : null}
           <div className="file-actions-row">
-            {!profileFile && !form.profile_pic && (
+            {!profileFile && (!form.profile_pic || isDefaultProfilePic) && (
               <button type="button" className="btn-secondary" onClick={() => profileInputRef.current?.click()}>
                 Choose profile
               </button>

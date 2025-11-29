@@ -233,7 +233,7 @@ export default function ProductPage() {
 
           <div className="product-detail-seller">
             <div className="product-detail-seller-avatar">
-              <img src={product.sellerAvatar || "/images/default-seller.jpg"} alt={product.vendor} />
+              <img src={product.sellerAvatar || "/images/default-pfp.jpg"} alt={product.vendor} />
             </div>
             <div
               className="product-detail-seller-text"

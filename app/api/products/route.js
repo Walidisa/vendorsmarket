@@ -2,6 +2,22 @@ import { NextResponse } from 'next/server';
 import { supabaseServer } from '../../../lib/supabaseServer.js';
 import { getPublicUrl, STORAGE_BUCKET } from '../../../lib/storage.js';
 
+const toStorageKey = (path) => {
+  if (!path) return null;
+  let key = path.trim();
+  if (!key) return null;
+  const marker = `/storage/v1/object/public/${STORAGE_BUCKET}/`;
+  const idx = key.indexOf(marker);
+  if (idx >= 0) {
+    key = key.slice(idx + marker.length);
+  }
+  if (key.startsWith(`${STORAGE_BUCKET}/`)) key = key.slice(`${STORAGE_BUCKET}/`.length);
+  if (key.startsWith('/')) key = key.slice(1);
+  if (key.includes('?')) key = key.split('?')[0];
+  if (key.includes('#')) key = key.split('#')[0];
+  return key || null;
+};
+
 // Cache products for a short window; invalidate immediately via /api/revalidate-products when writes occur.
 export const revalidate = 0; // 5-minute safety TTL; tag-based revalidation overrides when triggered
 
@@ -137,7 +153,7 @@ export async function GET() {
       vendorUserId: vendor.user_id || null,
       sellerAvatar: vendor.profile_pic
         ? toAssetUrl(vendor.profile_pic)
-        : toAssetUrl('vendors/default-seller.jpg'),
+        : toAssetUrl('vendors/default-pfp.jpg'),
       image: cover,
       images: images.length ? images : (cover ? [cover] : []),
       description: row.description || '',
@@ -207,7 +223,7 @@ export async function POST(request) {
       main_category: mainCategory,
       subcategory,
       vendor_username: vendorUsername,
-      cover_image: coverImage,
+      cover_image: coverImage || null,
       images,
       description,
       user_id: userId,
