@@ -80,10 +80,10 @@ export default function SignupPage() {
   const [passwordErrorMsg, setPasswordErrorMsg] = useState('');
   const [usernameError, setUsernameError] = useState(false);
   const [instagramError, setInstagramError] = useState(false);
-  const [locationError, setLocationError] = useState(false);
   const [stateError, setStateError] = useState(false);
   const usernameRef = useRef(null);
   const instagramRef = useRef(null);
+  const stateRef = useRef(null);
   const CropperModal = dynamic(() => import('../components/ImageCropper').then(mod => mod.ImageCropper), { ssr: false });
 
   const formatWhatsApp = (val) => {
@@ -91,7 +91,9 @@ export default function SignupPage() {
     if (!digits) return '+234 ';
     // Keep +234 default; if user typed a country code, respect the first 3 digits
     const country = digits.slice(0, 3) || '234';
-    const rest = digits.slice(3, 13); // up to 10 more digits
+    const rawRest = digits.slice(3); // everything after country code
+    // Drop any leading zero(s) immediately after the country code, then cap to 10 digits
+    const rest = rawRest.replace(/^0+/, '').slice(0, 10);
     const parts = [`+${country}`];
     if (rest.length) parts.push(rest.slice(0, 3));
     if (rest.length > 3) parts.push(rest.slice(3, 6));
@@ -134,7 +136,6 @@ export default function SignupPage() {
         ? value.replace(/\s+/g, '').toLowerCase()
         : value;
     if (name === 'username') setUsernameError(false);
-    if (name === 'location') setLocationError(false);
     if (name === 'state') setStateError(false);
     if (name === 'instagram') setInstagramError(false);
     if (status) setStatus('');
@@ -198,7 +199,6 @@ export default function SignupPage() {
     e.preventDefault();
     setStatus('Saving...');
     setUsernameError(false);
-    setLocationError(false);
     setPasswordError(false);
     setPasswordErrorMsg('');
 
@@ -235,14 +235,10 @@ export default function SignupPage() {
       return;
     }
 
-    if (!(form.location || '').trim()) {
-      setStatus('Location is required.');
-      setLocationError(true);
-      return;
-    }
     if (!form.state) {
       setStatus('State is required.');
       setStateError(true);
+      stateRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
 
@@ -300,7 +296,10 @@ export default function SignupPage() {
       return;
     }
 
-    const combinedLocation = `${(form.location || '').trim()}, ${form.state} State`;
+    const trimmedLocation = (form.location || '').trim();
+    const combinedLocation = trimmedLocation
+      ? `${trimmedLocation}, ${form.state} State`
+      : `${form.state} State`;
 
     const payload = {
       ...form,
@@ -414,14 +413,12 @@ export default function SignupPage() {
             name="location"
             value={form.location}
             onChange={handleChange}
-            required
-            className={locationError ? 'input-error' : ''}
           />
-          {locationError ? <div className="input-error-text">Location is required.</div> : null}
         </label>
         <label>
           State
           <select
+            ref={stateRef}
             name="state"
             value={form.state}
             onChange={handleChange}
