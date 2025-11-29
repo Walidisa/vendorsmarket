@@ -10,6 +10,7 @@ const initialForm = {
   full_name: '',
   email: '',
   password: '',
+  state: '',
   location: '',
   whatsapp: '',
   instagram: '',
@@ -20,6 +21,45 @@ const initialForm = {
 };
 
 export default function SignupPage() {
+  const states = [
+    'Abuja',
+    'Abia',
+    'Adamawa',
+    'Akwa Ibom',
+    'Anambra',
+    'Bauchi',
+    'Bayelsa',
+    'Benue',
+    'Borno',
+    'Cross River',
+    'Delta',
+    'Ebonyi',
+    'Edo',
+    'Ekiti',
+    'Enugu',
+    'Gombe',
+    'Imo',
+    'Jigawa',
+    'Kaduna',
+    'Kano',
+    'Katsina',
+    'Kebbi',
+    'Kogi',
+    'Kwara',
+    'Lagos',
+    'Nasarawa',
+    'Niger',
+    'Ogun',
+    'Ondo',
+    'Osun',
+    'Oyo',
+    'Plateau',
+    'Rivers',
+    'Sokoto',
+    'Taraba',
+    'Yobe',
+    'Zamfara',
+  ];
   const [form, setForm] = useState(initialForm);
   const [confirmPassword, setConfirmPassword] = useState('');
   const [theme, setTheme] = useState('clothing');
@@ -41,6 +81,7 @@ export default function SignupPage() {
   const [usernameError, setUsernameError] = useState(false);
   const [instagramError, setInstagramError] = useState(false);
   const [locationError, setLocationError] = useState(false);
+  const [stateError, setStateError] = useState(false);
   const usernameRef = useRef(null);
   const instagramRef = useRef(null);
   const CropperModal = dynamic(() => import('../components/ImageCropper').then(mod => mod.ImageCropper), { ssr: false });
@@ -57,6 +98,8 @@ export default function SignupPage() {
     if (rest.length > 6) parts.push(rest.slice(6, 10));
     return parts.join(' ').trimEnd();
   };
+
+  const sanitizeUsername = (val) => (val || '').replace(/\s+/g, '').toLowerCase().replace(/[^a-z0-9_-]/g, '');
 
   useEffect(() => {
     const t = typeof window !== 'undefined' ? (localStorage.getItem('activeTheme') || 'clothing') : 'clothing';
@@ -81,9 +124,18 @@ export default function SignupPage() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    const nextVal = name === 'username' ? value.replace(/\s+/g, '').toLowerCase() : value;
+    const nextVal = name === 'username'
+      ? sanitizeUsername(value)
+      : name === 'instagram'
+        ? value.replace(/\s+/g, '').replace(/^@+/, '').toLowerCase()
+      : name === 'location'
+        ? value.replace(/\s+/g, '')
+      : name === 'email'
+        ? value.replace(/\s+/g, '').toLowerCase()
+        : value;
     if (name === 'username') setUsernameError(false);
     if (name === 'location') setLocationError(false);
+    if (name === 'state') setStateError(false);
     if (name === 'instagram') setInstagramError(false);
     if (status) setStatus('');
     if (name === 'whatsapp') {
@@ -97,6 +149,12 @@ export default function SignupPage() {
   const handleWhatsAppFocus = () => {
     if (!(form.whatsapp || '').trim()) {
       setForm((prev) => ({ ...prev, whatsapp: '+234 ' }));
+    }
+  };
+
+  const preventSpaceKey = (e) => {
+    if (e.key === ' ') {
+      e.preventDefault();
     }
   };
 
@@ -158,7 +216,7 @@ export default function SignupPage() {
       return;
     }
 
-    const username = (form.username || '').trim().toLowerCase();
+    const username = sanitizeUsername(form.username || '');
     if (!username) {
       setStatus('Username is required.');
       setUsernameError(true);
@@ -180,6 +238,11 @@ export default function SignupPage() {
     if (!(form.location || '').trim()) {
       setStatus('Location is required.');
       setLocationError(true);
+      return;
+    }
+    if (!form.state) {
+      setStatus('State is required.');
+      setStateError(true);
       return;
     }
 
@@ -237,13 +300,17 @@ export default function SignupPage() {
       return;
     }
 
+    const combinedLocation = `${(form.location || '').trim()}, ${form.state} State`;
+
     const payload = {
       ...form,
+      location: combinedLocation,
       username,
       instagram: instagramHandle,
       whatsapp: formattedWhatsApp,
       profile_pic: profilePath,
       banner_pic: bannerPath,
+      state: form.state,
     };
 
     const res = await fetch('/api/vendors', {
@@ -292,6 +359,8 @@ export default function SignupPage() {
             value={form.username}
             onChange={handleChange}
             required
+            pattern="[a-z0-9_-]+"
+            title="Only letters, numbers, dashes, and underscores"
             className={usernameError ? 'input-error' : ''}
           />
           {usernameError ? <div className="input-error-text">Username taken. Try another one.</div> : null}
@@ -306,7 +375,14 @@ export default function SignupPage() {
         </label>
         <label>
           Email
-          <input name="email" type="email" value={form.email} onChange={handleChange} required />
+          <input
+            name="email"
+            type="email"
+            value={form.email}
+            onChange={handleChange}
+            onKeyDown={preventSpaceKey}
+            required
+          />
         </label>
         <label>
           Password
@@ -333,7 +409,7 @@ export default function SignupPage() {
           {passwordErrorMsg ? <div className="input-error-text">{passwordErrorMsg}</div> : null}
         </label>
         <label>
-          Location
+          Location (Town / LGA)
           <input
             name="location"
             value={form.location}
@@ -342,6 +418,24 @@ export default function SignupPage() {
             className={locationError ? 'input-error' : ''}
           />
           {locationError ? <div className="input-error-text">Location is required.</div> : null}
+        </label>
+        <label>
+          State
+          <select
+            name="state"
+            value={form.state}
+            onChange={handleChange}
+            required
+            className={stateError ? 'input-error' : ''}
+          >
+            <option value="">Select a state</option>
+            {states.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+          {stateError ? <div className="input-error-text">State is required.</div> : null}
         </label>
         <label>
           WhatsApp
