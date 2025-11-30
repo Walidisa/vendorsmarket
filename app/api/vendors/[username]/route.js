@@ -210,7 +210,7 @@ export async function DELETE(request, { params }) {
   const storageKeys = [];
   [vendorRow.profile_pic, vendorRow.banner_pic].forEach((p) => {
     const key = toStorageKey(p);
-    if (key) storageKeys.push(key);
+    if (key && !key.includes('default-pfp')) storageKeys.push(key);
   });
   (productRows || []).forEach((p) => {
     const cover = toStorageKey(p.cover_image);
