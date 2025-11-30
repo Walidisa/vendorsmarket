@@ -316,7 +316,7 @@ export default function ProductPage() {
                   rel="noopener noreferrer"
                 >
                   <img src="/icons/whatsapp.png" alt="" className="contact-icon" />
-                  Contact Vendor
+                  Contact
                 </a>
               ) : null}
               {product.instagram ? (
@@ -331,7 +331,7 @@ export default function ProductPage() {
                   rel="noopener noreferrer"
                 >
                   <img src="/icons/instagram.png" alt="" className="contact-icon" />
-                  Contact Vendor
+                  Contact
                 </a>
               ) : null}
             </div>
