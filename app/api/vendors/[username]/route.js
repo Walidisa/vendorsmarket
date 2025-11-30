@@ -143,6 +143,38 @@ export async function PUT(request, { params }) {
     updates.password = hashPassword(password);
   }
 
+  // Normalize storage paths before saving
+  const newProfileKey = updates.profile_pic !== undefined ? toStorageKey(updates.profile_pic) : null;
+  const newBannerKey = updates.banner_pic !== undefined ? toStorageKey(updates.banner_pic) : null;
+  const profileCleared = updates.profile_pic !== undefined && (updates.profile_pic ?? "").trim() === "";
+  const bannerCleared = updates.banner_pic !== undefined && (updates.banner_pic ?? "").trim() === "";
+
+  const existingProfileKey = toStorageKey(existingProfilePic);
+  const existingBannerKey = toStorageKey(existingBannerPic);
+
+  const profileChanged =
+    updates.profile_pic !== undefined &&
+    ((newProfileKey && newProfileKey !== existingProfileKey) || (profileCleared && !!existingProfileKey));
+  const bannerChanged =
+    updates.banner_pic !== undefined &&
+    ((newBannerKey && newBannerKey !== existingBannerKey) || (bannerCleared && !!existingBannerKey));
+
+  if (updates.profile_pic !== undefined) {
+    if (profileChanged && newProfileKey) {
+      updates.profile_pic = newProfileKey;
+    } else if (!profileChanged) {
+      delete updates.profile_pic; // no change, avoid clearing
+    }
+  }
+
+  if (updates.banner_pic !== undefined) {
+    if (bannerChanged && newBannerKey) {
+      updates.banner_pic = newBannerKey;
+    } else if (!bannerChanged) {
+      delete updates.banner_pic; // no change, avoid clearing
+    }
+  }
+
   // Update Supabase Auth user if we have a linked user_id and auth changes requested
   if (vendorRow.user_id && (email || password)) {
     const authUpdate = {};
@@ -178,16 +210,15 @@ export async function PUT(request, { params }) {
       .eq('vendor_user_id', vendorRow.user_id);
   }
 
-  // Clean up storage for replaced/cleared assets
+  // Normalize paths and clean up storage for replaced/cleared assets
   const storageKeysToDelete = [];
-  if (updates.profile_pic !== undefined && updates.profile_pic !== existingProfilePic) {
-    const key = toStorageKey(existingProfilePic);
-    if (key && !key.includes('default-pfp')) storageKeysToDelete.push(key);
+  if (profileChanged && existingProfileKey && !existingProfileKey.includes('default-pfp')) {
+    storageKeysToDelete.push(existingProfileKey);
   }
-  if (updates.banner_pic !== undefined && updates.banner_pic !== existingBannerPic) {
-    const key = toStorageKey(existingBannerPic);
-    if (key) storageKeysToDelete.push(key);
+  if (bannerChanged && existingBannerKey && !existingBannerKey.includes('default-banner')) {
+    storageKeysToDelete.push(existingBannerKey);
   }
+
   if (storageKeysToDelete.length) {
     await supabaseServer.storage.from(STORAGE_BUCKET).remove(storageKeysToDelete).catch(() => {});
   }
