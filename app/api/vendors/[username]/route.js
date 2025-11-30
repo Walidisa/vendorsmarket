@@ -89,6 +89,8 @@ export async function PUT(request, { params }) {
   const fullName = body.full_name || body.fullName || '';
   const email = body.email?.trim();
   const password = body.password || '';
+  const newUsernameRaw = body.username || '';
+  const newUsername = newUsernameRaw.trim();
   const location = body.location || '';
   const whatsapp = body.whatsapp || '';
   const instagram = body.instagram || '';
@@ -124,6 +126,18 @@ export async function PUT(request, { params }) {
   if (bannerPicRaw !== undefined) {
     updates.banner_pic = (bannerPicRaw ?? "").trim();
   }
+  if (newUsername && newUsername !== usernameParam) {
+    // Ensure new username is unique
+    const { data: existingUsername } = await supabaseServer
+      .from('vendors')
+      .select('username')
+      .eq('username', newUsername)
+      .maybeSingle();
+    if (existingUsername) {
+      return NextResponse.json({ error: 'Username already taken.' }, { status: 409 });
+    }
+    updates.username = newUsername;
+  }
 
   if (password) {
     updates.password = hashPassword(password);
@@ -146,10 +160,22 @@ export async function PUT(request, { params }) {
   const { error } = await supabaseServer
     .from('vendors')
     .update(updates)
-    .eq('username', usernameParam);
+    .eq('user_id', vendorRow.user_id);
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  // If username changed, propagate display usernames on dependent rows
+  if (updates.username && updates.username !== usernameParam) {
+    await supabaseServer
+      .from('products')
+      .update({ vendor_username: updates.username })
+      .eq('user_id', vendorRow.user_id);
+    await supabaseServer
+      .from('feedback')
+      .update({ vendor_username: updates.username })
+      .eq('vendor_user_id', vendorRow.user_id);
   }
 
   // Clean up storage for replaced/cleared assets
@@ -166,7 +192,7 @@ export async function PUT(request, { params }) {
     await supabaseServer.storage.from(STORAGE_BUCKET).remove(storageKeysToDelete).catch(() => {});
   }
 
-  return NextResponse.json({ updated: true });
+  return NextResponse.json({ updated: true, username: updates.username || usernameParam });
 }
 
 export async function DELETE(request, { params }) {
@@ -202,7 +228,7 @@ export async function DELETE(request, { params }) {
   const { data: productRows, error: fetchProductsErr } = await supabaseServer
     .from('products')
     .select('cover_image, images')
-    .eq('vendor_username', usernameParam);
+    .eq('user_id', vendorRow.user_id);
   if (fetchProductsErr) {
     return NextResponse.json({ error: fetchProductsErr.message }, { status: 500 });
   }
@@ -236,7 +262,7 @@ export async function DELETE(request, { params }) {
   const { error: feedbackErr } = await supabaseServer
     .from('feedback')
     .delete()
-    .eq('vendor_username', usernameParam);
+    .eq('vendor_user_id', vendorRow.user_id);
   if (feedbackErr) {
     return NextResponse.json({ error: feedbackErr.message }, { status: 500 });
   }
@@ -245,7 +271,7 @@ export async function DELETE(request, { params }) {
   const { error: productsErr } = await supabaseServer
     .from('products')
     .delete()
-    .eq('vendor_username', usernameParam);
+    .eq('user_id', vendorRow.user_id);
   if (productsErr) {
     return NextResponse.json({ error: productsErr.message }, { status: 500 });
   }

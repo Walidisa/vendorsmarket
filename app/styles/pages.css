@@ -282,6 +282,42 @@ body.scrolled .hero-image {
   color: var(--color-primary);
 }
 
+.product-contact-actions {
+  display: flex;
+  gap: 10px;
+  margin: 16px 0 0;
+}
+
+.product-contact-actions .contact-btn {
+  flex: 1;
+  text-align: center;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: var(--radius-pill);
+  background: #e5e7eb;
+  color: #1f2937;
+  border: 1px solid #e5e7eb;
+  font-weight: 600;
+}
+
+.product-contact-actions .contact-btn:hover {
+  background: #d1d5db;
+  border-color: #d1d5db;
+}
+
+.product-contact-actions .contact-btn:active {
+  transform: scale(0.98);
+}
+
+.product-contact-actions .contact-icon {
+  width: 18px;
+  height: 18px;
+}
+
 .product-detail-seller-rating-inline {
   font-size: 0.95rem;
   font-weight: 600;
@@ -847,6 +883,7 @@ body.scrolled .hero-image {
 
 .profile-feedback-item-comment {
   margin: 0;
+  white-space: pre-line;
 }
 
 /* PAGE TRANSITIONS */

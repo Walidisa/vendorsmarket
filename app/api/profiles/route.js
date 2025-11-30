@@ -51,20 +51,22 @@ export async function GET() {
   // Fetch product ids by vendor to keep the old ownedProductIds behavior
   const { data: products, error: productsError } = await supabaseServer
     .from('products')
-    .select('id, vendor_username');
+    .select('id, user_id');
 
   if (productsError) {
     return NextResponse.json({ error: productsError.message }, { status: 500 });
   }
 
   const productIdsByVendor = new Map();
-  (products || []).forEach((p) => {
-    const key = p.vendor_username || '';
-    if (!productIdsByVendor.has(key)) {
-      productIdsByVendor.set(key, []);
-    }
-    productIdsByVendor.get(key).push(p.id);
-  });
+  (products || [])
+    .filter((p) => p.user_id)
+    .forEach((p) => {
+      const key = p.user_id;
+      if (!productIdsByVendor.has(key)) {
+        productIdsByVendor.set(key, []);
+      }
+      productIdsByVendor.get(key).push(p.id);
+    });
 
   const profiles = (vendors || []).map((v) => ({
     id: v.username,
@@ -74,6 +76,7 @@ export async function GET() {
     userId: v.user_id || null,
     ownerName: v.full_name || '',      // full name shown under handle
     location: v.location || '',
+    email: v.email || '',
     avatar: toAssetUrl(v.profile_pic || 'vendors/default-pfp.jpg'),
     banner: toAssetUrl(v.banner_pic || ''),
     whatsapp: v.whatsapp || '',
@@ -82,7 +85,7 @@ export async function GET() {
     aboutDescription: v.about_description || '',
     ratingValue: Number(v.rating_value) || 0,
     ratingCount: Number(v.rating_count) || 0,
-    ownedProductIds: productIdsByVendor.get(v.username) || [],
+    ownedProductIds: productIdsByVendor.get(v.user_id) || [],
     category: '', // not tracked in DB; leave blank
   }));
 

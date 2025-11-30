@@ -97,9 +97,10 @@ export default function AddProductPage() {
           try {
             const prodRes = await fetch('/api/products');
             const prodData = prodRes.ok ? await prodRes.json() : [];
-            const mine = prodData.filter(
-              (p) => (p.vendorUsername || p.vendor_username || p.vendor) === vendor.username
-            );
+            const mine = prodData.filter((p) => {
+              const ownerId = p.ownerUserId || p.vendorUserId || p.user_id;
+              return ownerId && vendor.userId && ownerId === vendor.userId;
+            });
             setProductCount(mine.length);
           } catch (_) {
             setProductCount(0);
@@ -233,7 +234,7 @@ export default function AddProductPage() {
 
     const vendorUsername = sessionVendor?.username || '';
     const vendorUserId = sessionVendor?.userId || '';
-    if (!vendorUsername || !vendorUserId) {
+    if (!vendorUserId) {
       setStatus('Missing vendor information. Please log in again.');
       return;
     }
@@ -243,11 +244,11 @@ export default function AddProductPage() {
       price: Number(form.price) || 0,
       main_category: form.main_category,
       subcategory: form.subcategory,
-      vendor_username: vendorUsername,
       user_id: vendorUserId,
       cover_image: coverPath,
       images: galleryPaths,
       description: form.description,
+      vendor_username: vendorUsername, // optional, for display convenience
     };
 
     const res = await fetch('/api/products', {

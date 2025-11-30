@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
 import { uploadImage } from '../../lib/uploadImage';
 
 const initialForm = {
@@ -81,6 +82,8 @@ export default function SignupPage() {
   const [usernameError, setUsernameError] = useState(false);
   const [instagramError, setInstagramError] = useState(false);
   const [stateError, setStateError] = useState(false);
+  const [termsError, setTermsError] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const usernameRef = useRef(null);
   const instagramRef = useRef(null);
   const stateRef = useRef(null);
@@ -197,10 +200,15 @@ export default function SignupPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setStatus('Saving...');
+    setStatus('');
     setUsernameError(false);
     setPasswordError(false);
     setPasswordErrorMsg('');
+    setTermsError(false);
+    if (!termsAccepted) {
+      setTermsError(true);
+      return;
+    }
 
     if (form.password !== confirmPassword) {
       setStatus('Passwords do not match');
@@ -312,6 +320,7 @@ export default function SignupPage() {
       state: form.state,
     };
 
+    setStatus('Saving...');
     const res = await fetch('/api/vendors', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -544,6 +553,59 @@ export default function SignupPage() {
             )}
           </div>
         </label>
+
+        <label
+          className="input-label"
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'auto 1fr',
+            alignItems: 'center',
+            columnGap: 12,
+            marginTop: 8
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={termsAccepted}
+            onChange={(e) => {
+              setTermsAccepted(e.target.checked);
+              if (termsError && e.target.checked) {
+                setTermsError(false);
+                setStatus('');
+              }
+            }}
+            required
+            style={{
+              marginTop: 2,
+              outline: termsError ? '2px solid #b91c1c' : 'none',
+              outlineOffset: 2,
+              width: 18,
+              height: 18
+            }}
+            onInvalid={(e) => {
+              e.preventDefault();
+              setTermsError(true);
+              e.target.setCustomValidity('Please accept the Terms & Privacy to continue.');
+            }}
+            onInput={(e) => e.target.setCustomValidity('')}
+          />
+          <span>
+            I have read and agree to the{' '}
+            <Link href="/terms" style={{ textDecoration: 'underline' }}>
+              Terms &amp; Conditions
+            </Link>{' '}
+            and{' '}
+            <Link href="/privacy" style={{ textDecoration: 'underline' }}>
+              Privacy Policy
+            </Link>
+            .
+          </span>
+        </label>
+        {termsError ? (
+          <div className="input-error-text" style={{ marginTop: 4 }}>
+            Please accept the Terms &amp; Privacy to continue.
+          </div>
+        ) : null}
 
         <button type="submit">Create account</button>
         {status ? (() => {

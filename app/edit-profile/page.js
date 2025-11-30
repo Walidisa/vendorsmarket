@@ -27,10 +27,65 @@ const extractStorageKey = (url) => {
   return key || null;
 };
 
+const formatWhatsApp = (val) => {
+  const digits = (val || "").replace(/\D/g, "");
+  if (!digits) return "+234 ";
+  const country = digits.slice(0, 3) || "234";
+  const rawRest = digits.slice(3);
+  const rest = rawRest.replace(/^0+/, "").slice(0, 10);
+  const parts = [`+${country}`];
+  if (rest.length) parts.push(rest.slice(0, 3));
+  if (rest.length > 3) parts.push(rest.slice(3, 6));
+  if (rest.length > 6) parts.push(rest.slice(6, 10));
+  return parts.join(" ").trimEnd();
+};
+
+const sanitizeUsername = (val) => (val || "").replace(/\s+/g, "").toLowerCase().replace(/[^a-z0-9_-]/g, "");
+
 export default function EditProfilePage() {
   const router = useRouter();
   const { vendor, sessionUserId, loading } = useSessionVendor();
   const { theme } = useThemeIcons("clothing");
+
+  const states = [
+    "Abuja",
+    "Abia",
+    "Adamawa",
+    "Akwa Ibom",
+    "Anambra",
+    "Bauchi",
+    "Bayelsa",
+    "Benue",
+    "Borno",
+    "Cross River",
+    "Delta",
+    "Ebonyi",
+    "Edo",
+    "Ekiti",
+    "Enugu",
+    "Gombe",
+    "Imo",
+    "Jigawa",
+    "Kaduna",
+    "Kano",
+    "Katsina",
+    "Kebbi",
+    "Kogi",
+    "Kwara",
+    "Lagos",
+    "Nasarawa",
+    "Niger",
+    "Ogun",
+    "Ondo",
+    "Osun",
+    "Oyo",
+    "Plateau",
+    "Rivers",
+    "Sokoto",
+    "Taraba",
+    "Yobe",
+    "Zamfara",
+  ];
 
   const [form, setForm] = useState({
     username: "",
@@ -38,6 +93,7 @@ export default function EditProfilePage() {
     full_name: "",
     email: "",
     location: "",
+    state: "",
     whatsapp: "",
     instagram: "",
     motto: "",
@@ -61,12 +117,15 @@ export default function EditProfilePage() {
   const [originalProfilePic, setOriginalProfilePic] = useState("");
   const [originalBannerPic, setOriginalBannerPic] = useState("");
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [stateError, setStateError] = useState(false);
   const prevProfileUrl = useRef(null);
   const prevBannerUrl = useRef(null);
   const profileInputRef = useRef(null);
   const bannerInputRef = useRef(null);
   const passwordSectionRef = useRef(null);
   const instagramRef = useRef(null);
+  const usernameRef = useRef(null);
+  const stateRef = useRef(null);
   const CropperModal = dynamic(() => import("../components/ImageCropper").then((mod) => mod.ImageCropper), {
     ssr: false,
   });
@@ -81,12 +140,30 @@ export default function EditProfilePage() {
     if (vendor) {
       const profilePic = vendor.avatar || "";
       const bannerPic = vendor.banner || "";
+      let stateValue = "";
+      let loc = vendor.location || "";
+      if (loc) {
+        const parts = loc.split(",").map((p) => p.trim()).filter(Boolean);
+        if (parts.length) {
+          const possibleState = parts[parts.length - 1].replace(/state$/i, "").trim();
+          if (states.some((s) => s.toLowerCase() === possibleState.toLowerCase())) {
+            stateValue = states.find((s) => s.toLowerCase() === possibleState.toLowerCase()) || "";
+            if (parts.length > 1) {
+              parts.pop();
+              loc = parts.join(", ");
+            } else {
+              loc = "";
+            }
+          }
+        }
+      }
       setForm({
         username: vendor.username || "",
         shop_name: vendor.shopName || "",
         full_name: vendor.ownerName || "",
         email: vendor.email || "",
-        location: vendor.location || "",
+        location: loc || "",
+        state: stateValue || "",
         whatsapp: vendor.whatsapp || "",
         instagram: vendor.instagram || "",
         motto: vendor.tagline || "",
@@ -105,9 +182,27 @@ export default function EditProfilePage() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    if (name === "username") {
+      setForm((prev) => ({ ...prev, username: sanitizeUsername(value) }));
+      return;
+    }
+    if (name === "whatsapp") {
+      setForm((prev) => ({ ...prev, whatsapp: formatWhatsApp(value) }));
+      return;
+    }
+    if (name === "state") {
+      setStateError(false);
+      setForm((prev) => ({ ...prev, state: value }));
+      return;
+    }
     if (name === "instagram") {
       setInstagramError(false);
       setStatus("");
+      setForm((prev) => ({
+        ...prev,
+        instagram: value.replace(/\s+/g, "").replace(/^@+/, "").toLowerCase(),
+      }));
+      return;
     }
     setForm((prev) => ({ ...prev, [name]: value }));
   };
@@ -238,6 +333,42 @@ export default function EditProfilePage() {
       payload.password = newPassword;
     }
 
+    // Validation similar to signup hygiene
+    const username = sanitizeUsername(payload.username || "");
+    if (!username) {
+      setStatus("Username is required.");
+      usernameRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+    payload.username = username;
+
+    const emailVal = (payload.email || "").trim();
+    if (emailVal && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(emailVal)) {
+      setStatus("Please enter a valid email address.");
+      return;
+    }
+
+    const rawInsta = (payload.instagram || "").trim();
+    if (rawInsta && /https?:\/\//i.test(rawInsta)) {
+      setStatus("Enter an Instagram username only (not a link).");
+      setInstagramError(true);
+      instagramRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+    payload.instagram = rawInsta ? rawInsta.replace(/^@+/, "").toLowerCase() : "";
+    payload.whatsapp = formatWhatsApp(payload.whatsapp);
+
+    if (!payload.state) {
+      setStateError(true);
+      setStatus("State is required.");
+      stateRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+    const trimmedLocation = (payload.location || "").trim();
+    payload.location = trimmedLocation
+      ? `${trimmedLocation}, ${payload.state} State`
+      : `${payload.state} State`;
+
     // include auth token so the API can verify ownership
     const { data: sessionData } = await supabase.auth.getSession();
     const accessToken = sessionData?.session?.access_token;
@@ -261,9 +392,11 @@ export default function EditProfilePage() {
       return;
     }
 
+    const payloadRes = await res.json().catch(() => ({}));
+    const nextUsername = payloadRes.username || form.username || vendor.username;
     setStatus("Saved!");
     setTimeout(() => {
-      router.replace(`/profile/${vendor.username}`);
+      router.replace(`/profile/${nextUsername}`);
     }, 600);
   };
 
@@ -295,21 +428,11 @@ export default function EditProfilePage() {
                 setPasswordError("");
               }}
             >
-              Change Email/Password
+              Change Password
             </button>
           )}
           {showPasswordFields && (
             <div className="password-fields">
-              <label>
-                Email
-                <input
-                  name="email"
-                  type="email"
-                  value={form.email}
-                  onChange={handleChange}
-                  required
-                />
-              </label>
               <label>
                 Current Password
                 <input
@@ -361,8 +484,54 @@ export default function EditProfilePage() {
         </div>
 
         <label>
-          Username (slug)
-          <input name="username" value={form.username} onChange={handleChange} disabled />
+          Email
+          <input
+            name="email"
+            type="email"
+            value={form.email}
+            onChange={handleChange}
+            required={false}
+          />
+        </label>
+
+        <label>
+          Username
+          <input
+            ref={usernameRef}
+            name="username"
+            value={form.username}
+            onChange={handleChange}
+            pattern="[a-z0-9_-]+"
+            title="Only letters, numbers, dashes, and underscores"
+            required
+          />
+        </label>
+        <label>
+          Location (Town / LGA)
+          <input
+            name="location"
+            value={form.location}
+            onChange={handleChange}
+          />
+        </label>
+        <label>
+          State
+          <select
+            ref={stateRef}
+            name="state"
+            value={form.state}
+            onChange={handleChange}
+            required
+            className={stateError ? "input-error" : ""}
+          >
+            <option value="">Select a state</option>
+            {states.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+          {stateError ? <div className="input-error-text">State is required.</div> : null}
         </label>
         <label>
           Shop Name
@@ -371,10 +540,6 @@ export default function EditProfilePage() {
         <label>
           Full Name
           <input name="full_name" value={form.full_name} onChange={handleChange} />
-        </label>
-        <label>
-          Location
-          <input name="location" value={form.location} onChange={handleChange} />
         </label>
         <label>
           WhatsApp
@@ -618,3 +783,5 @@ export default function EditProfilePage() {
     </div>
   );
 }
+
+

@@ -197,7 +197,7 @@ export default function EditProductPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!sessionVendor?.username || !productId) {
+    if (!sessionVendor?.userId || !productId) {
       setStatus('You must be logged in as a vendor to edit products.');
       return;
     }
@@ -248,11 +248,11 @@ export default function EditProductPage() {
       price: Number(form.price) || 0,
       main_category: form.main_category,
       subcategory: form.subcategory,
-      vendor_username: sessionVendor.username,
-      user_id: sessionVendor.userId,
       cover_image: coverPath,
       images: galleryPaths,
       description: form.description,
+      user_id: sessionVendor.userId,
+      vendor_username: sessionVendor.username, // optional, for display convenience
     };
 
     const res = await fetch(`/api/products/${productId}`, {

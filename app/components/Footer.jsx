@@ -4,6 +4,11 @@ import { useCallback, useEffect, useState } from "react";
 
 export default function Footer() {
   const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [adminTarget, setAdminTarget] = useState({ userId: null, username: "admin" });
 
   const close = useCallback(() => setOpen(false), []);
 
@@ -15,6 +20,28 @@ export default function Footer() {
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [open, close]);
+
+  useEffect(() => {
+    async function loadAdminTarget() {
+      try {
+        const res = await fetch("/api/profiles", { cache: "no-store" });
+        if (!res.ok) return;
+        const profiles = (await res.json()) || [];
+        const adminProfile = profiles.find(
+          (p) => (p.username || "").toLowerCase() === "admin"
+        );
+        if (adminProfile) {
+          setAdminTarget({
+            userId: adminProfile.userId || null,
+            username: adminProfile.username || "admin"
+          });
+        }
+      } catch {
+        // ignore
+      }
+    }
+    loadAdminTarget();
+  }, []);
 
   return (
     <div id="site-footer">
@@ -46,16 +73,65 @@ export default function Footer() {
             Tell us what you think about Vendors Market, or report an issue.
           </p>
 
-          <form className="feedback-form">
+          <form
+            className="feedback-form"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              if (submitting) return;
+              if (!adminTarget.userId) {
+                alert("Admin contact not configured yet. Please try again later.");
+                return;
+              }
+              setSubmitting(true);
+              try {
+                const trimmedMessage = message.trim();
+                const body = {
+                  vendor_user_id: adminTarget.userId,
+                  vendor_username: adminTarget.username,
+                  rating: 5,
+                  message: trimmedMessage
+                    ? `${trimmedMessage}\n\nSent by: ${name || "Anonymous"}${email ? ` (${email})` : ""}`
+                    : `Sent by: ${name || "Anonymous"}${email ? ` (${email})` : ""}`
+                };
+                await fetch("/api/feedback", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(body)
+                });
+                setMessage("");
+                setName("");
+                setEmail("");
+                close();
+              } catch (err) {
+                console.error("Failed to submit feedback", err);
+              } finally {
+                setSubmitting(false);
+              }
+            }}
+          >
             <label className="input-label" htmlFor="fb-name">
               Name (optional)
             </label>
-            <input id="fb-name" type="text" className="input-field" placeholder="Your name" />
+            <input
+              id="fb-name"
+              type="text"
+              className="input-field"
+              placeholder="Your name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
 
             <label className="input-label" htmlFor="fb-email">
               Email (optional)
             </label>
-            <input id="fb-email" type="email" className="input-field" placeholder="you@example.com" />
+            <input
+              id="fb-email"
+              type="email"
+              className="input-field"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
 
             <label className="input-label" htmlFor="fb-message">
               Message
@@ -65,17 +141,16 @@ export default function Footer() {
               className="input-field feedback-textarea"
               rows="4"
               placeholder="Share your feedback or question..."
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
             ></textarea>
 
             <button
               type="submit"
               className="btn-primary feedback-submit"
-              onClick={(e) => {
-                e.preventDefault();
-                close();
-              }}
+              disabled={submitting}
             >
-              Send feedback
+              {submitting ? "Sending..." : "Send feedback"}
             </button>
           </form>
         </div>
@@ -88,10 +163,9 @@ export default function Footer() {
         </div>
 
         <div className="footer-links">
-          <a href="#">About</a>
-          <a href="#">Terms</a>
-          <a href="#">Privacy</a>
-          <a href="#">Help</a>
+          <a href="/about">About</a>
+          <a href="/terms">Terms</a>
+          <a href="/privacy">Privacy</a>
         </div>
 
         <button
@@ -103,7 +177,7 @@ export default function Footer() {
           Contact &amp; Feedback
         </button>
 
-        <p className="footer-copy">Ac 2025 Vendors Market</p>
+        <p className="footer-copy">© 2025 Vendors Market</p>
       </footer>
     </div>
   );

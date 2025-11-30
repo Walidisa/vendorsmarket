@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
+import Link from "next/link";
 import { RatingModal } from "../../components/RatingModal";
 import { useThemeIcons } from "../../../lib/useThemeIcons";
 
 function useProduct(id) {
   const [product, setProduct] = useState(null);
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -19,6 +21,7 @@ function useProduct(id) {
         const res = await fetch("/api/products");
         if (!res.ok) throw new Error("Failed to load products");
         const all = await res.json();
+        if (active) setProducts(all || []);
         const found = id ? all.find((p) => p.id === id) : null;
         const chosen = found || all[0] || null;
         if (active) setProduct(chosen);
@@ -34,15 +37,17 @@ function useProduct(id) {
     };
   }, [id]);
 
-  return { product, loading, error };
+  return { product, products, loading, error };
 }
 
 export default function ProductPage() {
   const router = useRouter();
   const params = useParams();
   const id = params?.id || null;
-  const { product, loading, error } = useProduct(id);
+  const { product, products, loading, error } = useProduct(id);
   const [activeIndex, setActiveIndex] = useState(0);
+  const touchStartX = useRef(null);
+  const touchCurrentX = useRef(null);
   const [ratingModalOpen, setRatingModalOpen] = useState(false);
   const [selectedRating, setSelectedRating] = useState(null);
   const [ratingValue, setRatingValue] = useState(null);
@@ -75,6 +80,48 @@ export default function ProductPage() {
     if (Array.isArray(product.images) && product.images.length) return product.images;
     return product.image ? [product.image] : [];
   }, [product]);
+
+  const handleTouchStart = (e) => {
+    if (images.length <= 1) return;
+    const x = e.touches?.[0]?.clientX ?? null;
+    touchStartX.current = x;
+    touchCurrentX.current = x;
+  };
+
+  const handleTouchMove = (e) => {
+    if (images.length <= 1) return;
+    touchCurrentX.current = e.touches?.[0]?.clientX ?? touchCurrentX.current;
+  };
+
+  const handleTouchEnd = () => {
+    if (images.length <= 1) return;
+    const start = touchStartX.current;
+    const end = touchCurrentX.current;
+    touchStartX.current = null;
+    touchCurrentX.current = null;
+    if (start === null || end === null) return;
+    const delta = end - start;
+    const threshold = 40;
+    if (delta > threshold && activeIndex > 0) {
+      setActiveIndex((idx) => Math.max(0, idx - 1));
+    } else if (delta < -threshold && activeIndex < images.length - 1) {
+      setActiveIndex((idx) => Math.min(images.length - 1, idx + 1));
+    }
+  };
+
+  const similarProducts = useMemo(() => {
+    if (!product || !Array.isArray(products)) return [];
+    const targetSub =
+      (product.subCategory || product.subcategory || product.sub_category || "").toString().toLowerCase();
+    if (!targetSub) return [];
+    return products
+      .filter((p) => {
+        if (!p || p.id === product.id) return false;
+        const sub = (p.subCategory || p.subcategory || p.sub_category || "").toString().toLowerCase();
+        return sub === targetSub;
+      })
+      .slice(0, 10);
+  }, [product, products]);
 
   const handleRate = async () => {
     if (!product || !selectedRating) return;
@@ -164,7 +211,6 @@ export default function ProductPage() {
               className="back-icon"
             />
           </button>
-          <h1 id="productTitle">{product.name}</h1>
         </header>
 
         <section className="product-detail-main">
@@ -187,7 +233,13 @@ export default function ProductPage() {
                 </button>
               </>
             )}
-            <div className="product-detail-slider" style={{ transform: `translateX(-${activeIndex * 100}%)` }}>
+            <div
+              className="product-detail-slider"
+              style={{ transform: `translateX(-${activeIndex * 100}%)` }}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+            >
               {images.map((src, idx) => (
                 <div className="product-detail-slide" key={`${src}-${idx}`}>
                   <img src={src} alt={product.name} className="product-image" />
@@ -206,6 +258,8 @@ export default function ProductPage() {
             </div>
           </div>
 
+          <h1 id="productTitle" style={{ margin: "12px 0 8px" }}>{product.name}</h1>
+
           <div className="product-detail-meta">
             <p className="price">&#8358;{Number(product.price || 0).toLocaleString()}</p>
           </div>
@@ -223,12 +277,6 @@ export default function ProductPage() {
                 {alreadyRated ? "Remove My Rating" : "Rate"}
               </button>
             </p>
-          ) : null}
-
-          {product.description ? <p className="product-detail-description">{product.description}</p> : null}
-
-          {product.vendorMotto || product.sellerDetails ? (
-            <p className="product-detail-motto">{product.vendorMotto || product.sellerDetails}</p>
           ) : null}
 
           <div className="product-detail-seller">
@@ -257,7 +305,99 @@ export default function ProductPage() {
               </span>
             </div>
           </div>
+
+          {(product.whatsapp || product.instagram) && (
+            <div className="product-contact-actions">
+              {product.whatsapp ? (
+                <a
+                  className="contact-btn"
+                  href={product.whatsapp.startsWith("http") ? product.whatsapp : `https://wa.me/${product.whatsapp.replace(/\D/g, "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <img src="/icons/whatsapp.png" alt="" className="contact-icon" />
+                  Contact Vendor
+                </a>
+              ) : null}
+              {product.instagram ? (
+                <a
+                  className="contact-btn"
+                  href={
+                    product.instagram.startsWith("http")
+                      ? product.instagram
+                      : `https://instagram.com/${product.instagram.replace(/^@+/, "")}`
+                  }
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <img src="/icons/instagram.png" alt="" className="contact-icon" />
+                  Contact Vendor
+                </a>
+              ) : null}
+            </div>
+          )}
+
+          {product.description ? (
+            <div className="product-about" style={{ marginTop: 14 }}>
+              <h3 style={{ margin: "0 0 6px", fontSize: "1.05rem" }}>About this product</h3>
+              <p style={{ margin: 0, color: "var(--color-muted)", lineHeight: 1.5 }}>
+                {product.description}
+              </p>
+            </div>
+          ) : null}
         </section>
+
+        {similarProducts.length ? (
+          <section className="product-similar-section" style={{ marginTop: 20 }}>
+            <h2 style={{ marginTop: 0, marginBottom: 10, fontSize: "1.1rem" }}>Similar products</h2>
+            <div className="landing-slider subcategory-row-scroll">
+              {similarProducts.map((p) => {
+                const cover =
+                  p.image ||
+                  p.coverImage ||
+                  p.cover_image ||
+                  (Array.isArray(p.images) && p.images.length ? p.images[0] : "/images/default-product.jpg");
+                const vendorName =
+                  p.vendorShopName ||
+                  p.shop_name ||
+                  p.shopName ||
+                  p.vendorName ||
+                  p.vendor_username ||
+                  p.vendorUsername ||
+                  "";
+                const ratingVal = Number(p.rating_value || p.ratingValue || 0);
+                const ratingCnt = Number(p.rating_count || p.ratingCount || 0);
+                return (
+                  <Link
+                    key={p.id}
+                    href={`/product?id=${p.id}`}
+                    className="product-card"
+                    onClick={() => {
+                      if (typeof window !== "undefined") {
+                        localStorage.setItem("activeProductId", p.id);
+                      }
+                    }}
+                  >
+                    <div className="product-image-wrapper">
+                      <div className="product-image-box">
+                        <img src={cover} alt={p.name} className="product-image" />
+                      </div>
+                    </div>
+                    <div className="product-info">
+                      <h3>{p.name}</h3>
+                      <p className="price">&#8358;{Number(p.price || 0).toLocaleString()}</p>
+                      <p className="details-vendor">{vendorName}</p>
+                      <p className="details">
+                        <span className="rating-star">&#9733;</span>{" "}
+                        {ratingVal > 0 ? ratingVal.toFixed(1) : "0.0"} ({ratingCnt})
+                      </p>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
+        ) : null}
       </div>
 
       <RatingModal

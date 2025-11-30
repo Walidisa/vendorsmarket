@@ -31,12 +31,15 @@ export async function PUT(request, { params }) {
     price: body.price,
     main_category: body.main_category || body.mainCategory,
     subcategory: body.subcategory || body.subCategory,
-    vendor_username: body.vendor_username || body.vendorUsername,
     cover_image: body.cover_image || body.coverImage,
     images: Array.isArray(body.images) ? body.images : [],
     description: body.description,
     user_id: body.user_id || body.userId || null,
   };
+
+  if (body.vendor_username || body.vendorUsername) {
+    update.vendor_username = body.vendor_username || body.vendorUsername;
+  }
 
   const { data, error } = await supabaseServer
     .from('products')

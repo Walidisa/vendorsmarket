@@ -61,9 +61,11 @@ export default function ProfilePage({ params }) {
       setOwnedProducts([]);
       return;
     }
-    const owned = allProducts.filter(
-      (p) => slugify(p.vendorUsername || p.vendor || "") === slugify(profile.username || "")
-    );
+    const owned = allProducts.filter((p) => {
+      const ownerId = p.ownerUserId || p.vendorUserId || p.user_id;
+      if (profile.userId && ownerId) return ownerId === profile.userId;
+      return slugify(p.vendorUsername || p.vendor || "") === slugify(profile.username || "");
+    });
     setOwnedProducts(owned);
   }, [allProducts, profile]);
 
@@ -72,10 +74,11 @@ export default function ProfilePage({ params }) {
       setFeedbackList([]);
       return;
     }
-    const vendorFeedback = feedbackData.filter(
-      (f) =>
-        slugify(f.sellerId || f.vendor_username || "") === slugify(profile.username || "")
-    );
+    const vendorFeedback = feedbackData.filter((f) => {
+      const sellerId = f.sellerId || f.vendorUserId || f.vendor_user_id;
+      if (profile.userId && sellerId) return sellerId === profile.userId;
+      return slugify(f.vendorUsername || f.sellerName || "") === slugify(profile.username || "");
+    });
     setFeedbackList(vendorFeedback);
   }, [feedbackData, profile]);
 
@@ -149,6 +152,7 @@ export default function ProfilePage({ params }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          vendor_user_id: profile.userId,
           vendor_username: profile.username,
           rating: feedbackRating,
           message: feedbackComment,
@@ -158,6 +162,7 @@ export default function ProfilePage({ params }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          vendor_user_id: profile.userId,
           vendor_username: profile.username,
           rating: feedbackRating,
         }),
@@ -167,7 +172,7 @@ export default function ProfilePage({ params }) {
         {
           rating: feedbackRating,
           comment: feedbackComment,
-          sellerId: profile.username,
+          sellerId: profile.userId,
           sellerName: profile.shopName,
           createdAt: new Date().toISOString(),
         },

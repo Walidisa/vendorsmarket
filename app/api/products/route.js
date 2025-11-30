@@ -56,6 +56,7 @@ export async function GET() {
     .from('vendors')
     .select(
       `
+        user_id,
         username,
         shop_name,
         profile_pic,
@@ -79,10 +80,10 @@ export async function GET() {
   const feedbackByVendor = new Map();
   const { data: feedbackRows } = await supabaseServer
     .from('feedback')
-    .select('vendor_username, rating');
+    .select('vendor_user_id, vendor_username, rating');
   if (Array.isArray(feedbackRows)) {
     feedbackRows.forEach((row) => {
-      const key = row.vendor_username;
+      const key = row.vendor_user_id || row.vendor_username;
       const val = Number(row.rating) || 0;
       if (!key) return;
       const current = feedbackByVendor.get(key) || { total: 0, count: 0 };
@@ -91,8 +92,10 @@ export async function GET() {
   }
 
   const vendorsByUsername = new Map();
+  const vendorsById = new Map();
   (vendorRows || []).forEach((v) => {
     vendorsByUsername.set(v.username, v);
+    if (v.user_id) vendorsById.set(v.user_id, v);
   });
 
   const { data, error } = await supabaseServer
@@ -120,7 +123,11 @@ export async function GET() {
   }
 
   const products = (data || []).map((row) => {
-    const vendor = vendorsByUsername.get(row.vendor_username) || {};
+    const vendor =
+      vendorsById.get(row.user_id) ||
+      vendorsByUsername.get(row.vendor_username) ||
+      {};
+    const feedbackKey = row.user_id || vendor.user_id || row.vendor_username;
     const rawCover = row.cover_image || (Array.isArray(row.images) ? row.images[0] : '');
     const cover = toAssetUrl(rawCover);
 
@@ -146,11 +153,11 @@ export async function GET() {
       price: Number(row.price) || 0,
       mainCategory: row.main_category || '',
       subCategory: row.subcategory || '',
-      vendor: vendor.username || vendor.shop_name || row.vendor_username || '',
+      vendor: vendor.shop_name || vendor.username || row.vendor_username || '',
       vendorUsername: vendor.username || row.vendor_username || '',
       vendorShopName: vendor.shop_name || vendor.username || row.vendor_username || '',
       vendorFullName: vendor.full_name || '',
-      vendorUserId: vendor.user_id || null,
+      vendorUserId: vendor.user_id || row.user_id || null,
       sellerAvatar: vendor.profile_pic
         ? toAssetUrl(vendor.profile_pic)
         : toAssetUrl('vendors/default-pfp.jpg'),
@@ -162,13 +169,13 @@ export async function GET() {
       vendorRatingValue: (() => {
         const direct = Number(vendor.rating_value);
         if (direct) return direct;
-        const agg = feedbackByVendor.get(vendor.username || row.vendor_username);
+        const agg = feedbackByVendor.get(feedbackKey);
         return agg && agg.count > 0 ? agg.total / agg.count : 0;
       })(),
       vendorRatingCount: (() => {
         const direct = Number(vendor.rating_count);
         if (direct) return direct;
-        const agg = feedbackByVendor.get(vendor.username || row.vendor_username);
+        const agg = feedbackByVendor.get(feedbackKey);
         return agg?.count || 0;
       })(),
       ownerUserId: row.user_id || vendor.user_id || null,
@@ -193,25 +200,25 @@ export async function POST(request) {
   const price = Number(body.price) || 0;
   const mainCategory = body.main_category || body.mainCategory || '';
   const subcategory = body.subcategory || body.subCategory || '';
-  const vendorUsername = body.vendor_username || body.vendorUsername || '';
   const coverImage = body.cover_image || body.coverImage || '';
   const images = Array.isArray(body.images) ? body.images : [];
   const description = body.description || '';
   let userId = body.user_id || body.userId || null;
+  let vendorUsername = body.vendor_username || body.vendorUsername || '';
 
-  if (!name || !vendorUsername || !mainCategory || !subcategory) {
-    return NextResponse.json({ error: 'name, vendor_username, main_category, and subcategory are required.' }, { status: 400 });
+  if (!name || !userId || !mainCategory || !subcategory) {
+    return NextResponse.json({ error: 'name, user_id, main_category, and subcategory are required.' }, { status: 400 });
   }
 
-  // If we don't have a user_id, attempt to resolve it from the vendor username for RLS compatibility
-  if (!userId && vendorUsername) {
+  // Resolve vendor username from user_id if not provided (used for display only)
+  if (!vendorUsername && userId) {
     const { data: vendorRow } = await supabaseServer
       .from('vendors')
-      .select('user_id')
-      .eq('username', vendorUsername)
+      .select('username')
+      .eq('user_id', userId)
       .maybeSingle();
-    if (vendorRow?.user_id) {
-      userId = vendorRow.user_id;
+    if (vendorRow?.username) {
+      vendorUsername = vendorRow.username;
     }
   }
 
@@ -222,7 +229,7 @@ export async function POST(request) {
       price,
       main_category: mainCategory,
       subcategory,
-      vendor_username: vendorUsername,
+      vendor_username: vendorUsername || null,
       cover_image: coverImage || null,
       images,
       description,

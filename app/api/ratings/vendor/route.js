@@ -3,17 +3,40 @@ import { supabaseServer } from '../../../../lib/supabaseServer.js';
 
 export async function POST(request) {
   const body = await request.json().catch(() => null);
-  const vendorUsername = body?.vendor_username || body?.vendorUsername || '';
   const rating = Number(body?.rating) || 0;
+  const vendorUserId =
+    body?.vendor_user_id ||
+    body?.vendorUserId ||
+    body?.user_id ||
+    body?.userId ||
+    null;
+  const vendorUsername = body?.vendor_username || body?.vendorUsername || '';
 
-  if (!vendorUsername || !rating) {
-    return NextResponse.json({ error: 'vendor_username and rating are required.' }, { status: 400 });
+  if (!vendorUserId && !vendorUsername) {
+    return NextResponse.json({ error: 'vendor_user_id is required.' }, { status: 400 });
+  }
+  if (!rating) {
+    return NextResponse.json({ error: 'rating is required.' }, { status: 400 });
+  }
+
+  let resolvedUserId = vendorUserId;
+  if (!resolvedUserId && vendorUsername) {
+    const { data: vendorRow } = await supabaseServer
+      .from('vendors')
+      .select('user_id')
+      .eq('username', vendorUsername)
+      .maybeSingle();
+    if (vendorRow?.user_id) resolvedUserId = vendorRow.user_id;
+  }
+
+  if (!resolvedUserId) {
+    return NextResponse.json({ error: 'Vendor not found.' }, { status: 404 });
   }
 
   const { data: vendor, error: selectError } = await supabaseServer
     .from('vendors')
     .select('rating_value, rating_count')
-    .eq('username', vendorUsername)
+    .eq('user_id', resolvedUserId)
     .maybeSingle();
 
   if (selectError) {
@@ -32,7 +55,7 @@ export async function POST(request) {
   const { error: updateError } = await supabaseServer
     .from('vendors')
     .update({ rating_value: newValue, rating_count: newCount })
-    .eq('username', vendorUsername);
+    .eq('user_id', resolvedUserId);
 
   if (updateError) {
     return NextResponse.json({ error: updateError.message }, { status: 500 });
