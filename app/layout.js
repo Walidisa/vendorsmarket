@@ -5,18 +5,39 @@ import "./styles/pages.css";
 import "./styles/themes.css";
 import Footer from "./components/Footer";
 import RouteLoader from "./components/RouteLoader";
+import PwaProvider from "./components/PwaProvider";
+import InstallPrompt from "./components/InstallPrompt";
 import { Suspense } from "react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata = {
   title: "VendorsMarket",
-  description: "Vendors Market"
+  description: "Vendors Market",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Vendors Market"
+  },
+  icons: {
+    icon: [
+      { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512x512.png", sizes: "512x512", type: "image/png" }
+    ],
+    apple: "/icons/apple-touch-icon.png"
+  }
+};
+
+export const viewport = {
+  themeColor: "#ffffff"
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
+        <PwaProvider />
+        <InstallPrompt />
         <RouteLoader />
         <main>
           <Suspense fallback={null}>{children}</Suspense>

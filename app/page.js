@@ -20,6 +20,23 @@ export default function Page() {
   const [productsLoading, setProductsLoading] = useState(true);
   const [vendorsLoading, setVendorsLoading] = useState(true);
 
+  const setBodyTheme = (theme) => {
+    if (typeof document === "undefined") return;
+    document.body.classList.remove("theme-food", "theme-clothing");
+    document.body.classList.add(theme === "food" ? "theme-food" : "theme-clothing");
+  };
+
+  const applyTheme = (theme) => {
+    setLandingCategory(theme);
+    setHeroTheme(theme);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("activeTheme", theme);
+      document.cookie = `activeTheme=${theme};path=/;max-age=31536000`;
+      setBodyTheme(theme);
+      window.dispatchEvent(new Event("vm-theme-change"));
+    }
+  };
+
   const heroRef = useRef(null);
   const cardsRef = useRef(null);
 
@@ -40,6 +57,7 @@ export default function Page() {
     if (saved === "clothing" || saved === "food") {
       setHeroTheme(saved);
       setLandingCategory(saved);
+      setBodyTheme(saved);
     }
     const id = setInterval(() => {
       setSlideIndex((prev) => (prev + 1) % slides.length);
@@ -156,25 +174,13 @@ export default function Page() {
             <div className="pill-highlight" />
             <button
               className={`pill ${landingCategory === "food" ? "active" : ""}`}
-              onClick={() => {
-                setLandingCategory("food");
-                setHeroTheme("food");
-                if (typeof window !== "undefined") {
-                  localStorage.setItem("activeTheme", "food");
-                }
-              }}
+              onClick={() => applyTheme("food")}
             >
               Food
             </button>
             <button
               className={`pill ${landingCategory === "clothing" ? "active" : ""}`}
-              onClick={() => {
-                setLandingCategory("clothing");
-                setHeroTheme("clothing");
-                if (typeof window !== "undefined") {
-                  localStorage.setItem("activeTheme", "clothing");
-                }
-              }}
+              onClick={() => applyTheme("clothing")}
             >
               Clothing
             </button>

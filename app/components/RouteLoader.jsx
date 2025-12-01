@@ -50,37 +50,28 @@ export default function RouteLoader() {
     <div
       style={{
         position: "fixed",
-        inset: 0,
-        background: "#ffffff",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
+        top: 0,
+        left: 0,
+        right: 0,
+        height: "4px",
         zIndex: 12000,
-        transition: "opacity 0.25s ease-out",
+        background: "transparent",
+        pointerEvents: "none",
         opacity: fading ? 0 : 1,
-        pointerEvents: "auto"
+        transition: "opacity 0.25s ease-out"
       }}
     >
       <div
         style={{
-          display: "inline-block",
-          animation: "vm-spin 0.9s linear infinite"
+          position: "absolute",
+          inset: 0,
+          background: `linear-gradient(90deg, ${spinnerColors.primary}, ${spinnerColors.primaryLight})`,
+          transformOrigin: "0 50%",
+          transform: fading ? "scaleX(0)" : "scaleX(1)",
+          transition: "transform 0.4s ease-out",
+          boxShadow: `0 0 12px ${spinnerColors.primaryLight}66`
         }}
-      >
-        <div
-          style={{
-            width: "48px",
-            height: "48px",
-            borderRadius: "50%",
-            border: `4px solid ${spinnerColors.primaryLight}`,
-            borderTopColor: "transparent",
-            borderRightColor: spinnerColors.primary,
-            borderBottomColor: spinnerColors.primaryLight,
-            borderLeftColor: spinnerColors.primary,
-            animation: "vm-pulse 1.4s ease-in-out infinite"
-          }}
-        />
-      </div>
+      />
     </div>
   );
 }

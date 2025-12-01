@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vendors Market • Offline</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --color-primary: #0d3b66;
+      --color-accent: #c58a64;
+    }
+    body {
+      margin: 0;
+      font-family: -apple-system, system-ui, sans-serif;
+      background: #f5f5f5;
+      color: #1d1d1d;
+      display: flex;
+      min-height: 100vh;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      padding: 24px;
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+    }
+    h1 {
+      margin: 0 0 12px;
+      font-size: 1.4rem;
+      color: var(--color-primary);
+    }
+    p {
+      margin: 0 0 16px;
+      line-height: 1.5;
+      color: #3c4043;
+    }
+    .badge {
+      display: inline-block;
+      padding: 6px 12px;
+      background: #e8eef6;
+      color: var(--color-primary);
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      margin-bottom: 12px;
+    }
+    .cta {
+      display: inline-block;
+      padding: 10px 18px;
+      border-radius: 999px;
+      background: var(--color-primary);
+      color: #fff;
+      text-decoration: none;
+      font-weight: 700;
+      margin-top: 6px;
+    }
+    .cta:active { transform: scale(0.98); }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <div class="badge">Offline</div>
+    <h1>You're offline right now</h1>
+    <p>Your device lost connection. Keep browsing products you've already opened, or reconnect to continue shopping.</p>
+    <a class="cta" href="/">Retry</a>
+  </main>
+</body>
+</html>
