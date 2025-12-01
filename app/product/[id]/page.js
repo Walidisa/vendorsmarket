@@ -247,18 +247,21 @@ export default function ProductPage() {
                   </div>
                 ))}
               </div>
-              <div className="product-detail-dots">
-                {images.map((_, idx) => (
-                  <span
-                    key={idx}
-                    className={`product-detail-dot${idx === activeIndex ? " is-active" : ""}`}
-                    data-index={idx}
-                    onClick={() => setActiveIndex(idx)}
-                  ></span>
-                ))}
-              </div>
             </div>
           </div>
+
+          {images.length > 1 && (
+            <div className="product-detail-dots product-detail-dots-below">
+              {images.map((_, idx) => (
+                <span
+                  key={idx}
+                  className={`product-detail-dot${idx === activeIndex ? " is-active" : ""}`}
+                  data-index={idx}
+                  onClick={() => setActiveIndex(idx)}
+                ></span>
+              ))}
+            </div>
+          )}
 
           <h1 id="productTitle" style={{ margin: "12px 0 8px" }}>{product.name}</h1>
 
