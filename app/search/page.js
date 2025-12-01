@@ -91,7 +91,7 @@ export default function SearchPage() {
     if (typeof window !== "undefined") {
       localStorage.setItem("activeProductId", id);
     }
-    router.push(`/product?id=${id}`);
+    router.push(`/product/${id}`);
   };
 
   return (

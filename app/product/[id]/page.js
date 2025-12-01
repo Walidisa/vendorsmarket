@@ -193,7 +193,7 @@ export default function ProductPage() {
   }, [ratingModalOpen, alreadyRated]);
 
   if (loading) {
-    return <div style={{ padding: "1.5rem" }}>Loading product…</div>;
+    return <ProductSkeleton />;
   }
 
   if (error || !product) {
@@ -215,46 +215,48 @@ export default function ProductPage() {
 
         <section className="product-detail-main">
           <div className="product-detail-hero">
-            {images.length > 1 && (
-              <>
-                <button
-                  className="product-detail-nav prev"
-                  aria-label="Previous image"
-                  onClick={() => setActiveIndex(Math.max(0, activeIndex - 1))}
-                >
-                  <img src="/icons/left.png" alt="Previous" />
-                </button>
-                <button
-                  className="product-detail-nav next"
-                  aria-label="Next image"
-                  onClick={() => setActiveIndex(Math.min(images.length - 1, activeIndex + 1))}
-                >
-                  <img src="/icons/right.png" alt="Next" />
-                </button>
-              </>
-            )}
-            <div
-              className="product-detail-slider"
-              style={{ transform: `translateX(-${activeIndex * 100}%)` }}
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
-            >
-              {images.map((src, idx) => (
-                <div className="product-detail-slide" key={`${src}-${idx}`}>
-                  <img src={src} alt={product.name} className="product-image" />
-                </div>
-              ))}
-            </div>
-            <div className="product-detail-dots">
-              {images.map((_, idx) => (
-                <span
-                  key={idx}
-                  className={`product-detail-dot${idx === activeIndex ? " is-active" : ""}`}
-                  data-index={idx}
-                  onClick={() => setActiveIndex(idx)}
-                ></span>
-              ))}
+            <div className="product-detail-hero-inner">
+              {images.length > 1 && (
+                <>
+                  <button
+                    className="product-detail-nav prev"
+                    aria-label="Previous image"
+                    onClick={() => setActiveIndex(Math.max(0, activeIndex - 1))}
+                  >
+                    <img src="/icons/left.png" alt="Previous" />
+                  </button>
+                  <button
+                    className="product-detail-nav next"
+                    aria-label="Next image"
+                    onClick={() => setActiveIndex(Math.min(images.length - 1, activeIndex + 1))}
+                  >
+                    <img src="/icons/right.png" alt="Next" />
+                  </button>
+                </>
+              )}
+              <div
+                className="product-detail-slider"
+                style={{ transform: `translateX(-${activeIndex * 100}%)` }}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+              >
+                {images.map((src, idx) => (
+                  <div className="product-detail-slide" key={`${src}-${idx}`}>
+                    <img src={src} alt={product.name} className="product-image" />
+                  </div>
+                ))}
+              </div>
+              <div className="product-detail-dots">
+                {images.map((_, idx) => (
+                  <span
+                    key={idx}
+                    className={`product-detail-dot${idx === activeIndex ? " is-active" : ""}`}
+                    data-index={idx}
+                    onClick={() => setActiveIndex(idx)}
+                  ></span>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -294,14 +296,18 @@ export default function ProductPage() {
             >
               <span className="product-detail-seller-name">
                 {product.vendorShopName || product.vendor}
-                {typeof product.vendorRatingValue === "number" && typeof product.vendorRatingCount === "number" ? (
-                  <span className="product-detail-seller-rating">
-                    &#9733; {product.vendorRatingValue.toFixed(1)} ({product.vendorRatingCount})
-                  </span>
-                ) : null}
               </span>
               <span className="product-detail-seller-extra">
+                <img src="/icons/location.png" alt="" className="product-detail-location-icon" />
                 {product.vendorLocation || "Trusted local vendor"}
+                {typeof product.vendorRatingValue === "number" && typeof product.vendorRatingCount === "number" ? (
+                  <>
+                    <span className="dot-separator"> &middot; </span>
+                    <span className="product-detail-seller-rating-inline">
+                      &#9733; {product.vendorRatingValue.toFixed(1)} ({product.vendorRatingCount})
+                    </span>
+                  </>
+                ) : null}
               </span>
             </div>
           </div>
@@ -370,7 +376,7 @@ export default function ProductPage() {
                 return (
                   <Link
                     key={p.id}
-                    href={`/product?id=${p.id}`}
+                    href={`/product/${p.id}`}
                     className="product-card"
                     onClick={() => {
                       if (typeof window !== "undefined") {
@@ -417,3 +423,59 @@ export default function ProductPage() {
     </div>
   );
 }
+
+function ProductSkeleton() {
+  const sliderCards = Array.from({ length: 4 });
+
+  return (
+    <div className="product-detail-page product-skeleton-container">
+      <div className="product-detail-main">
+        <div className="skeleton product-skeleton-back product-skeleton-back-floating" />
+        <div className="skeleton product-skeleton-hero" />
+
+        <div className="product-skeleton-body">
+          <div className="skeleton skeleton-line" style={{ width: "68%", height: 18 }} />
+          <div className="skeleton skeleton-line" style={{ width: "42%", height: 16 }} />
+          <div className="skeleton skeleton-line" style={{ width: "55%", height: 12 }} />
+
+          <div className="product-skeleton-seller">
+            <div className="skeleton product-skeleton-avatar" />
+            <div className="product-skeleton-seller-lines">
+              <div className="skeleton skeleton-line" style={{ width: "60%", height: 12 }} />
+              <div className="skeleton skeleton-line" style={{ width: "72%", height: 12 }} />
+            </div>
+          </div>
+
+          <div className="product-skeleton-contacts">
+            <div className="skeleton skeleton-contact-pill" />
+            <div className="skeleton skeleton-contact-pill" />
+          </div>
+
+          <div className="product-skeleton-about">
+            <div className="skeleton skeleton-line" style={{ width: "36%", height: 14 }} />
+            <div className="skeleton skeleton-line" style={{ width: "95%", height: 12 }} />
+            <div className="skeleton skeleton-line" style={{ width: "92%", height: 12 }} />
+            <div className="skeleton skeleton-line" style={{ width: "80%", height: 12 }} />
+          </div>
+
+          <div className="product-skeleton-similar">
+            <div className="skeleton skeleton-line" style={{ width: "46%", height: 14 }} />
+            <div className="product-skeleton-slider">
+              {sliderCards.map((_, idx) => (
+                <div key={idx} className="skeleton-card-wrapper skeleton-slider-card">
+                  <div className="skeleton skeleton-card-small" />
+                  <div className="skeleton skeleton-line" style={{ width: "82%", height: 12 }} />
+                  <div className="skeleton skeleton-line" style={{ width: "70%", height: 12 }} />
+                  <div className="skeleton skeleton-line" style={{ width: "58%", height: 12 }} />
+                  <div className="skeleton skeleton-line" style={{ width: "64%", height: 12 }} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+

@@ -41,8 +41,8 @@ const SUBROWS = {
 };
 
 export default function Homepage() {
-  const { vendor } = useSessionVendor();
-  const { products = [] } = useProducts();
+  const { vendor, loading: vendorLoading } = useSessionVendor();
+  const { products = [], isLoading: productsLoading } = useProducts();
   const router = useRouter();
   const { theme, setTheme } = useThemeIcons("clothing");
   const [profileHref, setProfileHref] = useState("/login");
@@ -92,8 +92,58 @@ export default function Homepage() {
     if (typeof window !== "undefined") {
       localStorage.setItem("activeProductId", id);
     }
-    router.push(`/product?id=${id}`);
+    router.push(`/product/${id}`);
   };
+
+  const loadingNow = productsLoading;
+
+  if (loadingNow) {
+    return (
+      <>
+        <HomepageSkeleton />
+        <nav className="bottom-nav">
+          <Link href="/homepage" className="nav-item active">
+            <span className="nav-icon-wrapper">
+              <img
+                src="/icons/home.png"
+                className="nav-icon"
+                data-blue="/icons/home.png"
+                data-brown="/icons/home-lightbrown.png"
+                alt=""
+              />
+            </span>
+            <span>Home</span>
+          </Link>
+
+          <Link href="/search" className="nav-item">
+            <span className="nav-icon-wrapper">
+              <img
+                src="/icons/search.png"
+                className="nav-icon"
+                data-blue="/icons/search.png"
+                data-brown="/icons/search-lightbrown.png"
+                alt=""
+              />
+            </span>
+            <span>Search</span>
+          </Link>
+
+          <Link href="/login" className="nav-item">
+            <span className="nav-icon-wrapper">
+              <img
+                src="/icons/profile.png"
+                className="nav-icon"
+                data-blue="/icons/profile.png"
+                data-brown="/icons/profile-lightbrown.png"
+                alt=""
+              />
+            </span>
+            <span>Profile</span>
+          </Link>
+        </nav>
+      </>
+    );
+  }
 
   return (
     <>
@@ -200,5 +250,44 @@ export default function Homepage() {
         </Link>
       </nav>
     </>
+  );
+}
+
+function HomepageSkeleton() {
+  return (
+    <div className="page-transition">
+      <div className="page">
+        <div className="skeleton-category-toggle">
+          {Array.from({ length: 2 }).map((_, idx) => (
+            <div key={idx} className="skeleton-category-btn">
+              <div className="skeleton skeleton-category-icon"></div>
+              <div className="skeleton skeleton-line" style={{ width: "70%", height: 12 }}></div>
+            </div>
+          ))}
+        </div>
+
+        <section className="subcategory-rows">
+          {Array.from({ length: 3 }).map((_, rowIdx) => (
+            <div key={rowIdx} className="subcategory-row" style={{ marginBottom: 24 }}>
+              <header className="subcategory-row-header" style={{ alignItems: "center" }}>
+                <div className="skeleton skeleton-line" style={{ width: "60%", height: 14 }}></div>
+                <div className="skeleton skeleton-pill skeleton-pill-small"></div>
+              </header>
+              <div className="subcategory-row-scroll">
+              {Array.from({ length: 6 }).map((__, idx) => (
+                <div key={idx} className="skeleton-card-wrapper skeleton-slider-card">
+                  <div className="skeleton skeleton-card skeleton-card-small"></div>
+                  <div className="skeleton skeleton-line skeleton-line-small"></div>
+                  <div className="skeleton skeleton-line skeleton-line-smaller"></div>
+                  <div className="skeleton skeleton-line skeleton-line-small"></div>
+                  <div className="skeleton skeleton-line skeleton-line-smaller"></div>
+                </div>
+              ))}
+              </div>
+            </div>
+          ))}
+        </section>
+      </div>
+    </div>
   );
 }

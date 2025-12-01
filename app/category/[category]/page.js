@@ -6,6 +6,33 @@ import Script from "next/script";
 import { ProductCard } from "../../components/ProductCard";
 import { useThemeIcons } from "../../../lib/useThemeIcons";
 
+function CategorySkeleton() {
+  return (
+    <div className="page-transition">
+      <div className="page category-skeleton-wrapper">
+        <header className="subcategory-page-header">
+          <div className="skeleton-back-row">
+            <div className="skeleton skeleton-circle skeleton-back-btn"></div>
+            <div className="skeleton skeleton-line skeleton-cat-title"></div>
+          </div>
+        </header>
+
+        <section className="subcategory-page-grid category-skeleton-grid">
+          {Array.from({ length: 9 }).map((_, idx) => (
+            <div key={idx} className="skeleton-card-wrapper">
+              <div className="skeleton skeleton-card skeleton-cat-card"></div>
+              <div className="skeleton skeleton-line skeleton-line-small"></div>
+              <div className="skeleton skeleton-line skeleton-line-smaller"></div>
+              <div className="skeleton skeleton-line skeleton-line-small"></div>
+              <div className="skeleton skeleton-line skeleton-line-smaller"></div>
+            </div>
+          ))}
+        </section>
+      </div>
+    </div>
+  );
+}
+
 export default function CategoryPage() {
   const params = useParams();
   const router = useRouter();
@@ -68,8 +95,17 @@ export default function CategoryPage() {
     if (typeof window !== "undefined") {
       localStorage.setItem("activeProductId", id);
     }
-    router.push(`/product?id=${id}`);
+    router.push(`/product/${id}`);
   };
+
+  if (loading) {
+    return (
+      <>
+        <CategorySkeleton />
+        <Script src="/scripts/main.js" strategy="afterInteractive" />
+      </>
+    );
+  }
 
   return (
     <>

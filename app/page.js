@@ -16,7 +16,9 @@ export default function Page() {
   const [landingCategory, setLandingCategory] = useState("clothing");
   const [featuredVendors, setFeaturedVendors] = useState([]);
   const [heroVisible, setHeroVisible] = useState(true);
-  const [cardsVisible, setCardsVisible] = useState(false);
+  const [cardsVisible, setCardsVisible] = useState(true);
+  const [productsLoading, setProductsLoading] = useState(true);
+  const [vendorsLoading, setVendorsLoading] = useState(true);
 
   const heroRef = useRef(null);
   const cardsRef = useRef(null);
@@ -49,11 +51,13 @@ export default function Page() {
     async function loadProducts() {
       try {
         const res = await fetch("/api/products", { cache: "no-store" });
-        if (!res.ok) return;
+        if (!res.ok) throw new Error("Failed to load products");
         const data = await res.json();
         setLandingProducts(data || []);
       } catch (e) {
         // ignore
+      } finally {
+        setProductsLoading(false);
       }
     }
     loadProducts();
@@ -76,6 +80,8 @@ export default function Page() {
         setFeaturedVendors(sorted.slice(0, 4));
       } catch (e) {
         // ignore
+      } finally {
+        setVendorsLoading(false);
       }
     }
     loadVendors();
@@ -101,6 +107,15 @@ export default function Page() {
 
     return () => observer.disconnect();
   }, []);
+
+  if (productsLoading || vendorsLoading) {
+    return (
+      <>
+        <HomeSkeleton />
+        <Script src="/scripts/main.js" strategy="afterInteractive" />
+      </>
+    );
+  }
 
   return (
     <>
@@ -211,7 +226,7 @@ export default function Page() {
                       return (
                         <Link
                           key={p.id}
-                          href={`/product?id=${p.id}`}
+                          href={`/product/${p.id}`}
                           className="product-card"
                           onClick={() => {
                             if (typeof window !== "undefined") {
@@ -290,5 +305,56 @@ export default function Page() {
       </div>
       <Script src="/scripts/main.js" strategy="afterInteractive" />
     </>
+  );
+}
+
+function HomeSkeleton() {
+  return (
+    <div className="page">
+      <div className="skeleton-hero-shell">
+        <div className="skeleton skeleton-line" style={{ width: "70%", height: 22, marginTop: 32 }}></div>
+        <div className="skeleton-dots">
+          {Array.from({ length: 3 }).map((_, idx) => (
+            <span key={idx} className="skeleton skeleton-dot"></span>
+          ))}
+        </div>
+        <div className="skeleton-hero-actions">
+          <div className="skeleton skeleton-pill skeleton-pill-wide"></div>
+          <div className="skeleton skeleton-pill skeleton-pill-wide"></div>
+        </div>
+      </div>
+
+      <section className="landing-categories">
+        <div className="skeleton-pill-toggle">
+          <div className="skeleton skeleton-pill"></div>
+          <div className="skeleton skeleton-pill"></div>
+        </div>
+
+        <div className="skeleton-section-header">
+          <div className="skeleton skeleton-line" style={{ width: "40%", height: 16 }}></div>
+        </div>
+
+        <div className="landing-slider subcategory-row-scroll">
+          {Array.from({ length: 6 }).map((_, idx) => (
+            <div key={idx} className="skeleton-card-wrapper skeleton-slider-card">
+              <div className="skeleton skeleton-card skeleton-card-small"></div>
+              <div className="skeleton skeleton-line skeleton-line-small"></div>
+              <div className="skeleton skeleton-line skeleton-line-smaller"></div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="landing-featured">
+        <div className="skeleton-section-header">
+          <div className="skeleton skeleton-line" style={{ width: "50%", height: 16 }}></div>
+        </div>
+        <div className="vendor-slider">
+          {Array.from({ length: 4 }).map((_, idx) => (
+            <div key={idx} className="vendor-card skeleton skeleton-card skeleton-card-small"></div>
+          ))}
+        </div>
+      </section>
+    </div>
   );
 }

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -12,6 +12,44 @@ import { AddProductCard } from "../../components/AddProductCard";
 import { FeedbackList } from "../../components/FeedbackList";
 import { RatingModal } from "../../components/RatingModal";
 import { slugify } from "../../components/slugify";
+
+function ProfileSkeleton() {
+  return (
+    <div className="page-transition">
+      <div className="page">
+        <section className="profile-header">
+          <div className="profile-banner skeleton skeleton-banner"></div>
+          <div className="profile-info-row skeleton-info-row">
+            <div className="profile-avatar-left skeleton skeleton-circle"></div>
+            <div className="profile-info-text skeleton-stack" style={{ padding: 0, gap: 12 }}>
+              <div className="skeleton skeleton-line skeleton-line-row1"></div>
+              <div className="skeleton skeleton-line skeleton-line-row2"></div>
+              <div className="skeleton skeleton-line skeleton-line-row3"></div>
+              <div className="skeleton skeleton-line skeleton-line-row4"></div>
+            </div>
+          </div>
+        </section>
+
+        <div className="profile-tabs skeleton-tabs">
+          <div className="skeleton skeleton-pill skeleton-pill-wide"></div>
+          <div className="skeleton skeleton-pill skeleton-pill-wide"></div>
+        </div>
+
+        <section className="profile-products">
+          <div className="profile-products-grid skeleton-grid">
+            {Array.from({ length: 6 }).map((_, idx) => (
+              <div key={idx} className="skeleton-card-wrapper">
+                <div className="skeleton skeleton-card skeleton-card-small"></div>
+                <div className="skeleton skeleton-line skeleton-line-small"></div>
+                <div className="skeleton skeleton-line skeleton-line-smaller"></div>
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+}
 
 export default function ProfilePage({ params }) {
   const router = useRouter();
@@ -190,7 +228,7 @@ export default function ProfilePage({ params }) {
   const errorNow = error || profilesError?.message || productsError?.message || feedbackError?.message;
 
   if (loadingNow) {
-    return <div style={{ padding: "1.5rem" }}>Loading profile...</div>;
+    return <ProfileSkeleton />;
   }
 
   if (errorNow || !profile) {
@@ -259,7 +297,8 @@ export default function ProfilePage({ params }) {
                   {profile.ownerName ? <><br />{profile.ownerName}</> : null}
                 </p>
                 <p className="profile-location" id="profileLocation">
-                  {profile.location ? `Based in ${profile.location}` : "Based locally"}
+                  <img src="/icons/location.png" alt="" className="profile-location-icon" />
+                  <span>{profile.location || "Based locally"}</span>
                 </p>
                 <div className="profile-contact" id="profileContact">
                   {whatsappHref ? (
@@ -316,7 +355,7 @@ export default function ProfilePage({ params }) {
                       if (typeof window !== "undefined") {
                         localStorage.setItem("activeProductId", p.id);
                       }
-                      router.push(`/product?id=${p.id}`);
+                      router.push(`/product/${p.id}`);
                     }}
                     onEdit={() => router.push(`/edit-product/${p.id}`)}
                     onDelete={() => {

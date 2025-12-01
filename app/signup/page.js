@@ -23,6 +23,7 @@ const initialForm = {
 
 export default function SignupPage() {
   const states = [
+    'Nigeria',
     'Abuja',
     'Abia',
     'Adamawa',
@@ -305,9 +306,10 @@ export default function SignupPage() {
     }
 
     const trimmedLocation = (form.location || '').trim();
+    const isNigeria = form.state && form.state.toLowerCase() === 'nigeria';
     const combinedLocation = trimmedLocation
-      ? `${trimmedLocation}, ${form.state} State`
-      : `${form.state} State`;
+      ? isNigeria ? trimmedLocation : `${trimmedLocation}, ${form.state} State`
+      : isNigeria ? 'Nigeria' : `${form.state} State`;
 
     const payload = {
       ...form,

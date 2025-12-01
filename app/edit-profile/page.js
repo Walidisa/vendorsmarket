@@ -48,6 +48,7 @@ export default function EditProfilePage() {
   const { theme } = useThemeIcons("clothing");
 
   const states = [
+    'Nigeria',
     "Abuja",
     "Abia",
     "Adamawa",
@@ -365,9 +366,10 @@ export default function EditProfilePage() {
       return;
     }
     const trimmedLocation = (payload.location || "").trim();
+    const isNigeria = payload.state && payload.state.toLowerCase() === "nigeria";
     payload.location = trimmedLocation
-      ? `${trimmedLocation}, ${payload.state} State`
-      : `${payload.state} State`;
+      ? isNigeria ? trimmedLocation : `${trimmedLocation}, ${payload.state} State`
+      : isNigeria ? "Nigeria" : `${payload.state} State`;
 
     // include auth token so the API can verify ownership
     const { data: sessionData } = await supabase.auth.getSession();
