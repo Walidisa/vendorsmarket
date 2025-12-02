@@ -24,12 +24,23 @@ export default function LoginPage() {
     }
 
     try {
+      // Clear any stale session before attempting a fresh sign-in (helps in PWA/SW scenarios).
+      await supabase.auth.signOut({ scope: "global" }).catch(() => supabase.auth.signOut().catch(() => {}));
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
       });
       if (error || !data?.session) {
         throw new Error(error?.message || "Invalid credentials");
+      }
+
+      // Ensure the returned session is persisted.
+      if (data.session?.access_token && data.session?.refresh_token) {
+        await supabase.auth.setSession({
+          access_token: data.session.access_token,
+          refresh_token: data.session.refresh_token
+        }).catch(() => {});
       }
 
       // Resolve vendor by session user_id
