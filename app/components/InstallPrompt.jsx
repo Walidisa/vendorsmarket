@@ -6,7 +6,7 @@ export default function InstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [visible, setVisible] = useState(false);
   const [colors, setColors] = useState({
-    primary: "#0d3b66",
+    primary: "#4b5563",
     accent: "#c58a64"
   });
 
@@ -28,9 +28,9 @@ export default function InstallPrompt() {
   useEffect(() => {
     const handler = (event) => {
       event.preventDefault();
+      refreshColors();
       setDeferredPrompt(event);
       setVisible(true);
-      refreshColors();
     };
     refreshColors();
     const onThemeChange = () => refreshColors();

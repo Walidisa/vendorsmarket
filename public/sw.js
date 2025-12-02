@@ -1,6 +1,5 @@
-const CACHE_NAME = "vm-static-v3";
+const CACHE_NAME = "vm-static-v6";
 const APP_SHELL = [
-  "/",
   "/offline.html",
   "/icons/icon-192x192.png",
   "/icons/icon-512x512.png",
@@ -51,7 +50,9 @@ self.addEventListener("fetch", (event) => {
   const isManifest = url.pathname === "/manifest.webmanifest";
 
   // Always bypass cache for write operations or API mutations.
-  if (request.method !== "GET" || (isApi && request.method !== "GET")) return;
+  if (request.method !== "GET") return;
+  // Never cache API calls; let them hit the network so auth/session stays fresh.
+  if (isApi) return;
 
   if (isManifest) {
     // Always fetch manifest fresh so theme_color updates are picked up.
@@ -62,14 +63,11 @@ self.addEventListener("fetch", (event) => {
   if (request.mode === "navigate") {
     event.respondWith(
       (async () => {
-        const cache = await caches.open(CACHE_NAME);
         try {
           const network = await fetch(request);
-          cache.put(request, network.clone());
           return network;
         } catch (err) {
-          const cached = await cache.match(request);
-          if (cached) return cached;
+          const cache = await caches.open(CACHE_NAME);
           const offline = await cache.match("/offline.html");
           if (offline) return offline;
           throw err;
