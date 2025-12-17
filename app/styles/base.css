@@ -12,8 +12,8 @@
   --radius-card: 20px;
   --shadow-card: 0 6px 20px rgba(0,0,0,0.06);
 
-  /* Wise-style typography system */
-  --font-display: "Wise Sans", "Inter", system-ui, -apple-system, sans-serif;
+  /* Typography: Inter self-hosted via fonts.css */
+  --font-display: "Inter", system-ui, -apple-system, sans-serif;
   --font-body: "Inter", system-ui, -apple-system, sans-serif;
 }
 
@@ -24,6 +24,7 @@ html {
 
 body {
   overflow-x: hidden;
+  width: 100%;
   max-width: 480px;
   margin-left: auto;
   margin-right: auto;
@@ -33,6 +34,13 @@ body {
 
 * {
   font-family: inherit;
+}
+
+/* Use border-box sizing to keep padding from causing horizontal overflow */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 h1, h2, h3 {
@@ -54,12 +62,17 @@ body, p, input, button, textarea, li {
   margin: 0 auto;
 }
 
+.page.auth-page {
+  padding-top: 16px; /* keep auth views closer to top while respecting header spacing */
+}
+
 .auth-page {
   display: flex;
   flex-direction: column;
   gap: 18px;
   padding-top: 16px;
   justify-content: flex-start;
+  align-items: stretch;
 }
 
 /* HERO */
@@ -260,6 +273,12 @@ body, p, input, button, textarea, li {
   scroll-snap-type: x mandatory;
 }
 
+.most-rated-slider {
+  grid-auto-columns: 170px;
+  gap: 14px;
+  padding: 8px 4px;
+}
+
 
 .landing-featured {
   background: #fff;
@@ -305,7 +324,7 @@ body, p, input, button, textarea, li {
 
 .landing-featured .vendor-name {
   margin: 0;
-  color: var(--color-text);
+  color: var(--color-text); /* ensure link inherits brand text color */
   font-size: 0.95rem;
   line-height: 1.2;
   max-height: 2.4em; /* fallback clamp for non-WebKit */
@@ -319,6 +338,7 @@ body, p, input, button, textarea, li {
 .landing-featured .vendor-username {
   margin: 2px 0 0;
   color: var(--color-muted);
+  text-decoration: none;
 }
 
 .landing-slider .product-card {
@@ -347,14 +367,20 @@ body, p, input, button, textarea, li {
   gap: 10px;
   align-items: center;
   width: 100%;
+  max-width: 420px; /* match form/button widths used elsewhere */
 }
 
 .page-hero .btn-primary,
 .page-hero .btn-secondary {
-  padding: 11px 24px;
-  font-size: 1.1rem;
-  border-radius: var(--radius-pill);
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0.9rem 1.2rem; /* align with global button spacing */
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 999px; /* enforce pill shape */
   width: 100%;
+  max-width: 340px;
   align-self: center;
   text-align: center;
 }
@@ -405,4 +431,123 @@ button:active {
   font-weight: 800;
   font-size: 1.25rem;
   letter-spacing: -0.01em;
+}
+
+/* ---------------------------------------------------------
+   RESPONSIVE ENHANCEMENTS (mobile-first)
+--------------------------------------------------------- */
+@media (max-width: 479px) {
+  /* Force single-column flow on very small screens */
+  .page,
+  body {
+    max-width: 100%;
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+}
+
+@media (min-width: 480px) {
+  body {
+    max-width: 640px;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+  .page {
+    max-width: 640px;
+  }
+  .hero-shell {
+    max-width: 720px;
+  }
+}
+
+@media (min-width: 768px) {
+  body {
+    max-width: 960px;
+    padding-left: 28px;
+    padding-right: 28px;
+    padding-top: 0; /* move offset to .page to avoid shifting body */
+    font-size: 16px;
+  }
+  .page {
+    max-width: 960px;
+    padding-top: 76px; /* offset content for top nav on larger screens */
+  }
+  .page.add-product-page {
+    padding-top: 20px !important; /* keep desktop add/edit product pages comfortably spaced */
+  }
+  .page.auth-page {
+    padding-top: 20px !important; /* consistent top spacing for desktop auth */
+  }
+  .auth-page {
+    padding-top: 20px; /* ensure inner auth stack has visible breathing room */
+  }
+  /* Center auth layout on larger screens and align header with card */
+  .auth-page {
+    align-items: center;
+  }
+  .auth-page .add-product-header,
+  .auth-page .auth-card {
+    width: 100%;
+    max-width: 520px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .auth-page .add-product-header {
+    justify-content: flex-start;
+  }
+  /* Remove body top padding for themed layouts; keep offset on .page */
+  body.theme-clothing,
+  body.theme-food {
+    padding-top: 0;
+  }
+  body.theme-clothing .page,
+  body.theme-food .page {
+    padding-top: 0;
+  }
+  .hero-shell {
+    max-width: 960px;
+    border-radius: 0 0 48px 48px;
+    padding: 22px 24px 30px;
+  }
+}
+
+@media (min-width: 1024px) {
+  body {
+    max-width: 1180px;
+    padding-left: 32px;
+    padding-right: 32px;
+    font-size: 17px;
+  }
+  .page {
+    max-width: 1180px;
+    padding-top: 80px;
+  }
+  body.theme-clothing .page,
+  body.theme-food .page {
+    padding-top: 0;
+  }
+  .page-hero h1 {
+    font-size: 2.8rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  body {
+    max-width: 1320px;
+    padding-left: 40px;
+    padding-right: 40px;
+    font-size: 18px;
+  }
+  .page {
+    max-width: 1280px;
+    padding-top: 88px;
+  }
+  body.theme-clothing .page,
+  body.theme-food .page {
+    padding-top: 0;
+  }
+  .hero-shell {
+    max-width: 1280px;
+    border-radius: 0 0 56px 56px;
+  }
 }

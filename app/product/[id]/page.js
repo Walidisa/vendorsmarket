@@ -160,16 +160,40 @@ export default function ProductPage() {
     if (!product) return;
     const ratedKey = `rated_${product.id}`;
     localStorage.removeItem(ratedKey);
-    // Optimistically adjust counts
-    const currentValue = Number(ratingValue) || 0;
-    const currentCount = Number(ratingCount) || 0;
     const removeVal = Number(storedRating || selectedRating || 0);
-    if (currentCount > 1) {
-      const total = currentValue * currentCount - removeVal;
-      const newCount = currentCount - 1;
-      setRatingValue(total / newCount);
-      setRatingCount(newCount);
+
+    try {
+      const res = await fetch("/api/ratings/product", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ product_id: product.id, rating: removeVal }),
+      });
+      const payload = await res.json().catch(() => null);
+      if (res.ok && payload && typeof payload.rating_value === "number" && typeof payload.rating_count === "number") {
+        setRatingValue(payload.rating_value);
+        setRatingCount(payload.rating_count);
+      } else {
+        // optimistic fallback
+        const currentValue = Number(ratingValue) || 0;
+        const currentCount = Number(ratingCount) || 0;
+        if (currentCount > 0) {
+          const total = currentValue * currentCount - removeVal;
+          const newCount = Math.max(0, currentCount - 1);
+          setRatingCount(newCount);
+          setRatingValue(newCount > 0 ? total / newCount : 0);
+        }
+      }
+    } catch (_) {
+      const currentValue = Number(ratingValue) || 0;
+      const currentCount = Number(ratingCount) || 0;
+      if (currentCount > 0) {
+        const total = currentValue * currentCount - removeVal;
+        const newCount = Math.max(0, currentCount - 1);
+        setRatingCount(newCount);
+        setRatingValue(newCount > 0 ? total / newCount : 0);
+      }
     }
+
     setToast("Your rating was removed");
     setTimeout(() => setToast(""), 1800);
     setRatingModalOpen(false);
@@ -263,14 +287,16 @@ export default function ProductPage() {
             </div>
           )}
 
-          <h1 id="productTitle" style={{ margin: "12px 0 8px" }}>{product.name}</h1>
+          <h1 id="productTitle" className="product-detail-title" style={{ margin: "12px 0 8px" }}>
+            {product.name}
+          </h1>
 
           <div className="product-detail-meta">
             <p className="price">&#8358;{Number(product.price || 0).toLocaleString()}</p>
           </div>
 
           {typeof ratingValue === "number" && typeof ratingCount === "number" ? (
-            <p className="rating" style={{ marginTop: "4px" }}>
+            <p className="rating product-detail-rating" style={{ marginTop: "4px" }}>
               &#9733; <span id="productRatingValue">{ratingValue.toFixed(1)}</span> (
               <span id="productRatingCount">{ratingCount}</span>){" "}
               <button
@@ -480,5 +506,3 @@ function ProductSkeleton() {
     </div>
   );
 }
-
-

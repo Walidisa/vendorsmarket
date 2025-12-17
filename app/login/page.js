@@ -71,7 +71,6 @@ export default function LoginPage() {
             data-brown="/icons/back-orange.png"
           />
         </button>
-        <h1 className="add-product-title">Log In</h1>
       </div>
       <section className="auth-card">
         <form className="auth-form" data-react-login="1" onSubmit={handleSubmit}>

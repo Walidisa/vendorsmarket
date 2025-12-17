@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
+import { useSWRConfig } from "swr";
 import { useSessionVendor } from "../../lib/useSessionVendor";
 import { uploadImage } from "../../lib/uploadImage";
 import { useThemeIcons } from "../../lib/useThemeIcons";
@@ -44,6 +45,7 @@ const sanitizeUsername = (val) => (val || "").replace(/\s+/g, "").toLowerCase().
 
 export default function EditProfilePage() {
   const router = useRouter();
+  const { mutate } = useSWRConfig();
   const { vendor, sessionUserId, loading } = useSessionVendor();
   const { theme } = useThemeIcons("clothing");
 
@@ -118,6 +120,7 @@ export default function EditProfilePage() {
   const [originalProfilePic, setOriginalProfilePic] = useState("");
   const [originalBannerPic, setOriginalBannerPic] = useState("");
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteSuccessOpen, setDeleteSuccessOpen] = useState(false);
   const [stateError, setStateError] = useState(false);
   const prevProfileUrl = useRef(null);
   const prevBannerUrl = useRef(null);
@@ -396,9 +399,14 @@ export default function EditProfilePage() {
 
     const payloadRes = await res.json().catch(() => ({}));
     const nextUsername = payloadRes.username || form.username || vendor.username;
+    await Promise.all([
+      mutate("/api/profiles", undefined, { revalidate: true }),
+      mutate("/api/products", undefined, { revalidate: true }),
+    ]);
     setStatus("Saved!");
     setTimeout(() => {
       router.replace(`/profile/${nextUsername}`);
+      setTimeout(() => router.refresh(), 80);
     }, 600);
   };
 
@@ -694,7 +702,12 @@ export default function EditProfilePage() {
                 className="rating-confirm"
                 style={{ background: "#d6453d" }}
                 onClick={async () => {
-                  if (!vendor?.username) return;
+                  const username = (vendor?.username || "").trim();
+                  if (!username) {
+                    setStatus("No username found for this account.");
+                    setDeleteModalOpen(false);
+                    return;
+                  }
                   setStatus("Deleting account...");
                   try {
                     // Refresh session to avoid stale token
@@ -708,7 +721,7 @@ export default function EditProfilePage() {
                       setDeleteModalOpen(false);
                       return;
                     }
-                    const res = await fetch(`/api/vendors/${vendor.username}`, {
+                    const res = await fetch(`/api/vendors/${encodeURIComponent(username)}`, {
                       method: "DELETE",
                       headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
                     });
@@ -720,7 +733,7 @@ export default function EditProfilePage() {
                         return;
                       }
                       const body = await res.json().catch(() => ({}));
-                      setStatus(body.error || "Delete failed");
+                      setStatus(body.error || res.statusText || "Delete failed");
                       setDeleteModalOpen(false);
                       return;
                     }
@@ -729,9 +742,15 @@ export default function EditProfilePage() {
                       Object.keys(localStorage).forEach((k) => {
                         if (k.toLowerCase().includes("supabase")) localStorage.removeItem(k);
                       });
-                      window.location.href = "/homepage";
+                      setDeleteSuccessOpen(true);
+                      setTimeout(() => {
+                        window.location.href = "/homepage";
+                      }, 1200);
                     } else {
-                      router.replace("/homepage");
+                      setDeleteSuccessOpen(true);
+                      setTimeout(() => {
+                        router.replace("/homepage");
+                      }, 1200);
                     }
                   } catch (err) {
                     setStatus(err.message || "Delete failed");
@@ -782,8 +801,28 @@ export default function EditProfilePage() {
           }}
         />
       )}
+
+      {deleteSuccessOpen && (
+        <div
+          className="rating-overlay is-visible"
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 1100,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: "rgba(0,0,0,0.45)",
+          }}
+        >
+          <div className="rating-dialog" style={{ maxWidth: "300px", textAlign: "center" }}>
+            <h2 style={{ marginBottom: "6px" }}>Account deleted</h2>
+            <p className="rating-dialog-sub" style={{ marginBottom: "14px" }}>
+              Taking you back to the homepage…
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
-
-

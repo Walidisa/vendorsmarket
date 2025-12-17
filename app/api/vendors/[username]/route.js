@@ -54,8 +54,17 @@ const hashPassword = (password) => {
   return `${salt}:${derived}`;
 };
 
-export async function PUT(request, { params }) {
-  const usernameParam = params?.username || '';
+const getUsernameParam = async (paramsOrPromise) => {
+  try {
+    const p = await paramsOrPromise;
+    return p?.username || '';
+  } catch {
+    return '';
+  }
+};
+
+export async function PUT(request, context) {
+  const usernameParam = await getUsernameParam(context?.params);
   const body = await request.json().catch(() => null);
   if (!body || !usernameParam) {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
@@ -226,8 +235,8 @@ export async function PUT(request, { params }) {
   return NextResponse.json({ updated: true, username: updates.username || usernameParam });
 }
 
-export async function DELETE(request, { params }) {
-  const usernameParam = params?.username || '';
+export async function DELETE(request, context) {
+  const usernameParam = await getUsernameParam(context?.params);
   if (!usernameParam) {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
   }

@@ -1,8 +1,34 @@
 import { NextResponse } from 'next/server';
 import { supabaseServer } from '../../../../lib/supabaseServer.js';
 
-export async function DELETE(_request, { params }) {
-  const { id } = params || {};
+const getParams = async (paramsOrPromise) => {
+  try {
+    return await paramsOrPromise;
+  } catch {
+    return {};
+  }
+};
+
+const getProductId = (request, params, body) => {
+  if (params?.id) return params.id;
+  const bodyId = body?.id || body?.product_id || body?.productId;
+  if (bodyId) return bodyId;
+  try {
+    const { searchParams, pathname } = new URL(request.url);
+    const queryId = searchParams.get('id');
+    if (queryId) return queryId;
+    const parts = pathname.split('/').filter(Boolean);
+    const last = parts[parts.length - 1];
+    if (last && last !== 'products') return last;
+  } catch (_) {
+    // ignore parsing issues
+  }
+  return null;
+};
+
+export async function DELETE(request, context) {
+  const params = await getParams(context?.params);
+  const id = getProductId(request, params);
   if (!id) {
     return NextResponse.json({ error: 'Product id is required' }, { status: 400 });
   }
@@ -15,13 +41,14 @@ export async function DELETE(_request, { params }) {
   return NextResponse.json({ deleted: true, id });
 }
 
-export async function PUT(request, { params }) {
-  const { id } = params || {};
+export async function PUT(request, context) {
+  const body = await request.json().catch(() => null);
+  const params = await getParams(context?.params);
+  const id = getProductId(request, params, body);
   if (!id) {
     return NextResponse.json({ error: 'Product id is required' }, { status: 400 });
   }
 
-  const body = await request.json().catch(() => null);
   if (!body) {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }

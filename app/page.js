@@ -202,7 +202,7 @@ export default function Page() {
               <div key={sub} style={{ marginBottom: 24 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
                 </div>
-                <div className="landing-slider subcategory-row-scroll">
+                <div className="landing-slider most-rated-slider">
                   {products
                     .sort((a, b) => {
                       const ra = Number(a.rating_value || a.ratingValue || 0);

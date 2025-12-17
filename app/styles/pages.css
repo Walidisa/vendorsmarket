@@ -53,14 +53,16 @@ body.scrolled .hero-image {
 
 .subcategory-page-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr)); /* match profile grid behavior */
-  gap: 0.5rem;
-  justify-items: center;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  grid-auto-flow: row dense;
+  gap: 0.35rem;
+  justify-items: start;
   align-items: start;
+  justify-content: start; /* avoid overstretching when few cards */
 }
 .subcategory-page-grid .product-card {
   width: 100%;
-  max-width: 100%;
+  max-width: 200px; /* cap width so cards don’t stretch too wide */
 }
 
 /* PRODUCT DETAIL PAGE */
@@ -338,21 +340,26 @@ body.scrolled .hero-image {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 10px 12px;
-  border-radius: var(--radius-pill);
+  padding: 0.9rem 1.2rem;          /* match global button spacing */
+  border-radius: 999px;             /* enforce pill shape */
   background: #e5e7eb;
   color: #1f2937;
   border: 1px solid #e5e7eb;
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 1rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12); /* consistent soft lift */
+  transition: background 0.15s ease-out, transform 0.12s ease-out, box-shadow 0.15s ease-out;
 }
 
 .product-contact-actions .contact-btn:hover {
   background: #d1d5db;
   border-color: #d1d5db;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.14);
 }
 
 .product-contact-actions .contact-btn:active {
   transform: scale(0.98);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
 }
 
 .product-contact-actions .contact-icon {
@@ -601,11 +608,20 @@ body.scrolled .hero-image {
   overflow: hidden;
 }
 
+.profile-banner.has-banner {
+  max-height: 260px;          /* prevent overly tall banners while giving more height */
+  aspect-ratio: 16 / 9;       /* keep a balanced rectangle */
+}
+
+.profile-banner.no-banner {
+  display: none;              /* collapse space when no banner */
+}
+
 .profile-banner-image {
   width: 100%;
   height: auto;
   display: block;
-  object-fit: contain;
+  object-fit: cover;          /* keep full image visible without cropping */
 }
 
 /* Info row under banner */
@@ -818,9 +834,9 @@ body.scrolled .hero-image {
 }
 
 .product-skeleton-hero {
-  width: 100vw;
-  margin-left: calc(50% - 50vw);
-  margin-right: calc(50% - 50vw);
+  width: 100%;
+  margin-left: 0;
+  margin-right: 0;
   height: 320px;
   margin-top: 46px;
   margin-bottom: 14px;
@@ -1016,8 +1032,10 @@ body.scrolled .hero-image {
 }
 
 .category-skeleton-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); /* mirror live grid sizing */
+  grid-auto-flow: row dense;
+  justify-content: start;
+  gap: 0.35rem;
   width: 100%;
 }
 
@@ -1027,6 +1045,7 @@ body.scrolled .hero-image {
 
 .category-skeleton-grid .skeleton-card-wrapper {
   width: 100%;
+  max-width: 200px; /* keep skeleton cards compact on wide screens */
 }
 
 .skeleton-info-row {
@@ -1087,9 +1106,38 @@ body.scrolled .hero-image {
 }
 #profileProductsGrid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.5rem;
-  justify-items: center;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 150px)); /* tighter max to fit more cards */
+  grid-auto-flow: row dense;
+  gap: 0.1rem;
+  justify-items: start;
+  justify-content: start; /* avoid stretching when few items */
+}
+
+@media (min-width: 768px) {
+  .profile-banner.has-banner {
+    max-height: 300px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .profile-banner.has-banner {
+    max-height: 260px; /* slightly shorter on desktop */
+  }
+  #profileProductsGrid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 170px));
+    gap: 0.14rem;
+    justify-items: start;
+  }
+}
+
+@media (min-width: 1280px) {
+  .profile-banner.has-banner {
+    max-height: 280px; /* keep desktop banners compact on wide screens */
+  }
+  #profileProductsGrid {
+    grid-template-columns: repeat(auto-fit, minmax(130px, 180px));
+    gap: 0.16rem;
+  }
 }
 
 /* TABS */
@@ -1354,6 +1402,10 @@ body.scrolled .hero-image {
   align-items: center;
   gap: 0.6rem;
   margin-bottom: 0.5rem;
+  width: 100%;
+  max-width: 520px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .add-product-title {
@@ -1364,8 +1416,10 @@ body.scrolled .hero-image {
 .add-product-form {
   display: grid;
   gap: 0.75rem;
-  max-width: 480px;
   width: 100%;
+  max-width: 520px;        /* align form width with header/back button */
+  margin-left: auto;
+  margin-right: auto;      /* center the fields */
   box-sizing: border-box;
 }
 
@@ -1688,4 +1742,94 @@ body.scrolled .hero-image {
 
 .btn-secondary:hover {
   background: #e5e7eb;
+}
+
+/* ---------------------------------------------------------
+   DESKTOP ENHANCEMENTS (presentation only)
+--------------------------------------------------------- */
+@media (max-width: 767px) {
+  .product-contact-actions {
+    position: sticky;
+    bottom: 78px; /* keep above bottom nav */
+    background: transparent;
+    padding: 10px 0;
+    z-index: 5;
+    box-shadow: none; /* avoid heavy shadow wrap on mobile */
+  }
+  .product-contact-actions .contact-btn {
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08); /* lighter shadow on mobile */
+  }
+}
+
+@media (min-width: 768px) {
+  .product-detail-hero {
+    border-radius: 18px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .product-detail-main {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+    grid-template-areas:
+      "hero title"
+      "hero meta"
+      "hero rating"
+      "hero seller"
+      "hero actions"
+      "hero description"
+      "hero similar";
+    column-gap: 24px;
+    align-items: start;
+  }
+  .product-detail-hero {
+    grid-area: hero;
+    height: 440px;
+    border-radius: 24px;
+  }
+  .product-detail-title {
+    grid-area: title;
+  }
+  .product-detail-meta {
+    grid-area: meta;
+    position: sticky;
+    top: 100px;
+  }
+  .product-detail-rating {
+    grid-area: rating;
+  }
+  .product-detail-seller {
+    grid-area: seller;
+  }
+  .product-contact-actions {
+    grid-area: actions;
+    position: sticky;
+    top: 168px;
+    align-self: start;
+  }
+  .product-about {
+    grid-area: description;
+  }
+  .product-similar-section {
+    grid-area: similar;
+  }
+  /* Desktop: place dots below the image container */
+  .product-detail-dots {
+    display: none;
+  }
+  .product-detail-dots-below {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 12px 0 0;
+    width: 100%;
+    max-width: none;
+    grid-column: 1 / 2;
+  }
+}
+
+@media (min-width: 1280px) {
+  .product-detail-hero {
+    height: 520px;
+  }
 }

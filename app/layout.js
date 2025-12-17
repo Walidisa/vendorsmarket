@@ -3,6 +3,7 @@ import "./styles/base.css";
 import "./styles/components.css";
 import "./styles/pages.css";
 import "./styles/themes.css";
+import { Inter } from "next/font/google";
 import Footer from "./components/Footer";
 import RouteLoader from "./components/RouteLoader";
 import PwaProvider from "./components/PwaProvider";
@@ -32,10 +33,12 @@ export const viewport = {
   themeColor: "#ffffff"
 };
 
+const inter = Inter({ subsets: ["latin"], display: "swap" });
+
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body>
+      <body className={inter.className}>
         <PwaProvider />
         <InstallPrompt />
         <RouteLoader />

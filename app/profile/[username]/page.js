@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { use, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../../lib/supabaseClient";
@@ -53,7 +53,8 @@ function ProfileSkeleton() {
 
 export default function ProfilePage({ params }) {
   const router = useRouter();
-  const usernameSlug = (params?.username || "").toLowerCase();
+  const resolvedParams = use(params);
+  const usernameSlug = (resolvedParams?.username || "").toLowerCase();
 
   const [profile, setProfile] = useState(null);
   const [ownedProducts, setOwnedProducts] = useState([]);
@@ -91,12 +92,21 @@ export default function ProfilePage({ params }) {
         const s = slugify(p.username || p.id || "");
         return u === usernameSlug || s === usernameSlug;
       }) || null;
-    setProfile(foundProfile || null);
+    setProfile((prev) => {
+      if (!foundProfile && !prev) return prev;
+      if (foundProfile && prev) {
+        const sameId = prev.id && foundProfile.id && prev.id === foundProfile.id;
+        const sameUsername =
+          (prev.username || "").toLowerCase() === (foundProfile.username || "").toLowerCase();
+        if (sameId || sameUsername) return prev;
+      }
+      return foundProfile || null;
+    });
   }, [profiles, usernameSlug]);
 
   useEffect(() => {
     if (!profile) {
-      setOwnedProducts([]);
+      setOwnedProducts((prev) => (prev.length ? [] : prev));
       return;
     }
     const owned = allProducts.filter((p) => {
@@ -104,12 +114,17 @@ export default function ProfilePage({ params }) {
       if (profile.userId && ownerId) return ownerId === profile.userId;
       return slugify(p.vendorUsername || p.vendor || "") === slugify(profile.username || "");
     });
-    setOwnedProducts(owned);
+    setOwnedProducts((prev) => {
+      if (prev.length === owned.length && prev.every((p, i) => p.id === owned[i]?.id)) {
+        return prev;
+      }
+      return owned;
+    });
   }, [allProducts, profile]);
 
   useEffect(() => {
     if (!profile) {
-      setFeedbackList([]);
+      setFeedbackList((prev) => (prev.length ? [] : prev));
       return;
     }
     const vendorFeedback = feedbackData.filter((f) => {
@@ -117,7 +132,11 @@ export default function ProfilePage({ params }) {
       if (profile.userId && sellerId) return sellerId === profile.userId;
       return slugify(f.vendorUsername || f.sellerName || "") === slugify(profile.username || "");
     });
-    setFeedbackList(vendorFeedback);
+    const nextSerialized = JSON.stringify(vendorFeedback);
+    setFeedbackList((prev) => {
+      if (JSON.stringify(prev) === nextSerialized) return prev;
+      return vendorFeedback;
+    });
   }, [feedbackData, profile]);
 
   const avgRating = useMemo(() => {
@@ -152,17 +171,30 @@ export default function ProfilePage({ params }) {
     slugify(sessionVendor.username) === slugify(profile.username);
 
   const handleLogout = async () => {
+    const clearAuthStorage = () => {
+      if (typeof window === "undefined") return;
+      const removeKeys = (storage) => {
+        Object.keys(storage).forEach((k) => {
+          const lower = k.toLowerCase();
+          if (lower.includes("supabase") || lower.startsWith("sb-")) {
+            storage.removeItem(k);
+          }
+        });
+      };
+      removeKeys(localStorage);
+      removeKeys(sessionStorage);
+    };
+
     try {
-      await supabase.auth.signOut({ scope: "global" });
+      // Best-effort local sign-out first to avoid network failures blocking UI
+      await supabase.auth.signOut({ scope: "local" });
     } catch (_) {
       await supabase.auth.signOut().catch(() => {});
+    } finally {
+      clearAuthStorage();
     }
+
     if (typeof window !== "undefined") {
-      // Clear any cached Supabase tokens
-      Object.keys(localStorage).forEach((k) => {
-        if (k.toLowerCase().includes("supabase")) localStorage.removeItem(k);
-      });
-      // Hard reload to ensure UI reflects the cleared session
       window.location.href = "/homepage";
     } else {
       router.replace("/homepage");
@@ -251,7 +283,7 @@ export default function ProfilePage({ params }) {
       <div className="page-transition">
         <div className="page">
           <section className="profile-header">
-            <div className="profile-banner">
+            <div className={`profile-banner ${bannerSrc ? "has-banner" : "no-banner"}`}>
               {bannerSrc ? (
                 <img
                   src={bannerSrc}
@@ -550,10 +582,6 @@ export default function ProfilePage({ params }) {
     </>
   );
 }
-
-
-
-
 
 
 

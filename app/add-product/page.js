@@ -6,6 +6,7 @@ import { uploadImage } from '../../lib/uploadImage';
 import { supabase } from '../../lib/supabaseClient';
 import { useThemeIcons } from '../../lib/useThemeIcons';
 import dynamic from 'next/dynamic';
+import { ProductFormSkeleton } from '../components/ProductFormSkeleton';
 
 const mainCategories = [
   { value: 'food', label: 'Food, Drinks, Snacks & Utensils' },
@@ -289,7 +290,7 @@ export default function AddProductPage() {
   };
 
   if (loading) {
-    return <div style={{ padding: '1.5rem' }}>Loading...</div>;
+    return <ProductFormSkeleton />;
   }
 
   if (error) {
@@ -582,6 +583,5 @@ export default function AddProductPage() {
     </div>
   );
 }
-
 
 

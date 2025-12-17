@@ -3,9 +3,11 @@
 import { useEffect, useMemo, useState, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter, useParams } from 'next/navigation';
+import { useSWRConfig } from 'swr';
 import { uploadImage } from '../../../lib/uploadImage';
 import { supabase } from '../../../lib/supabaseClient';
 import { STORAGE_BUCKET } from '../../../lib/storage';
+import { ProductFormSkeleton } from '../../components/ProductFormSkeleton';
 
 const extractStorageKey = (url) => {
   if (!url) return null;
@@ -58,8 +60,10 @@ const subCategories = {
 
 export default function EditProductPage() {
   const params = useParams();
-  const productId = params?.id;
+  const rawProductId = params?.id;
+  const productId = Array.isArray(rawProductId) ? rawProductId[0] : rawProductId;
   const router = useRouter();
+  const { mutate } = useSWRConfig();
 
   const [form, setForm] = useState({
     name: '',
@@ -244,6 +248,7 @@ export default function EditProductPage() {
     }
 
     const payload = {
+      id: productId,
       name: form.name,
       price: Number(form.price) || 0,
       main_category: form.main_category,
@@ -267,11 +272,19 @@ export default function EditProductPage() {
       return;
     }
 
-    router.replace(`/profile/${sessionVendor.username}`);
+    await Promise.all([
+      mutate('/api/products', undefined, { revalidate: true }),
+      mutate('/api/profiles', undefined, { revalidate: true }),
+    ]);
+
+    const dest = `/profile/${sessionVendor.username}`;
+    router.replace(dest);
+    // Ensure fresh data after navigation
+    setTimeout(() => router.refresh(), 80);
   };
 
   if (loading) {
-    return <div style={{ padding: '1.5rem' }}>Loading…</div>;
+    return <ProductFormSkeleton />;
   }
 
   if (error) {

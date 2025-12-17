@@ -7,7 +7,7 @@
   grid-template-columns: 1fr;
   gap: 1.2rem;
   margin-top: 25px;
-  justify-items: center;
+  justify-items: stretch; /* let cards fill available width */
 }
 
 .card.theme-food,
@@ -157,12 +157,19 @@
   grid-template-columns: 1fr;
   gap: 1.2rem;
   margin-top: 25px;
+  justify-items: stretch; /* ensure consistent fill */
+}
+
+/* Stretch cards inside the info grid to avoid narrow columns */
+.card-grid .card {
+  width: 100%;
+  max-width: none;
 }
 
 .card {
   background: var(--card-bg);
-  padding: 1.1rem 1.25rem 1.1rem;
-  border-radius: 18px;
+  padding: 1.2rem;
+  border-radius: 16px;
   border: 1px solid rgba(0,0,0,0.06);
   box-shadow: 0 4px 14px rgba(0,0,0,0.05);
   position: relative;
@@ -192,22 +199,36 @@
 /* PRODUCT GRID */
 .product-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 1.2rem;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 200px));
+  grid-auto-flow: row dense;
+  gap: 0.35rem;
+  justify-content: start;
+  justify-items: start;
   margin-top: 10px;
 }
 
 .search-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1.2rem;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 170px));
+  grid-auto-flow: row dense;
+  gap: 0.18rem;
+  justify-items: start;
+  justify-content: start;
   margin-top: 10px;
+}
+
+.search-grid .product-card {
+  width: 100%;
+  max-width: 170px; /* keep cards from stretching too wide */
 }
 
 .vendor-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 0.8rem;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  grid-auto-flow: row dense;
+  gap: 0.2rem;
+  justify-items: center;
+  justify-content: center;
   margin-top: 10px;
 }
 
@@ -218,6 +239,19 @@
   justify-content: flex-start;
   text-align: center;
   padding: 12px;
+  color: var(--color-text);      /* inherit brand text color */
+  text-decoration: none; /* keep link cards unstyled */
+  width: 100%;
+  max-width: none;
+}
+
+.vendor-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden; /* ensure truncation */
 }
 
 .vendor-avatar-wrapper {
@@ -239,12 +273,24 @@
   margin: 0;
   font-size: 1rem;
   line-height: 1.2;
+  color: var(--color-text); /* inherit text color, avoid blue */
+  text-decoration: none;
+  width: 100%;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .vendor-info .vendor-username {
   margin: 4px 0 0;
   color: var(--color-muted);
   font-size: 0.9rem;
+  width: 100%;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* RATING / CONFIRM MODALS (delete product, logout) */
@@ -283,7 +329,7 @@
   box-shadow: none;
   border: none;
   overflow: hidden;
-  max-width: 160px; /* allow a bit more width so vendor names fit */
+  max-width: 200px; /* align with category card sizing */
   display: flex;
   flex-direction: column;
   text-decoration: none;
@@ -292,10 +338,18 @@
 
 /* Profile page product card variant: larger, but still 3 per row */
 #profileProductsGrid .product-card {
-  max-width: none;              /* let grid cell control width */
-  width: 100%;                  /* fill its grid column */
+  max-width: 150px;             /* allow stretch while keeping a sensible cap */
+  width: 100%;                  /* fill its grid column up to the cap */
+  justify-self: start;
   border-radius: 18px;
   position: relative;           /* for positioning edit/delete controls */
+}
+
+@media (max-width: 479px) {
+  #profileProductsGrid .product-card {
+    max-width: none;            /* let cards stretch fully on small screens */
+    min-width: 0;               /* allow full flexibility within 3-up grid */
+  }
 }
 
 #profileProductsGrid .add-product-slot {
@@ -490,11 +544,16 @@
 /* Auth card wrapper */
 .auth-card {
   background: var(--card-bg);
-  border-radius: var(--radius-card);
-  box-shadow: var(--shadow-card);
-  border: 1px solid rgba(0,0,0,0.08);
-  padding: 1.4rem 1.3rem 1.6rem;
-  margin-top: 90px;
+  border-radius: 24px; /* pronounced rounding to match pill styling */
+  box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+  border: 1px solid rgba(0,0,0,0.06);
+  padding: 1.6rem 1.4rem 1.8rem;
+  margin-top: 40px;
+  width: 100%;
+  max-width: 520px;
+  overflow: hidden; /* keep rounded corners visible */
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* Form layout */
@@ -903,7 +962,8 @@
 .feedback-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.28);
+  background: rgba(0,0,0,0.45); /* consistent dimmer with other overlays */
+  backdrop-filter: blur(1px);
 }
 
 /* Modal card */
@@ -913,19 +973,20 @@
   width: 100%;
   max-width: 420px;
   margin: 0 16px;                  /* safe mobile margin */
-  background: var(--card-bg);
-  border-radius: var(--radius-card);
-  box-shadow: var(--shadow-card);
-  padding: 1.2rem 1.1rem 1.3rem;
+  background: #ffffff;             /* solid card surface */
+  border-radius: 24px;             /* pronounced rounding */
+  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+  padding: 1.3rem 1.25rem 1.4rem;
+  overflow: hidden;                /* keep corners rounded */
 
-  opacity: 0;
-  transform: translateY(16px) scale(0.94);   /* start lower & smaller, like from button */
-  transform-origin: bottom center;           /* animate up from bottom/footer area */
-  transition: opacity 0.22s ease-out, transform 0.22s ease-out;
+  opacity: 1;                                /* keep card fully opaque */
+  transform: translateY(10px) scale(0.985);  /* subtle lift on open */
+  transform-origin: bottom center;
+  transition: transform 0.2s ease-out;
 }
 
 .feedback-overlay.is-open .feedback-modal {
-  opacity: 1;
   transform: translateY(0) scale(1);
 }
 
@@ -1049,3 +1110,207 @@
   gap: 8px;
 }
 
+/* ---------------------------------------------------------
+   RESPONSIVE LAYOUT FOR TABLET + DESKTOP (presentation only)
+--------------------------------------------------------- */
+@media (max-width: 479px) {
+  .product-grid {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    grid-auto-flow: row dense;
+    gap: 0.16rem;
+    justify-content: start;
+  }
+  #profileProductsGrid,
+  .subcategory-page-grid {
+    grid-template-columns: 1fr;
+  }
+  /* Allow search results to fit more cards per row on mobile */
+  .search-grid {
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    gap: 0.12rem;
+    justify-content: start;
+  }
+  .search-grid .product-card {
+    max-width: none;
+  }
+  /* Allow vendor grid to fit more cards per row on mobile */
+  .vendor-grid {
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    grid-auto-flow: row dense;
+    gap: 0.12rem;
+    justify-items: center;
+    justify-content: center;
+  }
+  .product-card,
+  .vendor-card {
+    max-width: 100%;
+  }
+}
+
+@media (min-width: 480px) {
+  .product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .search-grid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 170px));
+    grid-auto-flow: row dense;
+    gap: 0.18rem;
+    justify-content: start;
+  }
+  .vendor-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.3rem;
+  }
+  #profileProductsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 768px) {
+  .card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.4rem;
+    justify-items: stretch; /* keep cards filling columns on desktop */
+  }
+  .landing-slider {
+    grid-auto-columns: 200px;
+  }
+  .landing-featured .vendor-slider {
+    grid-auto-columns: 190px;
+    gap: 14px;
+  }
+  .hero-shell {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 16px;
+  }
+  .page-hero {
+    align-items: center;
+  }
+  .page-hero h1 {
+    height: auto;
+    min-height: 0;
+    text-align: center;
+  }
+  .hero-actions {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+  }
+  .page-hero .btn-primary,
+  .page-hero .btn-secondary {
+    width: 100%;
+  }
+  .subcategory-row-scroll {
+    padding-bottom: 8px;
+  }
+  .bottom-nav {
+    position: fixed;
+    bottom: 18px;
+    top: auto;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    max-width: none;
+    width: auto;
+    padding: 10px 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(0,0,0,0.08);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+    justify-content: center;
+    gap: 14px;
+  }
+  .nav-item {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    width: auto;
+    padding: 6px 10px;
+    font-size: 0.9rem;
+  }
+  .nav-icon {
+    margin-bottom: 0;
+  }
+}
+
+@media (min-width: 1024px) {
+  .card-grid {
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); /* let cards stretch wider across the row */
+    gap: 13.8rem;
+    justify-items: stretch; /* let cards fill the full row width */
+  }
+  .card-grid .card {
+    width: 400px;
+    height: 250px;
+    aspect-ratio: 1 / 1; /* keep square feel */
+    max-width: none;
+         /* allow cards to span available width */
+  }
+  .product-grid {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 180px));
+    gap: 0.25rem;
+  }
+  .search-grid {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 190px));
+    gap: 0.18rem;
+    justify-content: start;
+  }
+  .vendor-grid {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 0.2rem;
+  }
+  #profileProductsGrid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.8rem;
+  }
+  .bottom-nav {
+    padding: 12px 16px;
+  }
+  /* Homepage hero: place header at top, center slider/buttons on desktop */
+  .hero-shell {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 16px;
+  }
+  .hero-shell .site-header {
+    align-self: stretch;
+    justify-content: center;
+    margin-bottom: 6px;
+  }
+  .page-hero {
+    align-items: center;
+  }
+  .page-hero h1 {
+    text-align: center;
+    margin-bottom: 4px;
+  }
+  .hero-actions {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+  }
+  .auth-card {
+    padding: 2rem 1.8rem 2.2rem;
+    margin-top: 60px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .card-grid,
+  .product-grid {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 200px));
+  }
+  .search-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 200px));
+  }
+  .vendor-grid {
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  }
+  .bottom-nav {
+    padding: 12px 18px;
+  }
+}
