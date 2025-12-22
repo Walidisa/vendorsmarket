@@ -299,12 +299,7 @@ export default function ProductPage() {
             <p className="rating product-detail-rating" style={{ marginTop: "4px" }}>
               &#9733; <span id="productRatingValue">{ratingValue.toFixed(1)}</span> (
               <span id="productRatingCount">{ratingCount}</span>){" "}
-              <button
-                id="rateProductBtn"
-                className="rate-link"
-                type="button"
-                onClick={() => setRatingModalOpen(true)}
-              >
+              <button id="rateProductBtn" className="rate-link" type="button" onClick={() => setRatingModalOpen(true)}>
                 {alreadyRated ? "Remove My Rating" : "Rate"}
               </button>
             </p>

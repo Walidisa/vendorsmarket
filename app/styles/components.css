@@ -472,13 +472,10 @@
   font-weight: 600;              /* keep shop name visibly bolder on cards */
   color: var(--color-muted);     /* muted tone to match other meta text */
   line-height: 1.2;
-  max-height: 2.4em;             /* fallback clamp for non-WebKit */
-  white-space: normal;           /* allow wrapping */
+  white-space: nowrap;           /* single-line truncation */
   overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;         /* up to 2 lines before truncating */
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
+  text-overflow: ellipsis;
+  display: block;
   margin: 4px 0 2px;
 }
 
@@ -1114,6 +1111,9 @@
    RESPONSIVE LAYOUT FOR TABLET + DESKTOP (presentation only)
 --------------------------------------------------------- */
 @media (max-width: 479px) {
+  :root {
+    --bottom-nav-offset: calc(120px + env(safe-area-inset-bottom, 0px));
+  }
   .product-grid {
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
     grid-auto-flow: row dense;
@@ -1184,13 +1184,14 @@
     align-items: center;
     text-align: center;
     gap: 16px;
+    min-height: 150px; /* lock hero height so it doesn't jump between slides */
   }
   .page-hero {
     align-items: center;
   }
   .page-hero h1 {
-    height: auto;
-    min-height: 0;
+    height: clamp(90px, 9vw, 120px);
+    min-height: 80px;
     text-align: center;
   }
   .hero-actions {

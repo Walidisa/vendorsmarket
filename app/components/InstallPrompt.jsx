@@ -13,15 +13,22 @@ export default function InstallPrompt() {
   const refreshColors = () => {
     if (typeof window === "undefined") return;
     const stored = localStorage.getItem("activeTheme");
-    const fallbackPrimary = stored === "food" ? "#8A624A" : "#0d3b66";
-    const fallbackAccent = stored === "food" ? "#A98163" : "#c58a64";
+    const activeTheme = stored ||
+      (document.body.classList.contains("theme-food") ? "food" : "clothing");
+
     const style = getComputedStyle(document.body);
-    const primary = style.getPropertyValue("--color-primary")?.trim() || fallbackPrimary;
-    // Prefer theme-specific accent if set on body, otherwise fallback by theme
+    const foodPrimary =
+      style.getPropertyValue("--color-primary-lightbrown")?.trim() || "#8A624A";
+    const clothingPrimary =
+      style.getPropertyValue("--color-primary")?.trim() || "#0d3b66";
+
+    const primary = activeTheme === "food" ? foodPrimary : clothingPrimary;
     const accent =
-      style.getPropertyValue("--color-primary-lightbrown")?.trim() ||
-      style.getPropertyValue("--color-primary-light")?.trim() ||
-      fallbackAccent;
+      (activeTheme === "food"
+        ? foodPrimary
+        : style.getPropertyValue("--color-primary-light")?.trim() || clothingPrimary) ||
+      (activeTheme === "food" ? "#A98163" : "#c58a64");
+
     setColors({ primary, accent });
   };
 

@@ -439,6 +439,7 @@ export default function ProfilePage({ params }) {
                 type="button"
                 id="profileLogoutBtn"
                 className="profile-logout-btn"
+                style={{ borderRadius: "999px" }}
                 onClick={() => setLogoutModalOpen(true)}
               >
                 Log out
@@ -582,7 +583,6 @@ export default function ProfilePage({ params }) {
     </>
   );
 }
-
 
 
 

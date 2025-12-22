@@ -668,6 +668,7 @@ export default function EditProfilePage() {
           <button
             type="button"
             className="profile-logout-btn"
+            style={{ borderRadius: "999px" }}
             onClick={() => setDeleteModalOpen(true)}
           >
             Delete Account
