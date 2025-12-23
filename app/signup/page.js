@@ -134,11 +134,11 @@ export default function SignupPage() {
       ? sanitizeUsername(value)
       : name === 'instagram'
         ? value.replace(/\s+/g, '').replace(/^@+/, '').toLowerCase()
-      : name === 'location'
-        ? value.replace(/\s+/g, '')
-      : name === 'email'
-        ? value.replace(/\s+/g, '').toLowerCase()
-        : value;
+        : name === 'location'
+          ? value.replace(/\s+/g, '')
+          : name === 'email'
+            ? value.replace(/\s+/g, '').toLowerCase()
+            : value;
     if (name === 'username') setUsernameError(false);
     if (name === 'state') setStateError(false);
     if (name === 'instagram') setInstagramError(false);
@@ -355,6 +355,8 @@ export default function SignupPage() {
             src={theme === 'clothing' ? '/icons/back.png' : '/icons/back-orange.png'}
             alt="Back"
             className="back-icon"
+            data-blue="/icons/back.png"
+            data-brown="/icons/back-orange.png"
           />
         </button>
         <h1 className="add-product-title">Become a Vendor</h1>
@@ -621,7 +623,7 @@ export default function SignupPage() {
         })() : null}
       </form>
 
-            {successOpen && (
+      {successOpen && (
         <div className="add-product-success-overlay">
           <div className="add-product-success-dialog">
             <div className="success-icon">✅</div>

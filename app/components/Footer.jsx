@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import ThemeToggle from "./ThemeToggle";
 
 export default function Footer() {
   const [open, setOpen] = useState(false);
@@ -166,6 +167,7 @@ export default function Footer() {
           <a href="/about">About</a>
           <a href="/terms">Terms</a>
           <a href="/privacy">Privacy</a>
+          <ThemeToggle />
         </div>
 
         <button

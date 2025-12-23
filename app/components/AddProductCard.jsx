@@ -1,8 +1,14 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 
 export function AddProductCard({ theme = "food", onClick }) {
+  useEffect(() => {
+    // Trigger icon update in case we mounted after the initial scan
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new Event("vm-theme-change"));
+    }
+  }, []);
   return (
     <div className="product-card add-product-slot">
       <button type="button" className="profile-add-product-card" onClick={onClick}>

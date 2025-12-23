@@ -211,9 +211,9 @@ export default function EditProductPage() {
     let galleryPaths = Array.isArray(form.images)
       ? form.images
       : (form.images || '')
-          .split(',')
-          .map((s) => s.trim())
-          .filter(Boolean);
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
 
     try {
       if (coverFile) {
@@ -240,7 +240,7 @@ export default function EditProductPage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ paths: keysToDelete }),
-        }).catch(() => {});
+        }).catch(() => { });
       }
     } catch (err) {
       setStatus(err.message || 'Upload failed');
@@ -300,203 +300,205 @@ export default function EditProductPage() {
 
   return (
     <>
-    <div className="page add-product-page">
-      <div className="add-product-header">
-        <button type="button" className="back-button" onClick={() => router.back()}>
-          <img
-            src={theme === 'clothing' ? '/icons/back.png' : '/icons/back-orange.png'}
-            alt="Back"
-            className="back-icon"
-          />
-        </button>
-        <h1 className="add-product-title">Edit Product</h1>
-      </div>
-      <form className="add-product-form" onSubmit={handleSubmit}>
-        <label>
-          Name
-          <input name="name" value={form.name} onChange={handleChange} required />
-        </label>
+      <div className="page add-product-page">
+        <div className="add-product-header">
+          <button type="button" className="back-button" onClick={() => router.back()}>
+            <img
+              src={theme === 'clothing' ? '/icons/back.png' : '/icons/back-orange.png'}
+              alt="Back"
+              className="back-icon"
+              data-blue="/icons/back.png"
+              data-brown="/icons/back-orange.png"
+            />
+          </button>
+          <h1 className="add-product-title">Edit Product</h1>
+        </div>
+        <form className="add-product-form" onSubmit={handleSubmit}>
+          <label>
+            Name
+            <input name="name" value={form.name} onChange={handleChange} required />
+          </label>
 
-        <label>
-          Price
-          <input name="price" type="number" min="0" step="0.01" value={form.price} onChange={handleChange} required />
-        </label>
+          <label>
+            Price
+            <input name="price" type="number" min="0" step="0.01" value={form.price} onChange={handleChange} required />
+          </label>
 
-        <label>
-          Main Category
-          <select name="main_category" value={form.main_category} onChange={handleChange}>
-            {mainCategories.map((c) => (
-              <option key={c.value} value={c.value}>
-                {c.label}
-              </option>
-            ))}
-          </select>
-        </label>
+          <label>
+            Main Category
+            <select name="main_category" value={form.main_category} onChange={handleChange}>
+              {mainCategories.map((c) => (
+                <option key={c.value} value={c.value}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+          </label>
 
-        <label>
-          Subcategory
-          <select name="subcategory" value={form.subcategory} onChange={handleChange}>
-            {subOptions.map((c) => (
-              <option key={c.value} value={c.value}>
-                {c.label}
-              </option>
-            ))}
-          </select>
-        </label>
+          <label>
+            Subcategory
+            <select name="subcategory" value={form.subcategory} onChange={handleChange}>
+              {subOptions.map((c) => (
+                <option key={c.value} value={c.value}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+          </label>
 
-        <label>
-          Cover Image
-          <input
-            ref={coverInputRef}
-            className="file-input-hidden"
-            type="file"
-            accept="image/*"
-            onChange={handleCoverFile}
-          />
-          <div className="file-actions-row">
-            {!(coverFile || form.cover_image) && (
-              <button
-                type="button"
-                className="btn-secondary"
-                onClick={() => coverInputRef.current?.click()}
-              >
-                Choose cover
-              </button>
-            )}
-            {(coverFile || form.cover_image) && (
-              <div className="file-list-item" style={{ alignItems: 'center', gap: '0.5rem' }}>
-                <div style={{ position: 'relative', width: '64px', height: '64px' }}>
-                  {coverFile ? (
-                    <img
-                      src={URL.createObjectURL(coverFile)}
-                      alt={coverFile.name}
-                      className="file-thumb"
-                      style={{ width: '64px', height: '64px', objectFit: 'cover', borderRadius: '8px' }}
-                    />
-                  ) : form.cover_image ? (
-                    <img
-                      src={form.cover_image}
-                      alt="Cover"
-                      className="file-thumb"
-                      style={{ width: '64px', height: '64px', objectFit: 'cover', borderRadius: '8px' }}
-                    />
-                  ) : null}
-                  <button
-                    type="button"
-                    className="profile-card-btn profile-card-delete file-remove-btn"
-                    style={{ position: 'absolute', top: '-8px', right: '-8px' }}
-                    onClick={() => { setCoverFile(null); setForm((prev) => ({ ...prev, cover_image: '' })); }}
-                    aria-label="Remove cover"
-                  >
-                    <img src="/icons/delete.png" alt="Remove cover" className="profile-card-btn-icon" />
-                  </button>
+          <label>
+            Cover Image
+            <input
+              ref={coverInputRef}
+              className="file-input-hidden"
+              type="file"
+              accept="image/*"
+              onChange={handleCoverFile}
+            />
+            <div className="file-actions-row">
+              {!(coverFile || form.cover_image) && (
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => coverInputRef.current?.click()}
+                >
+                  Choose cover
+                </button>
+              )}
+              {(coverFile || form.cover_image) && (
+                <div className="file-list-item" style={{ alignItems: 'center', gap: '0.5rem' }}>
+                  <div style={{ position: 'relative', width: '64px', height: '64px' }}>
+                    {coverFile ? (
+                      <img
+                        src={URL.createObjectURL(coverFile)}
+                        alt={coverFile.name}
+                        className="file-thumb"
+                        style={{ width: '64px', height: '64px', objectFit: 'cover', borderRadius: '8px' }}
+                      />
+                    ) : form.cover_image ? (
+                      <img
+                        src={form.cover_image}
+                        alt="Cover"
+                        className="file-thumb"
+                        style={{ width: '64px', height: '64px', objectFit: 'cover', borderRadius: '8px' }}
+                      />
+                    ) : null}
+                    <button
+                      type="button"
+                      className="profile-card-btn profile-card-delete file-remove-btn"
+                      style={{ position: 'absolute', top: '-8px', right: '-8px' }}
+                      onClick={() => { setCoverFile(null); setForm((prev) => ({ ...prev, cover_image: '' })); }}
+                      aria-label="Remove cover"
+                    >
+                      <img src="/icons/delete.png" alt="Remove cover" className="profile-card-btn-icon" />
+                    </button>
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
-        </label>
+              )}
+            </div>
+          </label>
 
-        <label>
-          Gallery Images (comma-separated)
-          <input
-            ref={galleryInputRef}
-            className="file-input-hidden"
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={handleGalleryFiles}
-          />
-          <div className="file-actions-row">
-            {galleryFiles.length === 0 && (
-              <button
-                type="button"
-                className="btn-secondary"
-                onClick={() => galleryInputRef.current?.click()}
-              >
-                Choose images
-              </button>
-            )}
-            {galleryFiles.length > 0 && (
-              <>
+          <label>
+            Gallery Images (comma-separated)
+            <input
+              ref={galleryInputRef}
+              className="file-input-hidden"
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleGalleryFiles}
+            />
+            <div className="file-actions-row">
+              {galleryFiles.length === 0 && (
                 <button
                   type="button"
                   className="btn-secondary"
                   onClick={() => galleryInputRef.current?.click()}
                 >
-                  Add more
+                  Choose images
                 </button>
-              </>
+              )}
+              {galleryFiles.length > 0 && (
+                <>
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={() => galleryInputRef.current?.click()}
+                  >
+                    Add more
+                  </button>
+                </>
+              )}
+            </div>
+            {Array.isArray(form.images) && form.images.length > 0 && (
+              <ul className="file-list">
+                {form.images.map((img, idx) => (
+                  <li key={`${img}-${idx}`} className="file-list-item">
+                    <div style={{ position: 'relative', width: '64px', height: '64px' }}>
+                      <img
+                        src={img}
+                        alt={img}
+                        className="file-thumb"
+                        style={{ width: '64px', height: '64px', objectFit: 'cover', borderRadius: '8px' }}
+                      />
+                      <button
+                        type="button"
+                        className="profile-card-btn profile-card-delete file-remove-btn"
+                        style={{ position: 'absolute', top: '-8px', right: '-8px' }}
+                        onClick={() => handleRemoveExistingImage(idx)}
+                        aria-label="Remove image"
+                      >
+                        <img src="/icons/delete.png" alt="Remove" className="profile-card-btn-icon" />
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
             )}
-          </div>
-          {Array.isArray(form.images) && form.images.length > 0 && (
-            <ul className="file-list">
-              {form.images.map((img, idx) => (
-                <li key={`${img}-${idx}`} className="file-list-item">
-                  <div style={{ position: 'relative', width: '64px', height: '64px' }}>
-                    <img
-                      src={img}
-                      alt={img}
-                      className="file-thumb"
-                      style={{ width: '64px', height: '64px', objectFit: 'cover', borderRadius: '8px' }}
-                    />
-                    <button
-                      type="button"
-                      className="profile-card-btn profile-card-delete file-remove-btn"
-                      style={{ position: 'absolute', top: '-8px', right: '-8px' }}
-                      onClick={() => handleRemoveExistingImage(idx)}
-                      aria-label="Remove image"
-                    >
-                      <img src="/icons/delete.png" alt="Remove" className="profile-card-btn-icon" />
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-          {galleryFiles.length > 0 && (
-            <ul className="file-list">
-              {galleryFiles.map((file, idx) => (
-                <li key={`${file.name}-${idx}`} className="file-list-item">
-                  <div style={{ position: 'relative', width: '64px', height: '64px' }}>
-                    <img
-                      src={URL.createObjectURL(file)}
-                      alt={file.name}
-                      className="file-thumb"
-                      style={{ width: '64px', height: '64px', objectFit: 'cover', borderRadius: '8px' }}
-                    />
-                    <button
-                      type="button"
-                      className="profile-card-btn profile-card-delete file-remove-btn"
-                      style={{ position: 'absolute', top: '-8px', right: '-8px' }}
-                      onClick={() => handleRemoveNewFile(idx)}
-                      aria-label="Remove image"
-                    >
-                      <img src="/icons/delete.png" alt="Remove" className="profile-card-btn-icon" />
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </label>
+            {galleryFiles.length > 0 && (
+              <ul className="file-list">
+                {galleryFiles.map((file, idx) => (
+                  <li key={`${file.name}-${idx}`} className="file-list-item">
+                    <div style={{ position: 'relative', width: '64px', height: '64px' }}>
+                      <img
+                        src={URL.createObjectURL(file)}
+                        alt={file.name}
+                        className="file-thumb"
+                        style={{ width: '64px', height: '64px', objectFit: 'cover', borderRadius: '8px' }}
+                      />
+                      <button
+                        type="button"
+                        className="profile-card-btn profile-card-delete file-remove-btn"
+                        style={{ position: 'absolute', top: '-8px', right: '-8px' }}
+                        onClick={() => handleRemoveNewFile(idx)}
+                        aria-label="Remove image"
+                      >
+                        <img src="/icons/delete.png" alt="Remove" className="profile-card-btn-icon" />
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </label>
 
-        <label>
-          Description
-          <textarea name="description" rows="4" value={form.description} onChange={handleChange} />
-        </label>
+          <label>
+            Description
+            <textarea name="description" rows="4" value={form.description} onChange={handleChange} />
+          </label>
 
-        <button type="submit">Save changes</button>
-        {status && (() => {
-          const lower = String(status).toLowerCase();
-          const isError = !(lower.startsWith('saving') || lower.includes('saved'));
-          return (
-            <p className={`form-status${isError ? ' is-error' : ''}`}>
-              {status}
-            </p>
-          );
-        })()}
-      </form>
-    </div>
+          <button type="submit">Save changes</button>
+          {status && (() => {
+            const lower = String(status).toLowerCase();
+            const isError = !(lower.startsWith('saving') || lower.includes('saved'));
+            return (
+              <p className={`form-status${isError ? ' is-error' : ''}`}>
+                {status}
+              </p>
+            );
+          })()}
+        </form>
+      </div>
       {cropCoverFile && (
         <CropperModal
           file={cropCoverFile}

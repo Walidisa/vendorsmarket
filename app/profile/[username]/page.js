@@ -156,8 +156,8 @@ export default function ProfilePage({ params }) {
   const instagramHref = instagramHandle ? `https://instagram.com/${instagramHandle}` : null;
   const bannerSrc =
     profile?.banner &&
-    profile.banner !== "null" &&
-    profile.banner !== "undefined"
+      profile.banner !== "null" &&
+      profile.banner !== "undefined"
       ? profile.banner
       : null;
   const avatarSrc =
@@ -189,7 +189,7 @@ export default function ProfilePage({ params }) {
       // Best-effort local sign-out first to avoid network failures blocking UI
       await supabase.auth.signOut({ scope: "local" });
     } catch (_) {
-      await supabase.auth.signOut().catch(() => {});
+      await supabase.auth.signOut().catch(() => { });
     } finally {
       clearAuthStorage();
     }
@@ -420,18 +420,18 @@ export default function ProfilePage({ params }) {
                 </p>
                 <FeedbackList feedback={feedbackList} />
                 {!isOwner && (
-                <button
-                  type="button"
-                  className="btn-primary"
-                  id="profileFeedbackBtn"
-                  onClick={() => setFeedbackModalOpen(true)}
-                >
-                  Leave feedback
-                </button>
-              )}
-            </div>
-          </section>
-        )}
+                  <button
+                    type="button"
+                    className="btn-primary"
+                    id="profileFeedbackBtn"
+                    onClick={() => setFeedbackModalOpen(true)}
+                  >
+                    Leave feedback
+                  </button>
+                )}
+              </div>
+            </section>
+          )}
 
           <div className="profile-logout-wrapper">
             {isOwner && sessionUserId && (
@@ -545,6 +545,8 @@ export default function ProfilePage({ params }) {
               src={theme === "clothing" ? "/icons/home.png" : "/icons/home-lightbrown.png"}
               className="nav-icon"
               alt=""
+              data-blue="/icons/home.png"
+              data-brown="/icons/home-lightbrown.png"
             />
           </span>
           <span>Home</span>
@@ -556,6 +558,8 @@ export default function ProfilePage({ params }) {
               src={theme === "clothing" ? "/icons/search.png" : "/icons/search-lightbrown.png"}
               className="nav-icon"
               alt=""
+              data-blue="/icons/search.png"
+              data-brown="/icons/search-lightbrown.png"
             />
           </span>
           <span>Search</span>
@@ -575,6 +579,8 @@ export default function ProfilePage({ params }) {
               src={theme === "clothing" ? "/icons/profile.png" : "/icons/profile-lightbrown.png"}
               className="nav-icon"
               alt=""
+              data-blue="/icons/profile.png"
+              data-brown="/icons/profile-lightbrown.png"
             />
           </span>
           <span>Profile</span>

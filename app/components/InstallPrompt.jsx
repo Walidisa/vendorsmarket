@@ -36,6 +36,17 @@ export default function InstallPrompt() {
     const handler = (event) => {
       event.preventDefault();
       setDeferredPrompt(event);
+
+      // Check dismissal timestamp
+      const dismissed = localStorage.getItem("install_dismissed");
+      if (dismissed) {
+        const timePassed = Date.now() - parseInt(dismissed, 10);
+        // 24 hours = 86400000 ms
+        if (timePassed < 86400000) {
+          setVisible(false);
+          return;
+        }
+      }
       setVisible(true);
     };
     refreshColors();
@@ -81,6 +92,7 @@ export default function InstallPrompt() {
       }}
     >
       <div
+        className="install-prompt-card"
         style={{
           background: "#f7f7f7",
           color: "#1d1d1d",
@@ -96,7 +108,7 @@ export default function InstallPrompt() {
       >
         <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
           <strong style={{ fontSize: "0.98rem" }}>Install Vendors Market</strong>
-          <span style={{ fontSize: "0.87rem", color: "#3c4043" }}>
+          <span className="install-prompt-sub" style={{ fontSize: "0.87rem", color: "#3c4043" }}>
             Add the app to your home screen for quick access.
           </span>
         </div>
@@ -117,8 +129,11 @@ export default function InstallPrompt() {
             Install
           </button>
           <button
-            aria-label="Close install prompt"
-            onClick={() => setVisible(false)}
+            className="install-prompt-close"
+            onClick={() => {
+              setVisible(false);
+              localStorage.setItem("install_dismissed", Date.now().toString());
+            }}
             style={{
               background: "transparent",
               color: "#3c4043",

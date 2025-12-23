@@ -13,8 +13,10 @@ export default function RouteLoader() {
   const refreshThemeAndColors = () => {
     if (typeof window === "undefined") return;
     const theme = localStorage.getItem("activeTheme") || "clothing";
-    document.body.classList.remove("theme-food", "theme-clothing");
+    const isDark = localStorage.getItem("darkMode") === "true";
+    document.body.classList.remove("theme-food", "theme-clothing", "dark");
     document.body.classList.add(theme === "food" ? "theme-food" : "theme-clothing");
+    if (isDark) document.body.classList.add("dark");
     const style = getComputedStyle(document.body);
     const primaryVar = style.getPropertyValue("--color-primary").trim();
     const primaryLightVar = style.getPropertyValue("--color-primary-light").trim();

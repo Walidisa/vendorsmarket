@@ -163,6 +163,8 @@ export default function ProductPage() {
               src={theme === "clothing" ? "/icons/back.png" : "/icons/back-orange.png"}
               alt="Back"
               className="back-icon"
+              data-blue="/icons/back.png"
+              data-brown="/icons/back-orange.png"
             />
           </button>
           <h1 id="productTitle">{product.name}</h1>

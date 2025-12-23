@@ -1,19 +1,55 @@
 /* THEME – FOOD & SNACKS (Caramel) */
 .theme-food {
-  --color-primary: #8A624A;       /* Caramel brown */
-  --color-primary-light: #A98163; /* Lighter baked tone */
-  --page-bg: #f1f1f1;             /* Cream flour background */
+  --color-primary: #8A624A;
+  /* Caramel brown */
+  --color-primary-light: #A98163;
+  /* Lighter baked tone */
+  --page-bg: #f1f1f1;
+  /* Cream flour background */
   --nav-active-color: #8A624A;
   --nav-active-glow: rgba(138, 98, 74, 0.15);
   --nav-active-glow-strong: rgba(138, 98, 74, 0.25);
+  background-color: var(--page-bg);
+  color: var(--color-text);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body.dark.theme-food {
+  --color-primary: #a67c5e;
+  /* Lighter caramel for contrast */
+  --color-primary-light: #c49a7a;
+  --page-bg: #1a1a1a;
+  /* Deep cocoa background */
+  --nav-active-color: #b58d71;
+  --nav-active-glow: rgba(181, 141, 113, 0.2);
+  --nav-active-glow-strong: rgba(181, 141, 113, 0.35);
+  background-color: #1a1a1a !important;
+  color: #c49a7a !important;
 }
 
 /* THEME – CLOTHING (Blue) */
 .theme-clothing {
-  --color-primary: #0d3b66;       /* Dark blue */
+  --color-primary: #0d3b66;
+  /* Dark blue */
   --color-primary-light: #144a82;
   --page-bg: #f1f1f1;
   --nav-active-color: #0d3b66;
   --nav-active-glow: rgba(13, 59, 102, 0.15);
   --nav-active-glow-strong: rgba(13, 59, 102, 0.25);
+  background-color: var(--page-bg);
+  color: var(--color-text);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body.dark.theme-clothing {
+  --color-primary: #3a6ea5;
+  /* Lighter blue for dark mode visibility */
+  --color-primary-light: #5b8cc0;
+  --page-bg: #1a1a1a;
+  /* Midnight blue background */
+  --nav-active-color: #6494c5;
+  --nav-active-glow: rgba(100, 148, 197, 0.2);
+  --nav-active-glow-strong: rgba(100, 148, 197, 0.35);
+  background-color: #1a1a1a !important;
+  color: #e1e1e1 !important;
 }

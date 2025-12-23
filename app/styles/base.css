@@ -6,20 +6,31 @@
   --color-muted: #4b5563;
 
   --card-bg: #ffffff;
-  --page-bg: #faf7f2;
+  --page-bg: #ffffff;
+  /* Global White Background */
 
   --radius-pill: 999px;
   --radius-card: 20px;
-  --shadow-card: 0 6px 20px rgba(0,0,0,0.06);
+  --shadow-card: 0 6px 20px rgba(0, 0, 0, 0.06);
 
   /* Typography: Inter self-hosted via fonts.css */
   --font-display: "Inter", system-ui, -apple-system, sans-serif;
   --font-body: "Inter", system-ui, -apple-system, sans-serif;
 }
 
+body.dark {
+  --color-text: #e1e1e1;
+  --color-muted: #a3a3a3;
+  --card-bg: #2d2d2d;
+  --page-bg: #1a1a1a;
+  --shadow-card: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+
 html {
   font-family: var(--font-body);
   overflow-x: hidden;
+  background-color: var(--page-bg);
 }
 
 body {
@@ -28,8 +39,12 @@ body {
   max-width: 100%;
   margin-left: auto;
   margin-right: auto;
-  padding: 0 16px; /* safe mobile padding */
+  padding: 0 16px;
+  /* safe mobile padding */
   font-family: var(--font-body);
+  background-color: var(--page-bg);
+  color: var(--color-text);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 * {
@@ -43,14 +58,21 @@ body {
   box-sizing: border-box;
 }
 
-h1, h2, h3 {
+h1,
+h2,
+h3 {
   font-family: var(--font-display);
   font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.1;
 }
 
-body, p, input, button, textarea, li {
+body,
+p,
+input,
+button,
+textarea,
+li {
   font-family: var(--font-body);
   font-weight: 400;
   line-height: 1.5;
@@ -64,7 +86,8 @@ body, p, input, button, textarea, li {
 }
 
 .page.auth-page {
-  padding-top: 16px; /* keep auth views closer to top while respecting header spacing */
+  padding-top: 16px;
+  /* keep auth views closer to top while respecting header spacing */
 }
 
 .auth-page {
@@ -74,6 +97,16 @@ body, p, input, button, textarea, li {
   padding-top: 16px;
   justify-content: flex-start;
   align-items: stretch;
+}
+
+/* Global Input Fields (Light Mode Default) */
+.input-field {
+  background-color: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 12px;
+  width: 100%;
+  color: var(--color-text);
 }
 
 /* HERO */
@@ -86,7 +119,8 @@ body, p, input, button, textarea, li {
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  min-height: 220px;   /* lock the shell height */
+  min-height: 220px;
+  /* lock the shell height */
 }
 
 .hero-shell.theme-food {
@@ -326,10 +360,12 @@ body, p, input, button, textarea, li {
 
 .landing-featured .vendor-name {
   margin: 0;
-  color: var(--color-text); /* ensure link inherits brand text color */
+  color: var(--color-text);
+  /* ensure link inherits brand text color */
   font-size: 0.95rem;
   line-height: 1.2;
-  max-height: 2.4em; /* fallback clamp for non-WebKit */
+  max-height: 2.4em;
+  /* fallback clamp for non-WebKit */
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
@@ -369,7 +405,8 @@ body, p, input, button, textarea, li {
   gap: 10px;
   align-items: center;
   width: 100%;
-  max-width: 420px; /* match form/button widths used elsewhere */
+  max-width: 420px;
+  /* match form/button widths used elsewhere */
 }
 
 .page-hero .btn-primary,
@@ -377,10 +414,12 @@ body, p, input, button, textarea, li {
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  padding: 0.9rem 1.2rem; /* align with global button spacing */
+  padding: 0.9rem 1.2rem;
+  /* align with global button spacing */
   font-size: 1rem;
   font-weight: 600;
-  border-radius: 999px; /* enforce pill shape */
+  border-radius: 999px;
+  /* enforce pill shape */
   width: 100%;
   max-width: 340px;
   align-self: center;
@@ -439,6 +478,7 @@ button:active {
    RESPONSIVE ENHANCEMENTS (mobile-first)
 --------------------------------------------------------- */
 @media (max-width: 479px) {
+
   /* Force single-column flow on very small screens */
   .page,
   body {
@@ -446,23 +486,30 @@ button:active {
     padding-left: 14px;
     padding-right: 14px;
   }
+
   /* Reserve space so fixed bottom nav doesn't overlap content */
   :root {
     --bottom-nav-offset: calc(120px + env(safe-area-inset-bottom, 0px));
   }
+
   body {
     padding-bottom: var(--bottom-nav-offset);
   }
+
   .page {
     padding-bottom: var(--bottom-nav-offset);
   }
+
   .page {
     padding-left: 0;
     padding-right: 0;
   }
+
   html {
-    font-size: 15px; /* slightly smaller base to avoid zoomed feel */
+    font-size: 15px;
+    /* slightly smaller base to avoid zoomed feel */
   }
+
   /* Extra vertical space for hero slider text on mobile */
   .page-hero h1 {
     height: clamp(220px, 52vw, 320px);
@@ -475,14 +522,17 @@ button:active {
   html {
     font-size: 16px;
   }
+
   body {
     max-width: 640px;
     padding-left: 20px;
     padding-right: 20px;
   }
+
   .page {
     max-width: 640px;
   }
+
   .hero-shell {
     max-width: 720px;
   }
@@ -493,31 +543,47 @@ button:active {
     max-width: 960px;
     padding-left: 28px;
     padding-right: 28px;
-    padding-top: 0; /* move offset to .page to avoid shifting body */
+    padding-top: 0;
+    /* move offset to .page to avoid shifting body */
     font-size: 16px;
   }
+
   .page {
     max-width: 960px;
-    padding-top: 76px; /* offset content for top nav on larger screens */
+    padding-top: 76px;
+    /* offset content for top nav on larger screens */
   }
+
   /* Keep hero headline a consistent size on desktop */
   .page-hero h1 {
     height: clamp(100px, 10vw, 130px);
     min-height: 90px;
   }
+
   .page.add-product-page {
-    padding-top: 20px !important; /* keep desktop add/edit product pages comfortably spaced */
+    padding-top: 20px !important;
+    /* keep desktop add/edit product pages comfortably spaced */
   }
+
   .page.auth-page {
-    padding-top: 20px !important; /* consistent top spacing for desktop auth */
+    padding-top: 20px !important;
+    /* consistent top spacing for desktop auth */
   }
+
   .auth-page {
-    padding-top: 20px; /* ensure inner auth stack has visible breathing room */
+    padding-top: 20px;
+    /* ensure inner auth stack has visible breathing room */
   }
+
+  body.dark .auth-page {
+    background-color: var(--page-bg) !important;
+  }
+
   /* Center auth layout on larger screens and align header with card */
   .auth-page {
     align-items: center;
   }
+
   .auth-page .add-product-header,
   .auth-page .auth-card {
     width: 100%;
@@ -525,18 +591,22 @@ button:active {
     margin-left: auto;
     margin-right: auto;
   }
+
   .auth-page .add-product-header {
     justify-content: flex-start;
   }
+
   /* Remove body top padding for themed layouts; keep offset on .page */
   body.theme-clothing,
   body.theme-food {
     padding-top: 0;
   }
+
   body.theme-clothing .page,
   body.theme-food .page {
     padding-top: 0;
   }
+
   .hero-shell {
     max-width: 960px;
     border-radius: 0 0 48px 48px;
@@ -551,14 +621,17 @@ button:active {
     padding-right: 32px;
     font-size: 17px;
   }
+
   .page {
     max-width: 1180px;
     padding-top: 80px;
   }
+
   body.theme-clothing .page,
   body.theme-food .page {
     padding-top: 0;
   }
+
   .page-hero h1 {
     font-size: 2.8rem;
   }
@@ -571,16 +644,339 @@ button:active {
     padding-right: 40px;
     font-size: 18px;
   }
+
   .page {
     max-width: 1280px;
     padding-top: 88px;
   }
+
   body.theme-clothing .page,
   body.theme-food .page {
     padding-top: 0;
   }
+
   .hero-shell {
     max-width: 1280px;
     border-radius: 0 0 56px 56px;
   }
+}
+
+/* DARK MODE OVERRIDES (Moved from themes.css) */
+body.dark .landing-categories,
+body.dark .landing-featured {
+  background-color: var(--card-bg) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  /* subtle border for contrast */
+}
+
+body.dark .landing-categories h2,
+body.dark .landing-featured h2 {
+  color: var(--color-text);
+}
+
+/* Fix "Food" pill text color in Clothing theme (Dark Mode) */
+body.dark.theme-clothing .pill:not(.active) {
+  color: #e1e1e1 !important;
+}
+
+/* Fix "Food" Theme Dark Mode Text Color (was caramel) */
+body.dark.theme-food,
+body.dark.theme-food label,
+body.dark.theme-food .input-label,
+body.dark.theme-food h1,
+body.dark.theme-food h2,
+body.dark.theme-food h3 {
+  color: var(--color-text) !important;
+}
+
+/* Navbar and Button Backgrounds */
+body.dark .bottom-nav,
+body.dark .subcategory-see-all,
+body.dark .footer-feedback-btn {
+  background-color: var(--card-bg) !important;
+  color: var(--color-text) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Product Price Color (Specific to Clothing Theme in Dark Mode) */
+body.dark.theme-clothing .product-info .price {
+  color: #3a6ea5 !important;
+}
+
+
+/* Buttons and Inputs Dark Mode Overrides */
+body.dark .back-button,
+body.dark .product-detail-nav,
+body.dark .search-chip,
+body.dark .profile-shop-edit-btn,
+body.dark .product-contact-actions .contact-btn {
+  background-color: var(--card-bg) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: var(--color-text) !important;
+}
+
+/* Ensure icons passed into these buttons are white */
+/* Dark background, original icon color */
+body.dark .back-button {
+  background-color: var(--card-bg) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+body.dark .back-button .back-icon {
+  filter: none !important;
+  /* Show original icon color (e.g., orange or black) */
+}
+
+body.dark .profile-shop-edit-btn img,
+body.dark .product-detail-nav img,
+body.dark .contact-icon,
+body.dark .profile-location-icon {
+  filter: grayscale(1) invert(1) brightness(2) !important;
+  /* Keep these white/light */
+}
+
+body.dark .product-detail-location-icon {
+  filter: grayscale(1) invert(1) brightness(2) !important;
+  /* Make icons white/light without destroying internal detail */
+}
+
+body.dark .input-field,
+body.dark .feedback-comment,
+body.dark .search-input,
+body.dark .add-product-form input:not([type="checkbox"]),
+body.dark .add-product-form select,
+body.dark .add-product-form textarea {
+  background-color: var(--card-bg) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: var(--color-text) !important;
+}
+
+body.dark .input-field::placeholder,
+body.dark .feedback-comment::placeholder,
+body.dark .search-input::placeholder,
+body.dark .add-product-form input::placeholder,
+body.dark .add-product-form textarea::placeholder {
+  color: var(--color-muted);
+}
+
+/* Inactive Profile Tabs - PILL SHAPED */
+body.dark .profile-tab {
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  /* Full border for pill, override legacy border-bottom hacks */
+  margin-bottom: 0px !important;
+  border-radius: 999px !important;
+  /* Pill shape */
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+  box-sizing: border-box !important;
+}
+
+body.dark .profile-tab:not(.is-active) {
+  background-color: transparent !important;
+  color: var(--color-muted) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3) !important;
+  /* Explicitly enforce bottom border */
+}
+
+body.dark .profile-tab:not(.is-active):hover {
+  color: var(--color-text) !important;
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Nuclear fix for Profile Tabs in Dark Mode */
+html body.dark .profile-tab.is-active,
+html body.dark button.profile-tab.is-active {
+  background: var(--color-primary) !important;
+  background-color: var(--color-primary) !important;
+  background-image: none !important;
+  background-clip: border-box !important;
+  border: 1px solid var(--color-primary) !important;
+  color: #fff !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
+  -webkit-text-fill-color: #fff !important;
+  /* Ensure no background clipping on text */
+}
+
+/* Feedback Section Dark Mode */
+body.dark .profile-feedback {
+  border-top-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+body.dark .profile-feedback h2,
+body.dark .profile-feedback-empty {
+  color: var(--color-text) !important;
+}
+
+body.dark .profile-feedback-item {
+  background-color: var(--card-bg) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+body.dark .profile-feedback-item-header {
+  border-bottom: none !important;
+  /* specific fix if needed */
+}
+
+body.dark .profile-feedback-item-date,
+body.dark .profile-feedback-item-comment {
+  color: var(--color-muted) !important;
+}
+
+body.dark .rating-value-btn.is-selected {
+  background-color: var(--color-primary) !important;
+  /* Keep primary for selection */
+  color: #fff !important;
+  border-color: var(--color-primary) !important;
+}
+
+body.dark .rating-dialog,
+body.dark .logout-dialog,
+body.dark .add-product-success-dialog,
+body.dark .feedback-modal {
+  background-color: var(--card-bg) !important;
+  color: var(--color-text) !important;
+}
+
+body.dark .search-btn {
+  background-color: var(--color-primary) !important;
+  color: #fff !important;
+  border: none !important;
+}
+
+/* Increased visibility for secondary buttons - Lighter Background */
+body.dark .btn-secondary,
+body.dark .file-input-btn {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  /* Lighter background for visibility */
+  border-color: rgba(255, 255, 255, 0.6) !important;
+  color: var(--color-text) !important;
+}
+
+body.dark .btn-secondary:hover,
+body.dark .file-input-btn:hover {
+  border-color: #fff !important;
+  background-color: rgba(255, 255, 255, 0.18) !important;
+}
+
+body.dark .profile-card-btn {
+  background-color: var(--card-bg) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  /* added border for visibility */
+}
+
+body.dark .profile-card-btn-icon {
+  filter: brightness(0) invert(1) !important;
+}
+
+/* Install Banner Dark Mode */
+body.dark .install-prompt-card {
+  background-color: var(--card-bg) !important;
+  color: var(--color-text) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+body.dark .install-prompt-sub,
+body.dark .install-prompt-close {
+  color: var(--color-muted) !important;
+}
+
+body.dark .rating-value-btn {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Tab Outlines */
+body.dark .profile-tab {
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  border-bottom: none !important;
+  /* Keep bottom distinct or rely on active state */
+  margin-bottom: -1px;
+  /* overlap border if needed, or just let it be independent */
+  border-radius: 8px 8px 0 0;
+  /* consistent tab look */
+}
+
+body.dark .profile-tab:not(.is-active) {
+  background-color: transparent !important;
+  color: var(--color-muted) !important;
+}
+
+body.dark .profile-tab.is-active {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  border-bottom: 2px solid var(--color-primary) !important;
+  color: var(--color-text) !important;
+}
+
+
+body.dark.theme-clothing {
+  --color-primary: #3a6ea5;
+  --color-primary-light: #4f83c2;
+  /* slightly lighter for hover */
+  /* Deep Blue Grey background -> Dark Gray */
+  --page-bg: #1a1a1a;
+  --nav-active-color: #3a6ea5;
+  --nav-active-glow: rgba(58, 110, 165, 0.2);
+  --nav-active-glow-strong: rgba(58, 110, 165, 0.35);
+  background-color: #1a1a1a !important;
+  color: #c9d6e3 !important;
+}
+
+/* Profile Add Product Button Dark Mode */
+body.dark .profile-add-product-card {
+  background-color: var(--page-bg) !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+body.dark .profile-add-product-card:hover {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+body.dark .profile-add-product-circle {
+  background-color: transparent !important;
+}
+
+/* Dark Mode Autofill Fix */
+body.dark input:-webkit-autofill,
+body.dark input:-webkit-autofill:hover,
+body.dark input:-webkit-autofill:focus,
+body.dark input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px var(--card-bg) inset !important;
+  -webkit-text-fill-color: var(--color-text) !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Hide Add Product Card Container Background in Dark Mode - Increased Specificity */
+html body.dark .product-card.add-product-slot {
+  background-color: var(--page-bg) !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* Auth Card Dark Mode */
+body.dark .auth-card,
+body.dark .auth-page .auth-card,
+html body.dark .auth-card {
+  background-color: #2d2d2d !important;
+  /* Hardcoded to ensure visibility */
+  color: #e1e1e1 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Login Status Text Dark Mode */
+body.dark .form-status {
+  color: var(--color-text) !important;
+}
+
+body.dark .form-status.is-error {
+  color: #ff6b6b !important;
+  /* Lighter red for dark mode error */
 }

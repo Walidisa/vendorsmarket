@@ -316,7 +316,7 @@ export default function EditProfilePage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ paths: keysToDelete }),
-        }).catch(() => {});
+        }).catch(() => { });
       }
 
       // Update originals so subsequent edits know current values
@@ -422,6 +422,8 @@ export default function EditProfilePage() {
             src={theme === "clothing" ? "/icons/back.png" : "/icons/back-orange.png"}
             alt="Back"
             className="back-icon"
+            data-blue="/icons/back.png"
+            data-brown="/icons/back-orange.png"
           />
         </button>
         <h1 className="add-product-title">Edit Profile</h1>
@@ -712,7 +714,7 @@ export default function EditProfilePage() {
                   setStatus("Deleting account...");
                   try {
                     // Refresh session to avoid stale token
-                    await supabase.auth.refreshSession().catch(() => {});
+                    await supabase.auth.refreshSession().catch(() => { });
                     const {
                       data: sessionData,
                     } = await supabase.auth.getSession();
@@ -738,7 +740,7 @@ export default function EditProfilePage() {
                       setDeleteModalOpen(false);
                       return;
                     }
-                    await supabase.auth.signOut({ scope: "global" }).catch(() => supabase.auth.signOut().catch(() => {}));
+                    await supabase.auth.signOut({ scope: "global" }).catch(() => supabase.auth.signOut().catch(() => { }));
                     if (typeof window !== "undefined") {
                       Object.keys(localStorage).forEach((k) => {
                         if (k.toLowerCase().includes("supabase")) localStorage.removeItem(k);

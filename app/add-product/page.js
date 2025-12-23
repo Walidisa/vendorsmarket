@@ -215,9 +215,9 @@ export default function AddProductPage() {
     let galleryPaths = Array.isArray(form.images)
       ? form.images
       : (form.images || '')
-          .split(',')
-          .map((s) => s.trim())
-          .filter(Boolean);
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
 
     try {
       if (coverFile) {
@@ -312,6 +312,8 @@ export default function AddProductPage() {
             src={theme === 'clothing' ? '/icons/back.png' : '/icons/back-orange.png'}
             alt="Back"
             className="back-icon"
+            data-blue="/icons/back.png"
+            data-brown="/icons/back-orange.png"
           />
         </button>
         <h1 className="add-product-title">Add Product</h1>
