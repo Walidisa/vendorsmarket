@@ -15,7 +15,7 @@ export default function LoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setStatus("Logging in...");
+    setStatus("Logging in");
 
     const emailOk = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim());
     if (!emailOk) {
@@ -112,9 +112,10 @@ export default function LoginPage() {
           {status ? (() => {
             const s = status.trim().toLowerCase();
             const isNeutral = s.startsWith('saving') || s.startsWith('logging');
+            const showDots = s.startsWith('logging') || s.startsWith('saving');
             return (
               <p className={`form-status${isNeutral ? '' : ' is-error'}`}>
-                {status}
+                {status}{showDots ? <span className="loading-dots" aria-hidden="true"></span> : null}
               </p>
             );
           })() : null}

@@ -24,7 +24,7 @@ body.dark.theme-food {
   --nav-active-glow: rgba(181, 141, 113, 0.2);
   --nav-active-glow-strong: rgba(181, 141, 113, 0.35);
   background-color: #1a1a1a !important;
-  color: #c49a7a !important;
+  color: var(--color-text) !important;
 }
 
 /* THEME – CLOTHING (Blue) */

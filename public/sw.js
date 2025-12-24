@@ -1,4 +1,5 @@
-const CACHE_NAME = "vm-static-v6";
+// Bump this version on each deployment to bust old caches.
+const CACHE_NAME = "vm-static-v15";
 const APP_SHELL = [
   "/offline.html",
   "/icons/icon-192x192.png",
@@ -32,6 +33,18 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("message", (event) => {
   if (event.data && event.data.type === "SKIP_WAITING") {
     self.skipWaiting();
+  }
+  if (event.data && event.data.type === "REFRESH_CACHE") {
+    caches.keys().then((keys) =>
+      Promise.all(
+        keys.map((key) => {
+          if (key !== CACHE_NAME) {
+            return caches.delete(key);
+          }
+          return null;
+        })
+      )
+    );
   }
 });
 

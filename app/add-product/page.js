@@ -488,15 +488,16 @@ export default function AddProductPage() {
         </label>
 
         <button type="submit">Save product</button>
-        {status && (() => {
-          const lower = String(status).toLowerCase();
-          const isError = !(lower.startsWith('saving') || lower.includes('saved'));
-          return (
+          {status && (() => {
+            const lower = String(status).toLowerCase();
+            const isError = !(lower.startsWith('saving') || lower.includes('saved'));
+            return (
             <p className={`form-status${isError ? ' is-error' : ''}`}>
-              {status}
-            </p>
-          );
-        })()}
+                {status}
+                {lower.startsWith('saving') ? <span className="loading-dots" aria-hidden="true"></span> : null}
+              </p>
+            );
+          })()}
       </form>
 
       {limitModalOpen && (

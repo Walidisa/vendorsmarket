@@ -1,5 +1,17 @@
 // Minimal shared helpers kept for legacy static pages
 
+function getStoredTheme(defaultTheme = 'clothing') {
+  const stored = localStorage.getItem('activeTheme');
+  return stored === 'food' || stored === 'clothing' ? stored : defaultTheme;
+}
+
+function getStoredDarkMode() {
+  const stored = localStorage.getItem('darkMode');
+  if (stored === 'true') return true;
+  if (stored === 'false') return false;
+  return !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) || true;
+}
+
 function initPageTransitions() {
   const navLinks = document.querySelectorAll('.bottom-nav .nav-item');
   const wrapper = document.querySelector('.page-transition');
@@ -17,19 +29,35 @@ function initPageTransitions() {
 }
 
 function applySavedBodyTheme() {
-  const theme = localStorage.getItem('activeTheme') || 'clothing';
-  document.body.classList.remove('theme-food', 'theme-clothing');
+  const theme = getStoredTheme();
+  const isDark = getStoredDarkMode();
+  document.body.classList.remove('theme-food', 'theme-clothing', 'dark');
   document.body.classList.add(theme === 'food' ? 'theme-food' : 'theme-clothing');
+  if (isDark) document.body.classList.add('dark');
+  document.documentElement.classList.toggle('dark', !!isDark);
+  return { theme, isDark };
 }
 
 function updateNavIconsByTheme() {
-  const theme = localStorage.getItem('activeTheme') || 'clothing';
+  const theme = getStoredTheme();
+  const isDark = getStoredDarkMode();
   const swap = (selector) => {
     document.querySelectorAll(selector).forEach((icon) => {
       const brown = icon.dataset.brown;
       const blue = icon.dataset.blue;
-      if (theme === 'food' && brown) icon.src = brown;
-      if (theme === 'clothing' && blue) icon.src = blue;
+
+      if (theme === 'clothing' && isDark) {
+        const src = icon.getAttribute('src') || '';
+        if (src.includes('home')) icon.src = '/icons/home-clothing-dark.png';
+        else if (src.includes('search')) icon.src = '/icons/search-clothing-dark.png';
+        else if (src.includes('profile')) icon.src = '/icons/profile-clothing-dark.png';
+        else if (icon.classList.contains('back-icon')) icon.src = '/icons/back-button-clothing-dark.png';
+        else if (src.includes('add.png')) icon.src = '/icons/add-clothing-dark.png';
+        else if (blue) icon.src = blue;
+      } else {
+        if (theme === 'food' && brown) icon.src = brown;
+        if (theme === 'clothing' && blue) icon.src = blue;
+      }
     });
   };
   swap('.nav-icon');
@@ -57,6 +85,12 @@ function runAllInitializers() {
   updateNavIconsByTheme();
   initPageTransitions();
 }
+
+// Keep icons/classes in sync when theme changes elsewhere
+window.addEventListener('vm-theme-change', () => {
+  applySavedBodyTheme();
+  updateNavIconsByTheme();
+});
 
 window.applySavedBodyTheme = applySavedBodyTheme;
 window.updateNavIconsByTheme = updateNavIconsByTheme;

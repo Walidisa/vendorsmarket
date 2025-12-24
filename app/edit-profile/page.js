@@ -656,15 +656,16 @@ export default function EditProfilePage() {
         </label>
 
         <button type="submit">Save changes</button>
-        {status && (() => {
-          const lower = String(status).toLowerCase();
-          const isError = !(lower.startsWith('saving') || lower.includes('saved'));
-          return (
+          {status && (() => {
+            const lower = String(status).toLowerCase();
+            const isError = !(lower.startsWith('saving') || lower.includes('saved'));
+            return (
             <p className={`form-status${isError ? ' is-error' : ''}`}>
-              {status}
-            </p>
-          );
-        })()}
+                {status}
+                {lower.startsWith('saving') ? <span className="loading-dots" aria-hidden="true"></span> : null}
+              </p>
+            );
+          })()}
 
         <div className="profile-logout-wrapper" style={{ marginTop: "16px" }}>
           <button

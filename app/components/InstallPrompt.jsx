@@ -13,14 +13,11 @@ export default function InstallPrompt() {
   const refreshColors = () => {
     if (typeof window === "undefined") return;
     const stored = localStorage.getItem("activeTheme");
-    const activeTheme = stored ||
-      (document.body.classList.contains("theme-food") ? "food" : "clothing");
+    const activeTheme = stored || (document.body.classList.contains("theme-food") ? "food" : "clothing");
 
     const style = getComputedStyle(document.body);
-    const foodPrimary =
-      style.getPropertyValue("--color-primary-lightbrown")?.trim() || "#8A624A";
-    const clothingPrimary =
-      style.getPropertyValue("--color-primary")?.trim() || "#0d3b66";
+    const foodPrimary = style.getPropertyValue("--color-primary-lightbrown")?.trim() || "#8A624A";
+    const clothingPrimary = style.getPropertyValue("--color-primary")?.trim() || "#0d3b66";
 
     const primary = activeTheme === "food" ? foodPrimary : clothingPrimary;
     const accent =
@@ -49,7 +46,13 @@ export default function InstallPrompt() {
       }
       setVisible(true);
     };
+
     refreshColors();
+    // Show by default if not dismissed in last 24h, even if beforeinstallprompt hasn't fired yet.
+    const dismissed = localStorage.getItem("install_dismissed");
+    const suppressed = dismissed ? Date.now() - parseInt(dismissed, 10) < 86400000 : false;
+    if (!suppressed) setVisible(true);
+
     const onThemeChange = () => refreshColors();
     const observer = new MutationObserver(() => refreshColors());
     observer.observe(document.body, { attributes: true, attributeFilter: ["class"] });
@@ -64,9 +67,15 @@ export default function InstallPrompt() {
     };
   }, []);
 
-  if (!visible || !deferredPrompt) return null;
+  if (!visible) return null;
 
   const triggerInstall = async () => {
+    if (!deferredPrompt) {
+      // No native prompt available; dismiss after surfacing manual guidance.
+      localStorage.setItem("install_dismissed", Date.now().toString());
+      setVisible(false);
+      return;
+    }
     try {
       await deferredPrompt.prompt();
       await deferredPrompt.userChoice;
@@ -94,56 +103,79 @@ export default function InstallPrompt() {
       <div
         className="install-prompt-card"
         style={{
-          background: "#f7f7f7",
-          color: "#1d1d1d",
-          padding: "12px 14px",
-          borderRadius: "14px",
-          border: "1px solid rgba(0,0,0,0.08)",
-          boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
-          display: "flex",
+          background: "var(--card-bg)",
+          color: "var(--color-text)",
+          padding: "14px 16px",
+          borderRadius: "16px",
+          border: "1px solid rgba(0,0,0,0.12)",
+          boxShadow: "0 8px 24px rgba(0,0,0,0.16)",
+          display: "grid",
+          gridTemplateColumns: "1fr auto",
           alignItems: "center",
-          justifyContent: "space-between",
-          gap: "10px"
+          gap: "12px"
         }}
       >
-        <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-          <strong style={{ fontSize: "0.98rem" }}>Install Vendors Market</strong>
-          <span className="install-prompt-sub" style={{ fontSize: "0.87rem", color: "#3c4043" }}>
-            Add the app to your home screen for quick access.
+        <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+          <strong style={{ fontSize: "1.05rem", lineHeight: 1.2 }}>Download Vendors Market</strong>
+          <span className="install-prompt-sub" style={{ fontSize: "0.95rem", color: "var(--color-muted)" }}>
+            {deferredPrompt
+              ? "Add the app to your home screen for quick access."
+              : "Open menu (⋮) or Share button and tap \"Add to Home screen\" to install."}
           </span>
         </div>
-        <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+        <div
+          style={{
+            display: "flex",
+            gap: "10px",
+            alignItems: "center",
+            justifyContent: "flex-end",
+            flexWrap: "nowrap"
+          }}
+        >
+          {deferredPrompt && (
+            <button
+              onClick={triggerInstall}
+              style={{
+                background: colors.primary,
+                color: "#fff",
+                border: "none",
+                padding: "9px 14px",
+                borderRadius: "12px",
+                fontWeight: 700,
+                cursor: "pointer",
+                boxShadow: "0 6px 18px rgba(0,0,0,0.15)",
+                whiteSpace: "nowrap",
+                minWidth: "88px",
+                flexShrink: 0,
+                marginRight: "40px"
+              }}
+            >
+              Install
+            </button>
+          )}
           <button
-            onClick={triggerInstall}
-            style={{
-              background: colors.primary,
-              color: "#fff",
-              border: "none",
-              padding: "9px 12px",
-              borderRadius: "10px",
-              fontWeight: 700,
-              cursor: "pointer",
-              boxShadow: "0 6px 18px rgba(0,0,0,0.15)"
-            }}
-          >
-            Install
-          </button>
-          <button
-            className="install-prompt-close"
+            className="install-prompt-close feedback-close"
             onClick={() => {
               setVisible(false);
               localStorage.setItem("install_dismissed", Date.now().toString());
             }}
             style={{
               background: "transparent",
-              color: "#3c4043",
-              border: "none",
-              padding: "8px",
-              fontSize: "18px",
-              cursor: "pointer"
+              color: "var(--color-text)",
+              border: "1px solid rgba(0,0,0,0.16)",
+              padding: "6px",
+              fontSize: "16px",
+              cursor: "pointer",
+              minWidth: "32px",
+              minHeight: "32px",
+              borderRadius: "50%",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0
             }}
           >
-            ×
+            <img src="/icons/close.png" alt="Close" className="feedback-close-icon" />
           </button>
         </div>
       </div>

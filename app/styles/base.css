@@ -667,6 +667,7 @@ body.dark .landing-featured {
   background-color: var(--card-bg) !important;
   border: 1px solid rgba(255, 255, 255, 0.05) !important;
   /* subtle border for contrast */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
 }
 
 body.dark .landing-categories h2,
@@ -749,6 +750,25 @@ body.dark .add-product-form textarea {
   background-color: var(--card-bg) !important;
   border-color: rgba(255, 255, 255, 0.1) !important;
   color: var(--color-text) !important;
+}
+
+/* Product/vendor cards and sliders in dark mode */
+body.dark .landing-slider .product-card,
+body.dark .subcategory-row-scroll .product-card,
+body.dark .landing-featured .vendor-card,
+body.dark .vendor-slider .vendor-card {
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+body.dark .product-card .product-image-box {
+  background: transparent;
+}
+
+body.dark .product-card .product-image {
+  background: #1f1f1f;
 }
 
 body.dark .input-field::placeholder,
@@ -880,6 +900,13 @@ body.dark .install-prompt-card {
   border-color: rgba(255, 255, 255, 0.1) !important;
 }
 
+/* Feedback modal controls */
+body.dark .feedback-close {
+  background: var(--card-bg) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35) !important;
+}
+
 body.dark .install-prompt-sub,
 body.dark .install-prompt-close {
   color: var(--color-muted) !important;
@@ -971,12 +998,48 @@ html body.dark .auth-card {
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
+/* General cards slightly lighter than page background for contrast */
+body.dark .card,
+body.dark .profile-about,
+body.dark .profile-feedback-item,
+body.dark .install-prompt-card,
+body.dark .landing-featured,
+body.dark .landing-categories {
+  background-color: #242424 !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Remove outlines for text cards on About/Terms/Privacy in dark mode */
+body.dark .landing-featured .vendor-card {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Preserve themed info cards on homepage in dark mode */
+body.dark .card.theme-food {
+  background: #c58a64 !important;
+  color: #fff !important;
+  border: none !important;
+  box-shadow: 0 4px 18px rgba(197, 138, 100, 0.18) !important;
+}
+
+body.dark .card.theme-clothing {
+  background: var(--color-primary) !important;
+  color: #fff !important;
+  border: none !important;
+  box-shadow: 0 4px 18px rgba(13, 59, 102, 0.18) !important;
+}
+
 /* Login Status Text Dark Mode */
 body.dark .form-status {
   color: var(--color-text) !important;
+  background: var(--card-bg) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
 body.dark .form-status.is-error {
   color: #ff6b6b !important;
   /* Lighter red for dark mode error */
+  background: rgba(255, 107, 107, 0.08) !important;
+  border-color: rgba(255, 107, 107, 0.25) !important;
 }

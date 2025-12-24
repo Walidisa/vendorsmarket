@@ -3,6 +3,13 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Script from "next/script";
+import {
+  applyThemeAndBroadcast,
+  applyThemeClasses,
+  getInitialPreferences,
+  getStoredDarkMode,
+  persistTheme
+} from "../lib/themeUtils";
 
 export default function HomeClient() {
   const slides = [
@@ -20,23 +27,13 @@ export default function HomeClient() {
   const [productsLoading, setProductsLoading] = useState(true);
   const [vendorsLoading, setVendorsLoading] = useState(true);
 
-  const setBodyTheme = (theme, isDark) => {
-    if (typeof document === "undefined") return;
-    document.body.classList.remove("theme-food", "theme-clothing", "dark");
-    document.body.classList.add(theme === "food" ? "theme-food" : "theme-clothing");
-    if (isDark) document.body.classList.add("dark");
-  };
-
   const applyTheme = (theme) => {
     setLandingCategory(theme);
     setHeroTheme(theme);
-    if (typeof window !== "undefined") {
-      const isDark = localStorage.getItem("darkMode") === "true";
-      localStorage.setItem("activeTheme", theme);
-      document.cookie = `activeTheme=${theme};path=/;max-age=31536000`;
-      setBodyTheme(theme, isDark);
-      window.dispatchEvent(new Event("vm-theme-change"));
-    }
+    if (typeof window === "undefined") return;
+    const isDark = getStoredDarkMode();
+    persistTheme(theme);
+    applyThemeAndBroadcast(theme, isDark);
   };
 
   const heroRef = useRef(null);
@@ -55,16 +52,10 @@ export default function HomeClient() {
   }, []);
 
   useEffect(() => {
-    const saved = typeof window !== "undefined" ? localStorage.getItem("activeTheme") : null;
-    const isDark = typeof window !== "undefined" ? localStorage.getItem("darkMode") === "true" : false;
-    if (saved === "clothing" || saved === "food") {
-      setHeroTheme(saved);
-      setLandingCategory(saved);
-      setBodyTheme(saved, isDark);
-    } else {
-      // Default call if no saved theme, but respecting dark mode
-      setBodyTheme("clothing", isDark);
-    }
+    const { theme, isDark } = getInitialPreferences("clothing");
+    setHeroTheme(theme);
+    setLandingCategory(theme);
+    applyThemeClasses(theme, isDark);
     const id = setInterval(() => {
       setSlideIndex((prev) => (prev + 1) % slides.length);
     }, 3200);
@@ -169,7 +160,7 @@ export default function HomeClient() {
                 <button className="btn-primary">Explore all products</button>
               </Link>
               <Link href="/signup">
-                <button className="btn-secondary">Register as a vendor</button>
+                <button className="btn-secondary">Become a vendor</button>
               </Link>
             </div>
           </header>
@@ -323,7 +314,7 @@ export default function HomeClient() {
 function HomeSkeleton() {
   return (
     <div className="page">
-      <div className="skeleton-hero-shell">
+      <div className="skeleton-hero-shell" style={{ marginBottom: 16 }}>
         <div className="skeleton skeleton-line" style={{ width: "70%", height: 22, marginTop: 32 }}></div>
         <div className="skeleton-dots">
           {Array.from({ length: 3 }).map((_, idx) => (
@@ -336,7 +327,7 @@ function HomeSkeleton() {
         </div>
       </div>
 
-      <section className="landing-categories">
+      <section className="landing-categories" style={{ marginTop: 8 }}>
         <div className="skeleton-pill-toggle">
           <div className="skeleton skeleton-pill"></div>
           <div className="skeleton skeleton-pill"></div>

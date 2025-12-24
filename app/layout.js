@@ -41,7 +41,7 @@ const inter = Inter({ subsets: ["latin"], display: "swap" });
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={inter.className} suppressHydrationWarning={true}>
+      <body className={`${inter.className} dark theme-clothing`} suppressHydrationWarning={true}>
         <PwaProvider />
         <InstallPrompt />
         <RouteLoader />

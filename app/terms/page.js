@@ -125,7 +125,7 @@ export default function TermsPage() {
           </header>
 
           <section className="landing-featured" style={{ marginBottom: 16 }}>
-            <p style={{ marginTop: 0, marginBottom: 8, color: "#4b5563" }}>
+            <p style={{ marginTop: 0, marginBottom: 8, color: "var(--color-muted)" }}>
               Last updated: November 2025. Please read these terms carefully before using VendorsMarket.
             </p>
             <div className="vendor-slider" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -139,12 +139,12 @@ export default function TermsPage() {
                     {section.title}
                   </h3>
                   {section.body ? (
-                    <p className="vendor-username" style={{ color: "#4b5563", margin: 0 }}>
+                    <p className="vendor-username" style={{ margin: 0 }}>
                       {section.body}
                     </p>
                   ) : null}
                   {Array.isArray(section.list) ? (
-                    <ul style={{ paddingLeft: 18, margin: "4px 0 0", color: "#4b5563", lineHeight: 1.5 }}>
+                    <ul style={{ paddingLeft: 18, margin: "4px 0 0", color: "var(--color-muted)", lineHeight: 1.5 }}>
                       {section.list.map((item, idx) => (
                         <li key={idx}>{item}</li>
                       ))}

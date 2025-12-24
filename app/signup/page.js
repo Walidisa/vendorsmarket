@@ -534,7 +534,7 @@ export default function SignupPage() {
               <button
                 type="button"
                 className="preview-delete-btn"
-                onClick={() => {
+                onClick={() => {  
                   if (prevBannerUrl.current && prevBannerUrl.current.startsWith('blob:')) {
                     URL.revokeObjectURL(prevBannerUrl.current);
                   }
@@ -612,15 +612,18 @@ export default function SignupPage() {
         ) : null}
 
         <button type="submit">Create account</button>
-        {status ? (() => {
-          const s = status.trim().toLowerCase();
-          const isNeutral = s.startsWith('saving') || s.startsWith('signing') || s.startsWith('creating');
-          return (
+          {status ? (() => {
+            const s = status.trim().toLowerCase();
+            const isNeutral = s.startsWith('saving') || s.startsWith('signing') || s.startsWith('creating');
+            return (
             <p className={`form-status${isNeutral ? '' : ' is-error'}`}>
-              {status}
-            </p>
-          );
-        })() : null}
+                {status}
+                {s.startsWith('saving') || s.startsWith('signing') || s.startsWith('creating') ? (
+                  <span className="loading-dots" aria-hidden="true"></span>
+                ) : null}
+              </p>
+            );
+          })() : null}
       </form>
 
       {successOpen && (

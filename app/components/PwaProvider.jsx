@@ -98,6 +98,12 @@ export default function PwaProvider() {
     waitingWorker.postMessage({ type: "SKIP_WAITING" });
   };
 
+  const refreshCaches = async () => {
+    if (navigator.serviceWorker?.controller) {
+      navigator.serviceWorker.controller.postMessage({ type: "REFRESH_CACHE" });
+    }
+  };
+
   if (!showUpdate || !waitingWorker) return null;
 
   return (
@@ -105,7 +111,7 @@ export default function PwaProvider() {
       style={{
         position: "fixed",
         left: "50%",
-        bottom: "90px",
+        bottom: "24px",
         transform: "translateX(-50%)",
         zIndex: 15000,
         maxWidth: "480px",
@@ -115,10 +121,11 @@ export default function PwaProvider() {
     >
       <div
         style={{
-          background: "#0d3b66",
-          color: "#fff",
+          background: "var(--card-bg)",
+          color: "var(--color-text)",
           padding: "12px 14px",
           borderRadius: "14px",
+          border: "1px solid rgba(0,0,0,0.06)",
           boxShadow: "0 8px 24px rgba(0,0,0,0.16)",
           display: "flex",
           alignItems: "center",
@@ -128,7 +135,7 @@ export default function PwaProvider() {
       >
         <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
           <strong style={{ fontSize: "0.98rem" }}>Update available</strong>
-          <span style={{ fontSize: "0.87rem", color: "rgba(255,255,255,0.9)" }}>
+          <span style={{ fontSize: "0.87rem", color: "var(--color-muted)" }}>
             Reload to get the latest Vendors Market.
           </span>
         </div>
@@ -136,7 +143,7 @@ export default function PwaProvider() {
           <button
             onClick={updateApp}
             style={{
-              background: "#c58a64",
+              background: "var(--color-primary)",
               color: "#fff",
               border: "none",
               padding: "9px 12px",
