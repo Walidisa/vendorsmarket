@@ -311,17 +311,22 @@ export default function ProfilePage({ params }) {
                   {isOwner && (
                     <button
                       type="button"
-                      className="profile-shop-edit-btn"
-                      id="profileEditProfileBtn"
-                      aria-label="Edit profile details"
-                      onClick={() => router.push("/edit-profile")}
-                    >
-                      <img
-                        src={theme === "clothing" ? "/icons/edit.png" : "/icons/edit-orange.png"}
-                        alt="Edit profile"
-                        className="profile-shop-edit-icon"
-                      />
-                    </button>
+                    className="profile-shop-edit-btn"
+                    id="profileEditProfileBtn"
+                    aria-label="Edit profile details"
+                    onClick={() => router.push("/edit-profile")}
+                  >
+                    <img
+                      src={
+                        theme === "clothing"
+                          ? "/icons/edit-clothing-dark.png"
+                          : "/icons/edit-orange.png"
+                      }
+                      alt="Edit profile"
+                      className="profile-shop-edit-icon"
+                      data-icon="edit"
+                    />
+                  </button>
                   )}
                 </div>
                 <p className="profile-name" id="profileOwnerName">
@@ -540,28 +545,30 @@ export default function ProfilePage({ params }) {
 
       <nav className="bottom-nav">
         <Link href="/homepage" className="nav-item">
-          <span className="nav-icon-wrapper">
-            <img
-              src={theme === "clothing" ? "/icons/home.png" : "/icons/home-lightbrown.png"}
-              className="nav-icon"
-              alt=""
-              data-blue="/icons/home.png"
-              data-brown="/icons/home-lightbrown.png"
-            />
-          </span>
+            <span className="nav-icon-wrapper">
+              <img
+                src={theme === "clothing" ? "/icons/home.png" : "/icons/home-lightbrown.png"}
+                className="nav-icon"
+                data-icon="home"
+                alt=""
+                data-blue="/icons/home.png"
+                data-brown="/icons/home-lightbrown.png"
+              />
+            </span>
           <span>Home</span>
         </Link>
 
         <Link href="/search" className="nav-item">
-          <span className="nav-icon-wrapper">
-            <img
-              src={theme === "clothing" ? "/icons/search.png" : "/icons/search-lightbrown.png"}
-              className="nav-icon"
-              alt=""
-              data-blue="/icons/search.png"
-              data-brown="/icons/search-lightbrown.png"
-            />
-          </span>
+            <span className="nav-icon-wrapper">
+              <img
+                src={theme === "clothing" ? "/icons/search.png" : "/icons/search-lightbrown.png"}
+                className="nav-icon"
+                data-icon="search"
+                alt=""
+                data-blue="/icons/search.png"
+                data-brown="/icons/search-lightbrown.png"
+              />
+            </span>
           <span>Search</span>
         </Link>
 
@@ -574,15 +581,16 @@ export default function ProfilePage({ params }) {
           className={`nav-item${isProfileOwnerSlug ? " active" : ""}`}
           id="bottomNavProfileLink"
         >
-          <span className="nav-icon-wrapper">
-            <img
-              src={theme === "clothing" ? "/icons/profile.png" : "/icons/profile-lightbrown.png"}
-              className="nav-icon"
-              alt=""
-              data-blue="/icons/profile.png"
-              data-brown="/icons/profile-lightbrown.png"
-            />
-          </span>
+            <span className="nav-icon-wrapper">
+              <img
+                src={theme === "clothing" ? "/icons/profile.png" : "/icons/profile-lightbrown.png"}
+                className="nav-icon"
+                data-icon="profile"
+                alt=""
+                data-blue="/icons/profile.png"
+                data-brown="/icons/profile-lightbrown.png"
+              />
+            </span>
           <span>Profile</span>
         </Link>
       </nav>

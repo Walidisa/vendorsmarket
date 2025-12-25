@@ -5,12 +5,13 @@ import { useRouter } from 'next/navigation';
 import { uploadImage } from '../../lib/uploadImage';
 import { supabase } from '../../lib/supabaseClient';
 import { useThemeIcons } from '../../lib/useThemeIcons';
+import { getInitialPreferences, resolveIcon } from '../../lib/themeUtils';
 import dynamic from 'next/dynamic';
 import { ProductFormSkeleton } from '../components/ProductFormSkeleton';
 
 const mainCategories = [
   { value: 'food', label: 'Food, Drinks, Snacks & Utensils' },
-  { value: 'clothing', label: 'Clothing & accessories' },
+  { value: 'clothing', label: 'Clothing & Accessories' },
 ];
 
 // Subcategories as shown on the homepage
@@ -60,6 +61,11 @@ export default function AddProductPage() {
   const [subcategoryError, setSubcategoryError] = useState(false);
   const [coverError, setCoverError] = useState(false);
   const { theme } = useThemeIcons('clothing');
+  const initialPrefs = useMemo(
+    () => (typeof window === 'undefined' ? { theme: 'clothing', isDark: true } : getInitialPreferences('clothing')),
+    []
+  );
+  const backIconSrc = resolveIcon('back', theme || initialPrefs.theme, initialPrefs.isDark);
   const [coverFile, setCoverFile] = useState(null);
   const [galleryFiles, setGalleryFiles] = useState([]);
   const [cropCoverFile, setCropCoverFile] = useState(null);
@@ -209,7 +215,7 @@ export default function AddProductPage() {
       setLimitModalOpen(true);
       return;
     }
-    setStatus('Saving...');
+    setStatus('Saving');
 
     let coverPath = form.cover_image;
     let galleryPaths = Array.isArray(form.images)
@@ -308,13 +314,14 @@ export default function AddProductPage() {
     <div className="page add-product-page">
       <div className="add-product-header">
         <button type="button" className="back-button" onClick={() => window.history.back()}>
-          <img
-            src={theme === 'clothing' ? '/icons/back.png' : '/icons/back-orange.png'}
-            alt="Back"
-            className="back-icon"
-            data-blue="/icons/back.png"
-            data-brown="/icons/back-orange.png"
-          />
+            <img
+              src={backIconSrc || (theme === 'clothing' ? '/icons/back.png' : '/icons/back-orange.png')}
+              alt="Back"
+              className="back-icon"
+              data-icon="back"
+              data-blue="/icons/back.png"
+              data-brown="/icons/back-orange.png"
+            />
         </button>
         <h1 className="add-product-title">Add Product</h1>
       </div>
@@ -326,7 +333,7 @@ export default function AddProductPage() {
 
         <label>
           Price
-          <input name="price" type="number" min="0" step="0.01" value={form.price} onChange={handleChange} required />
+          <input name="price" type="number" min="0" step="500" value={form.price} onChange={handleChange} required />
         </label>
 
         <label>

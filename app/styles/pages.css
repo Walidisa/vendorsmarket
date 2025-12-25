@@ -229,6 +229,14 @@ body.scrolled .hero-image {
   border-radius: 999px;
 }
 
+body.dark .product-detail-dot {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+body.dark .product-detail-dot.is-active {
+  background: rgba(255, 255, 255, 0.9);
+}
+
 .product-detail-meta {
   margin-top: 8px;
 }
@@ -711,6 +719,7 @@ body.scrolled .hero-image {
   width: 18px;
   height: 18px;
   object-fit: contain;
+  content: attr(data-icon);
 }
 
 .profile-name,
@@ -1574,6 +1583,17 @@ body.dark .skeleton {
   cursor: pointer;
 }
 
+.preview-delete-btn .profile-card-btn-icon {
+  width: 13px;
+  height: 13px;
+}
+
+body.dark .preview-delete-btn {
+  background: #2b2b2b;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
 .file-input-hidden {
   position: absolute;
   opacity: 0;
@@ -1901,9 +1921,14 @@ body.dark .skeleton {
   }
 
   .product-contact-actions {
+    grid-area: actions;
     position: sticky;
     top: 168px;
     align-self: start;
+  }
+
+  .product-about {
+    grid-area: description;
   }
 
   .product-similar-section {

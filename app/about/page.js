@@ -1,13 +1,15 @@
 "use client";
 
 import Script from "next/script";
+import { useMemo } from "react";
 import { useThemeIcons } from "../../lib/useThemeIcons";
+import { getInitialPreferences, resolveIcon } from "../../lib/themeUtils";
 
 const sections = [
   {
     title: "What we do",
     body:
-      "VendorsMarket connects buyers with independent vendors. We host the marketplace; vendors own their shops and manage their listings across categories like clothing, phone/tech accessories, cars, real estate, and more."
+      "VendorsMarket connects buyers with independent vendors. We host the marketplace; vendors own their shops and manage their listings across categories like clothing, phone/tech accessories, and more."
   },
   {
     title: "How it works for buyers",
@@ -50,6 +52,11 @@ const sections = [
 
 export default function AboutPage() {
   const { theme } = useThemeIcons("clothing");
+  const initialPrefs = useMemo(
+    () => (typeof window === "undefined" ? { theme: "clothing", isDark: true } : getInitialPreferences("clothing")),
+    []
+  );
+  const backIconSrc = resolveIcon("back", theme || initialPrefs.theme, initialPrefs.isDark);
 
   return (
     <>
@@ -81,9 +88,10 @@ export default function AboutPage() {
               }}
             >
               <img
-                src={theme === "clothing" ? "/icons/back.png" : "/icons/back-orange.png"}
+                src={backIconSrc || (theme === "clothing" ? "/icons/back.png" : "/icons/back-orange.png")}
                 alt="Back"
                 className="back-icon"
+                data-icon="back"
                 data-blue="/icons/back.png"
                 data-brown="/icons/back-orange.png"
               />

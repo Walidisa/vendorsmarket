@@ -7,10 +7,11 @@ const __dirname = path.dirname(__filename);
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  allowedDevOrigins: ["10.9.7.113", "127.0.0.1"],
+  allowedDevOrigins: ["10.9.7.113", "127.0.0.1", "10.9.5.17"],
   turbopack: {
-    root: __dirname, // force workspace root to avoid Turbopack lockfile warning
-  },
+    // Silence workspace root warning when multiple lockfiles are present.
+    root: __dirname
+  }
 };
 
 export default nextConfig;

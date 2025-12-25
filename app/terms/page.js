@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import Script from "next/script";
+import { useMemo } from "react";
 import { useThemeIcons } from "../../lib/useThemeIcons";
+import { getInitialPreferences, resolveIcon } from "../../lib/themeUtils";
 
 const sections = [
   {
@@ -83,6 +85,11 @@ const sections = [
 
 export default function TermsPage() {
   const { theme } = useThemeIcons("clothing");
+  const initialPrefs = useMemo(
+    () => (typeof window === "undefined" ? { theme: "clothing", isDark: true } : getInitialPreferences("clothing")),
+    []
+  );
+  const backIconSrc = resolveIcon("back", theme || initialPrefs.theme, initialPrefs.isDark);
 
   return (
     <>
@@ -114,9 +121,10 @@ export default function TermsPage() {
               }}
             >
               <img
-                src={theme === "clothing" ? "/icons/back.png" : "/icons/back-orange.png"}
+                src={backIconSrc || (theme === "clothing" ? "/icons/back.png" : "/icons/back-orange.png")}
                 alt="Back"
                 className="back-icon"
+                data-icon="back"
                 data-blue="/icons/back.png"
                 data-brown="/icons/back-orange.png"
               />

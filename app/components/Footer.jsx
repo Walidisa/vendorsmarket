@@ -151,7 +151,7 @@ export default function Footer() {
               className="btn-primary feedback-submit"
               disabled={submitting}
             >
-              {submitting ? "Sending..." : "Send feedback"}
+              {submitting ? "Sending" : "Send feedback"}
             </button>
           </form>
         </div>

@@ -6,7 +6,7 @@ export default function PwaProvider() {
   const [waitingWorker, setWaitingWorker] = useState(null);
   const [showUpdate, setShowUpdate] = useState(false);
 
-  // Keep theme-color meta consistent (fixed white per request).
+  // Keep theme-color meta in sync with dark/light mode.
   const applyThemeColor = () => {
     if (typeof document === "undefined") return;
     const ensureMeta = (media) => {
@@ -27,7 +27,9 @@ export default function PwaProvider() {
       ensureMeta("(prefers-color-scheme: light)"),
       ensureMeta("(prefers-color-scheme: dark)")
     ];
-    metas.forEach((meta) => meta.setAttribute("content", "#ffffff"));
+    const isDark = document.body.classList.contains("dark");
+    const color = isDark ? "#1a1a1a" : "#ffffff";
+    metas.forEach((meta) => meta.setAttribute("content", color));
   };
 
   const syncBodyTheme = () => {

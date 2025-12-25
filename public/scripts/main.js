@@ -45,16 +45,39 @@ function updateNavIconsByTheme() {
     document.querySelectorAll(selector).forEach((icon) => {
       const brown = icon.dataset.brown;
       const blue = icon.dataset.blue;
+      const srcRef = icon.dataset.blue || icon.getAttribute('src') || '';
+      const baseName = (srcRef.split('/').pop() || '').split('.')[0];
+      const isBack = icon.classList.contains('back-icon');
+      const isAdd = icon.classList.contains('profile-add-product-card-icon') || (srcRef.includes('add.png'));
+      const roleAttr = icon.dataset.icon;
+      const role = roleAttr || (isBack ? 'back' : isAdd ? 'add' : baseName);
+
+      if (window.__vmResolveIcon) {
+        const resolved = window.__vmResolveIcon(role, theme, isDark);
+        if (resolved) {
+          icon.src = resolved;
+          return;
+        }
+      }
 
       if (theme === 'clothing' && isDark) {
-        const src = icon.getAttribute('src') || '';
-        if (src.includes('home')) icon.src = '/icons/home-clothing-dark.png';
-        else if (src.includes('search')) icon.src = '/icons/search-clothing-dark.png';
-        else if (src.includes('profile')) icon.src = '/icons/profile-clothing-dark.png';
-        else if (icon.classList.contains('back-icon')) icon.src = '/icons/back-button-clothing-dark.png';
-        else if (src.includes('add.png')) icon.src = '/icons/add-clothing-dark.png';
+        if (role.includes('home')) icon.src = '/icons/home-clothing-dark.png';
+        else if (role.includes('search')) icon.src = '/icons/search-clothing-dark.png';
+        else if (role.includes('profile')) icon.src = '/icons/profile-clothing-dark.png';
+        else if (role === 'back') icon.src = '/icons/back-button-clothing-dark.png';
+        else if (role === 'add') icon.src = '/icons/add-clothing-dark.png';
+        else if (role.includes('edit')) icon.src = '/icons/edit-clothing-dark.png';
         else if (blue) icon.src = blue;
       } else {
+        if (role === 'back') {
+          if (theme === 'food' && brown) icon.src = brown;
+          else if (theme === 'clothing') icon.src = blue || '/icons/back.png';
+          return;
+        }
+        if (role.includes('edit')) {
+          icon.src = theme === 'clothing' ? '/icons/edit.png' : '/icons/edit-orange.png';
+          return;
+        }
         if (theme === 'food' && brown) icon.src = brown;
         if (theme === 'clothing' && blue) icon.src = blue;
       }

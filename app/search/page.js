@@ -164,6 +164,7 @@ export default function SearchPage() {
             <img
               src="/icons/home.png"
               className="nav-icon"
+              data-icon="home"
               data-blue="/icons/home.png"
               data-brown="/icons/home-lightbrown.png"
               alt=""
@@ -177,6 +178,7 @@ export default function SearchPage() {
             <img
               src="/icons/search.png"
               className="nav-icon"
+              data-icon="search"
               data-blue="/icons/search.png"
               data-brown="/icons/search-lightbrown.png"
               alt=""
@@ -190,6 +192,7 @@ export default function SearchPage() {
             <img
               src="/icons/profile.png"
               className="nav-icon"
+              data-icon="profile"
               data-blue="/icons/profile.png"
               data-brown="/icons/profile-lightbrown.png"
               alt=""

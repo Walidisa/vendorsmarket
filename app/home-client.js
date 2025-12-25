@@ -20,6 +20,7 @@ export default function HomeClient() {
   const [slideIndex, setSlideIndex] = useState(0);
   const [heroTheme, setHeroTheme] = useState("clothing");
   const [landingProducts, setLandingProducts] = useState([]);
+  const [vendors, setVendors] = useState([]);
   const [landingCategory, setLandingCategory] = useState("clothing");
   const [featuredVendors, setFeaturedVendors] = useState([]);
   const [heroVisible, setHeroVisible] = useState(true);
@@ -84,15 +85,7 @@ export default function HomeClient() {
         const res = await fetch("/api/profiles", { cache: "no-store" });
         if (!res.ok) return;
         const profiles = (await res.json()) || [];
-        const sorted = [...profiles].sort((a, b) => {
-          const ra = Number(a.rating_value || 0);
-          const rb = Number(b.rating_value || 0);
-          const ca = Number(a.rating_count || 0);
-          const cb = Number(b.rating_count || 0);
-          if (rb !== ra) return rb - ra;
-          return cb - ca;
-        });
-        setFeaturedVendors(sorted.slice(0, 4));
+        setVendors(profiles);
       } catch (e) {
         // ignore
       } finally {
@@ -101,6 +94,40 @@ export default function HomeClient() {
     }
     loadVendors();
   }, []);
+
+  useEffect(() => {
+    if (!vendors.length) return;
+
+    const productCounts = new Map();
+    (landingProducts || []).forEach((p) => {
+      const key =
+        p.vendorUsername ||
+        p.vendor_username ||
+        p.vendor ||
+        p.vendorShopName ||
+        p.shopName ||
+        p.vendorName ||
+        "";
+      if (!key) return;
+      productCounts.set(key, (productCounts.get(key) || 0) + 1);
+    });
+
+    const sorted = [...vendors].sort((a, b) => {
+      const ca = productCounts.get(a.username) || 0;
+      const cb = productCounts.get(b.username) || 0;
+      if (cb !== ca) return cb - ca;
+
+      const ra = Number(a.rating_value || 0);
+      const rb = Number(b.rating_value || 0);
+      if (rb !== ra) return rb - ra;
+
+      const rca = Number(a.rating_count || 0);
+      const rcb = Number(b.rating_count || 0);
+      return rcb - rca;
+    });
+
+    setFeaturedVendors(sorted.slice(0, 6));
+  }, [vendors, landingProducts]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -137,7 +164,7 @@ export default function HomeClient() {
       <div className="page">
         <div ref={heroRef} className={`hero-shell theme-${heroTheme} fade-section${heroVisible ? " visible" : ""}`}>
           <header className="site-header">
-            <div className="site-logo">vendorsmarket.ng</div>
+            <div className="site-logo">vendorsmarket.com.ng</div>
           </header>
 
           <header className="page-hero">
@@ -160,7 +187,7 @@ export default function HomeClient() {
                 <button className="btn-primary">Explore all products</button>
               </Link>
               <Link href="/signup">
-                <button className="btn-secondary">Become a vendor</button>
+                <button className="btn-primary">Become a vendor</button>
               </Link>
             </div>
           </header>

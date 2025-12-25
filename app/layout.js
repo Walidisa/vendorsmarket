@@ -33,7 +33,8 @@ export const viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "contain",
-  themeColor: "#ffffff"
+  // theme color handled dynamically in PwaProvider
+  themeColor: "transparent"
 };
 
 const inter = Inter({ subsets: ["latin"], display: "swap" });
@@ -41,6 +42,9 @@ const inter = Inter({ subsets: ["latin"], display: "swap" });
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
+      <head>
+        <link rel="manifest" href="/manifest.webmanifest" crossOrigin="use-credentials" />
+      </head>
       <body className={`${inter.className} dark theme-clothing`} suppressHydrationWarning={true}>
         <PwaProvider />
         <InstallPrompt />

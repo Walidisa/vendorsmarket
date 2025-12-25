@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useSWRConfig } from "swr";
@@ -9,6 +9,7 @@ import { uploadImage } from "../../lib/uploadImage";
 import { useThemeIcons } from "../../lib/useThemeIcons";
 import { supabase } from "../../lib/supabaseClient";
 import { STORAGE_BUCKET } from "../../lib/storage";
+import { getInitialPreferences, resolveIcon } from "../../lib/themeUtils";
 
 const extractStorageKey = (url) => {
   if (!url) return null;
@@ -48,6 +49,11 @@ export default function EditProfilePage() {
   const { mutate } = useSWRConfig();
   const { vendor, sessionUserId, loading } = useSessionVendor();
   const { theme } = useThemeIcons("clothing");
+  const initialPrefs = useMemo(
+    () => (typeof window === "undefined" ? { theme: "clothing", isDark: true } : getInitialPreferences("clothing")),
+    []
+  );
+  const backIconSrc = resolveIcon("back", theme || initialPrefs.theme, initialPrefs.isDark);
 
   const states = [
     'Nigeria',
@@ -249,7 +255,7 @@ export default function EditProfilePage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setStatus("Saving...");
+    setStatus("Saving");
 
     if (!vendor?.username) {
       setStatus("No vendor to update.");
@@ -419,9 +425,10 @@ export default function EditProfilePage() {
       <div className="add-product-header">
         <button type="button" className="back-button" onClick={() => window.history.back()}>
           <img
-            src={theme === "clothing" ? "/icons/back.png" : "/icons/back-orange.png"}
+            src={backIconSrc || (theme === "clothing" ? "/icons/back.png" : "/icons/back-orange.png")}
             alt="Back"
             className="back-icon"
+            data-icon="back"
             data-blue="/icons/back.png"
             data-brown="/icons/back-orange.png"
           />
@@ -712,7 +719,7 @@ export default function EditProfilePage() {
                     setDeleteModalOpen(false);
                     return;
                   }
-                  setStatus("Deleting account...");
+                  setStatus("Deleting account");
                   try {
                     // Refresh session to avoid stale token
                     await supabase.auth.refreshSession().catch(() => { });

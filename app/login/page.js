@@ -1,14 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../lib/supabaseClient";
 import { useThemeIcons } from "../../lib/useThemeIcons";
+import { getInitialPreferences, resolveIcon } from "../../lib/themeUtils";
 
 export default function LoginPage() {
   const router = useRouter();
   const { theme } = useThemeIcons("clothing");
+  const initialPrefs = useMemo(
+    () => (typeof window === "undefined" ? { theme: "clothing", isDark: true } : getInitialPreferences("clothing")),
+    []
+  );
+  const backIconSrc = resolveIcon("back", theme || initialPrefs.theme, initialPrefs.isDark);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState("");
@@ -64,9 +70,10 @@ export default function LoginPage() {
       <div className="add-product-header">
         <button type="button" className="back-button" onClick={() => router.back()}>
           <img
-            src={theme === "clothing" ? "/icons/back.png" : "/icons/back-orange.png"}
+            src={backIconSrc || (theme === "clothing" ? "/icons/back.png" : "/icons/back-orange.png")}
             alt="Back"
             className="back-icon"
+            data-icon="back"
             data-blue="/icons/back.png"
             data-brown="/icons/back-orange.png"
           />

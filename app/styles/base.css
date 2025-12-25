@@ -132,14 +132,14 @@ li {
 }
 
 .hero-shell.theme-food .btn-primary {
-  background: var(--color-primary-lightbrown) !important;
-  border-color: var(--color-primary-lightbrown) !important;
+  background: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
   color: #fff !important;
 }
 
 .hero-shell.theme-food .btn-primary:hover {
-  background: #754f3c !important;
-  border-color: #754f3c !important;
+  background: var(--color-primary-light) !important;
+  border-color: var(--color-primary-light) !important;
   color: #fff !important;
 }
 
@@ -286,6 +286,10 @@ li {
   color: #fff;
 }
 
+body.dark.theme-food .pill:not(.active) {
+  color: #e1e1e1;
+}
+
 .theme-clothing .pill {
   color: #0b2d4d;
 }
@@ -313,6 +317,17 @@ li {
   grid-auto-columns: 170px;
   gap: 14px;
   padding: 8px 4px;
+}
+
+/* Keep slider card prices consistent with product grid cards */
+.landing-slider .product-card .price,
+.subcategory-row-scroll .product-card .price {
+  color: var(--color-primary);
+}
+
+body.dark.theme-clothing .landing-slider .product-card .price,
+body.dark.theme-clothing .subcategory-row-scroll .product-card .price {
+  color: #3a6ea5 !important;
 }
 
 
@@ -407,6 +422,10 @@ li {
   width: 100%;
   max-width: 420px;
   /* match form/button widths used elsewhere */
+}
+
+.hero-actions button {
+  min-width: 220px;
 }
 
 .page-hero .btn-primary,
@@ -729,11 +748,20 @@ body.dark .back-button .back-icon {
 }
 
 body.dark .profile-shop-edit-btn img,
-body.dark .product-detail-nav img,
 body.dark .contact-icon,
 body.dark .profile-location-icon {
   filter: grayscale(1) invert(1) brightness(2) !important;
   /* Keep these white/light */
+}
+
+/* Keep edit icons in profile their original color */
+body.dark .profile-shop-edit-icon {
+  filter: none !important;
+}
+
+/* Keep product card edit icons their original color */
+body.dark .profile-card-btn-icon.profile-card-edit {
+  filter: none !important;
 }
 
 body.dark .product-detail-location-icon {
@@ -891,6 +919,30 @@ body.dark .profile-card-btn {
 
 body.dark .profile-card-btn-icon {
   filter: brightness(0) invert(1) !important;
+}
+
+/* Keep destructive icons red in dark mode */
+body.dark .profile-card-btn.profile-card-delete .profile-card-btn-icon,
+body.dark .profile-card-btn-icon[alt*="Delete"],
+body.dark .profile-card-btn-icon[alt*="Remove"] {
+  filter: none !important;
+}
+
+/* Keep edit icons colored in dark mode */
+body.dark .profile-card-btn-icon.profile-card-edit,
+body.dark .profile-card-btn-icon[alt*="Edit"] {
+  filter: none !important;
+}
+
+/* Keep profile shop edit button icons colored */
+body.dark .profile-shop-edit-btn img {
+  filter: none !important;
+}
+
+/* Darken destructive button backgrounds in dark mode */
+body.dark .profile-card-btn.profile-card-delete {
+  background-color: #2b2b2b !important;
+  border-color: rgba(255, 255, 255, 0.28) !important;
 }
 
 /* Install Banner Dark Mode */

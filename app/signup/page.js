@@ -1,9 +1,11 @@
 ﻿'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { uploadImage } from '../../lib/uploadImage';
+import { getInitialPreferences, resolveIcon } from '../../lib/themeUtils';
+import { useThemeIcons } from '../../lib/useThemeIcons';
 
 const initialForm = {
   username: '',
@@ -78,6 +80,12 @@ export default function SignupPage() {
   const [bannerFile, setBannerFile] = useState(null);
   const [cropProfileFile, setCropProfileFile] = useState(null);
   const [cropBannerFile, setCropBannerFile] = useState(null);
+  const { theme: resolvedTheme } = useThemeIcons('clothing');
+  const initialPrefs = useMemo(
+    () => (typeof window === 'undefined' ? { theme: 'clothing', isDark: true } : getInitialPreferences('clothing')),
+    []
+  );
+  const backIconSrc = resolveIcon('back', resolvedTheme || theme || initialPrefs.theme, initialPrefs.isDark);
   const [passwordError, setPasswordError] = useState(false);
   const [passwordErrorMsg, setPasswordErrorMsg] = useState('');
   const [usernameError, setUsernameError] = useState(false);
@@ -322,7 +330,7 @@ export default function SignupPage() {
       state: form.state,
     };
 
-    setStatus('Saving...');
+    setStatus('Saving');
     const res = await fetch('/api/vendors', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -352,9 +360,10 @@ export default function SignupPage() {
       <div className="add-product-header">
         <button type="button" className="back-button" onClick={() => window.history.back()}>
           <img
-            src={theme === 'clothing' ? '/icons/back.png' : '/icons/back-orange.png'}
+            src={backIconSrc || (resolvedTheme === 'clothing' ? '/icons/back.png' : '/icons/back-orange.png')}
             alt="Back"
             className="back-icon"
+            data-icon="back"
             data-blue="/icons/back.png"
             data-brown="/icons/back-orange.png"
           />

@@ -60,9 +60,14 @@ export function ProductCard({
             onClick={onEdit}
           >
             <img
-              src={theme === "clothing" ? "/icons/edit.png" : "/icons/edit-orange.png"}
+              src={
+                theme === "clothing"
+                  ? "/icons/edit-clothing-dark.png"
+                  : "/icons/edit-orange.png"
+              }
               alt="Edit"
               className="profile-card-btn-icon"
+              data-icon="edit"
             />
           </button>
           <button

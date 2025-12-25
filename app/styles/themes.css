@@ -4,8 +4,8 @@
   /* Caramel brown */
   --color-primary-light: #A98163;
   /* Lighter baked tone */
-  --page-bg: #f1f1f1;
-  /* Cream flour background */
+  --page-bg: #ffffff;
+  /* Clean white background */
   --nav-active-color: #8A624A;
   --nav-active-glow: rgba(138, 98, 74, 0.15);
   --nav-active-glow-strong: rgba(138, 98, 74, 0.25);
@@ -32,7 +32,7 @@ body.dark.theme-food {
   --color-primary: #0d3b66;
   /* Dark blue */
   --color-primary-light: #144a82;
-  --page-bg: #f1f1f1;
+  --page-bg: #ffffff;
   --nav-active-color: #0d3b66;
   --nav-active-glow: rgba(13, 59, 102, 0.15);
   --nav-active-glow-strong: rgba(13, 59, 102, 0.25);

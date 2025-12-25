@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Script from "next/script";
 import { ProductCard } from "../../components/ProductCard";
 import { useThemeIcons } from "../../../lib/useThemeIcons";
+import { getInitialPreferences, resolveIcon } from "../../../lib/themeUtils";
 
 function CategorySkeleton() {
   return (
@@ -41,6 +42,11 @@ export default function CategoryPage() {
   const [error, setError] = useState("");
   const subcategory = params?.category || "";
   const { theme } = useThemeIcons("clothing");
+  const initialPrefs = useMemo(
+    () => (typeof window === "undefined" ? { theme: "clothing", isDark: true } : getInitialPreferences("clothing")),
+    []
+  );
+  const backIconSrc = resolveIcon("back", theme || initialPrefs.theme, initialPrefs.isDark);
 
   const normalize = (val) => (val ? String(val).toLowerCase() : "");
   const activeSub = normalize(subcategory);
@@ -115,15 +121,16 @@ export default function CategoryPage() {
             <button
               className="back-button"
               id="subcategoryBackBtn"
-              aria-label="Back to home"
-              onClick={() => router.back()}
-            >
-              <img
-                src={theme === "clothing" ? "/icons/back.png" : "/icons/back-orange.png"}
-                alt="Back"
-                className="back-icon"
-                data-blue="/icons/back.png"
-                data-brown="/icons/back-orange.png"
+            aria-label="Back to home"
+            onClick={() => router.back()}
+          >
+            <img
+              src={backIconSrc || (theme === "clothing" ? "/icons/back.png" : "/icons/back-orange.png")}
+              alt="Back"
+              className="back-icon"
+              data-icon="back"
+              data-blue="/icons/back.png"
+              data-brown="/icons/back-orange.png"
               />
             </button>
             <h1 id="subcategoryTitle">

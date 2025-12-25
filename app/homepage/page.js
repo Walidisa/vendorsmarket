@@ -7,10 +7,11 @@ import { ProductCard } from "../components/ProductCard";
 import { useProducts } from "../../lib/useData";
 import { useSessionVendor } from "../../lib/useSessionVendor";
 import { useThemeIcons } from "../../lib/useThemeIcons";
+import { getStoredDarkMode } from "../../lib/themeUtils";
 
 const CATEGORIES = [
-  { value: "food", label: "Food & snacks", icon: "/icons/food.png" },
-  { value: "clothing", label: "Clothing & accessories", icon: "/icons/clothes.png" },
+  { value: "food", label: "Food & Snacks", icon: "/icons/food.png" },
+  { value: "clothing", label: "Clothing & Accessories", icon: "/icons/clothes.png" },
 ];
 
 const SUBROWS = {
@@ -47,12 +48,22 @@ export default function Homepage() {
   const { theme, setTheme } = useThemeIcons("clothing");
   const [profileHref, setProfileHref] = useState("/login");
   const [activeCategory, setActiveCategory] = useState("clothing");
+  const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
     const saved = typeof window !== "undefined" ? localStorage.getItem("activeTheme") : null;
     const initial = saved === "food" ? "food" : "clothing";
     setActiveCategory(initial);
     setTheme(initial);
+    setIsDark(getStoredDarkMode());
+  }, [setTheme]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const updateDark = () => setIsDark(document.body.classList.contains("dark"));
+    updateDark();
+    window.addEventListener("vm-theme-change", updateDark);
+    return () => window.removeEventListener("vm-theme-change", updateDark);
   }, [setTheme]);
 
   useEffect(() => {
@@ -107,6 +118,7 @@ export default function Homepage() {
               <img
                 src="/icons/home.png"
                 className="nav-icon"
+                data-icon="home"
                 data-blue="/icons/home.png"
                 data-brown="/icons/home-lightbrown.png"
                 alt=""
@@ -120,6 +132,7 @@ export default function Homepage() {
               <img
                 src="/icons/search.png"
                 className="nav-icon"
+                data-icon="search"
                 data-blue="/icons/search.png"
                 data-brown="/icons/search-lightbrown.png"
                 alt=""
@@ -133,6 +146,7 @@ export default function Homepage() {
               <img
                 src="/icons/profile.png"
                 className="nav-icon"
+                data-icon="profile"
                 data-blue="/icons/profile.png"
                 data-brown="/icons/profile-lightbrown.png"
                 alt=""
@@ -164,7 +178,11 @@ export default function Homepage() {
                 }}
               >
                 <div className="category-icon-wrapper">
-                  <img src={cat.icon} className="category-icon-large" alt="" />
+                  <img
+                    src={cat.value === "clothing" && isDark ? "/icons/clothes-dark.png" : cat.icon}
+                    className="category-icon-large"
+                    alt=""
+                  />
                 </div>
                 <span className="category-label">{cat.label}</span>
               </button>
@@ -215,6 +233,7 @@ export default function Homepage() {
             <img
               src="/icons/home.png"
               className="nav-icon"
+              data-icon="home"
               data-blue="/icons/home.png"
               data-brown="/icons/home-lightbrown.png"
               alt=""
@@ -228,6 +247,7 @@ export default function Homepage() {
             <img
               src="/icons/search.png"
               className="nav-icon"
+              data-icon="search"
               data-blue="/icons/search.png"
               data-brown="/icons/search-lightbrown.png"
               alt=""
@@ -241,6 +261,7 @@ export default function Homepage() {
             <img
               src="/icons/profile.png"
               className="nav-icon"
+              data-icon="profile"
               data-blue="/icons/profile.png"
               data-brown="/icons/profile-lightbrown.png"
               alt=""

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { RatingModal } from "../../../../components/RatingModal";
 import { useThemeIcons } from "../../../../../lib/useThemeIcons";
+import { getInitialPreferences, resolveIcon } from "../../../../../lib/themeUtils";
 
 function useProduct(id) {
   const [product, setProduct] = useState(null);
@@ -52,6 +53,11 @@ export default function ProductPage() {
   const [toast, setToast] = useState("");
   const [mounted, setMounted] = useState(false);
   const { theme } = useThemeIcons(category || "clothing");
+  const initialPrefs = useMemo(
+    () => (typeof window === "undefined" ? { theme: "clothing", isDark: true } : getInitialPreferences("clothing")),
+    []
+  );
+  const backIconSrc = resolveIcon("back", theme || initialPrefs.theme, initialPrefs.isDark);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -160,9 +166,10 @@ export default function ProductPage() {
         <header className="product-detail-header">
           <button className="back-button" onClick={() => router.back()} aria-label="Back">
             <img
-              src={theme === "clothing" ? "/icons/back.png" : "/icons/back-orange.png"}
+              src={backIconSrc || (theme === "clothing" ? "/icons/back.png" : "/icons/back-orange.png")}
               alt="Back"
               className="back-icon"
+              data-icon="back"
               data-blue="/icons/back.png"
               data-brown="/icons/back-orange.png"
             />

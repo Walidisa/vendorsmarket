@@ -8,6 +8,8 @@ import { uploadImage } from '../../../lib/uploadImage';
 import { supabase } from '../../../lib/supabaseClient';
 import { STORAGE_BUCKET } from '../../../lib/storage';
 import { ProductFormSkeleton } from '../../components/ProductFormSkeleton';
+import { useThemeIcons } from '../../../lib/useThemeIcons';
+import { getInitialPreferences, resolveIcon } from '../../../lib/themeUtils';
 
 const extractStorageKey = (url) => {
   if (!url) return null;
@@ -75,7 +77,6 @@ export default function EditProductPage() {
     description: '',
   });
   const [status, setStatus] = useState('');
-  const [theme, setTheme] = useState('clothing');
   const [coverFile, setCoverFile] = useState(null);
   const [cropCoverFile, setCropCoverFile] = useState(null);
   const [galleryFiles, setGalleryFiles] = useState([]);
@@ -90,13 +91,14 @@ export default function EditProductPage() {
   const CropperModal = dynamic(() => import('../../components/ImageCropper').then((mod) => mod.ImageCropper), {
     ssr: false,
   });
+  const { theme } = useThemeIcons('clothing');
+  const initialPrefs = useMemo(
+    () => (typeof window === 'undefined' ? { theme: 'clothing', isDark: true } : getInitialPreferences('clothing')),
+    []
+  );
+  const backIconSrc = resolveIcon('back', theme || initialPrefs.theme, initialPrefs.isDark);
 
   const subOptions = useMemo(() => subCategories[form.main_category] || [], [form.main_category]);
-
-  useEffect(() => {
-    const t = typeof window !== 'undefined' ? (localStorage.getItem('activeTheme') || 'clothing') : 'clothing';
-    setTheme(t);
-  }, []);
 
   useEffect(() => {
     // Reset subcategory to first option when main changes
@@ -205,7 +207,7 @@ export default function EditProductPage() {
       setStatus('You must be logged in as a vendor to edit products.');
       return;
     }
-    setStatus('Saving...');
+    setStatus('Saving');
 
     let coverPath = form.cover_image;
     let galleryPaths = Array.isArray(form.images)
@@ -304,9 +306,10 @@ export default function EditProductPage() {
         <div className="add-product-header">
           <button type="button" className="back-button" onClick={() => router.back()}>
             <img
-              src={theme === 'clothing' ? '/icons/back.png' : '/icons/back-orange.png'}
+              src={backIconSrc || (theme === 'clothing' ? '/icons/back.png' : '/icons/back-orange.png')}
               alt="Back"
               className="back-icon"
+              data-icon="back"
               data-blue="/icons/back.png"
               data-brown="/icons/back-orange.png"
             />
@@ -321,7 +324,7 @@ export default function EditProductPage() {
 
           <label>
             Price
-            <input name="price" type="number" min="0" step="0.01" value={form.price} onChange={handleChange} required />
+            <input name="price" type="number" min="0" step="500" value={form.price} onChange={handleChange} required />
           </label>
 
           <label>

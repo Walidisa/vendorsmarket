@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import Script from "next/script";
+import { useMemo } from "react";
 import { useThemeIcons } from "../../lib/useThemeIcons";
+import { getInitialPreferences, resolveIcon } from "../../lib/themeUtils";
 
 const sections = [
   {
@@ -14,7 +16,7 @@ const sections = [
     title: "What we collect",
     list: [
       "Account & profile: name, email, username, password, contact details (e.g., WhatsApp), state, town/LGA, shop name, profile and banner images.",
-      "Listings: product/service info (descriptions, prices, images, categories like clothing, tech accessories, cars, real estate, etc.).",
+      "Listings: product/service info (descriptions, prices, images, categories like clothing, tech accessories, etc.).",
       "Feedback & messages: ratings, comments, and messages sent through Contact & Feedback or to vendors.",
       "Usage data: device/browser info, IP, pages viewed, searches and clicks to keep the site running and improve it.",
       "Optional socials: Instagram handle and WhatsApp for buyer–vendor contact."
@@ -71,12 +73,17 @@ const sections = [
   {
     title: "Contact",
     body:
-      "For privacy questions or requests, use the in-app Contact & Feedback form or email us at privacy@vendorsmarket.ng."
+      "For privacy questions or requests, use the in-app Contact & Feedback form or email us at support@vendorsmarket.com.ng."
   }
 ];
 
 export default function PrivacyPage() {
   const { theme } = useThemeIcons("clothing");
+  const initialPrefs = useMemo(
+    () => (typeof window === "undefined" ? { theme: "clothing", isDark: true } : getInitialPreferences("clothing")),
+    []
+  );
+  const backIconSrc = resolveIcon("back", theme || initialPrefs.theme, initialPrefs.isDark);
 
   return (
     <>
@@ -108,9 +115,10 @@ export default function PrivacyPage() {
               }}
             >
               <img
-                src={theme === "clothing" ? "/icons/back.png" : "/icons/back-orange.png"}
+                src={backIconSrc || (theme === "clothing" ? "/icons/back.png" : "/icons/back-orange.png")}
                 alt="Back"
                 className="back-icon"
+                data-icon="back"
                 data-blue="/icons/back.png"
                 data-brown="/icons/back-orange.png"
               />
