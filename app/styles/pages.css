@@ -1105,7 +1105,6 @@ body.dark .skeleton-hero-shell {
   width: 100%;
 }
 
-
 .skeleton-tabs {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1436,7 +1435,6 @@ body.dark .skeleton {
     transform: translateY(0);
   }
 }
-
 
 /* Fade out before navigating away */
 .page-transition.page-exit {
@@ -1956,3 +1954,7 @@ body.dark .preview-delete-btn {
     height: 520px;
   }
 }
+
+
+
+

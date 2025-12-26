@@ -150,11 +150,13 @@ li {
 .theme-clothing .page-hero .btn-primary {
   background: #0b2d4d;
   border-color: #0b2d4d;
+  color: #fff;
 }
 
 .theme-clothing .page-hero .btn-primary:hover {
   background: #07253f;
   border-color: #07253f;
+  color: #fff;
 }
 
 /* Ensure hero buttons swap colors by theme even if global button styles override */
@@ -168,6 +170,7 @@ li {
   background: #07253f !important;
   border-color: #07253f !important;
   color: #fff !important;
+  filter: brightness(1.04);
 }
 
 .site-header {
@@ -950,6 +953,49 @@ body.dark .install-prompt-card {
   background-color: var(--card-bg) !important;
   color: var(--color-text) !important;
   border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Install Banner Light Mode */
+.install-prompt-card {
+  background-color: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+}
+
+.install-share-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  line-height: 1.1;
+}
+
+.install-share-icon {
+  width: 11px;
+  height: 13px;
+  flex-shrink: 0;
+  vertical-align: middle;
+  margin-bottom: 2px;
+}
+
+body.dark .install-share-icon {
+  filter: brightness(0) invert(1);
+}
+
+.reset-code-input {
+  flex: 1 1 220px;
+  min-width: 220px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: #f7f7f7;
+  color: var(--color-text);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+body.dark .reset-code-input {
+  background: #3b3b3b;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+  color: #fff;
 }
 
 /* Feedback modal controls */

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { Resend } from 'resend';
 import { supabaseServer } from '../../../lib/supabaseServer.js';
 
 export const revalidate = 0;
@@ -92,6 +93,33 @@ export async function POST(request) {
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  // Fire-and-forget email notification to support if Resend is configured
+  if (process.env.RESEND_API_KEY) {
+    const resend = new Resend(process.env.RESEND_API_KEY);
+    const to = process.env.RESEND_TO || process.env.SUPPORT_EMAIL || 'support@vendorsmarket.com.ng';
+    const from = process.env.RESEND_FROM || 'support@vendorsmarket.com.ng';
+    const subject = `New feedback for ${resolvedUsername || vendorUserId || 'vendor'}`;
+    const plain = [
+      `Vendor: ${resolvedUsername || vendorUserId || ''}`,
+      `Rating: ${rating || 'N/A'}`,
+      `Message:`,
+      message || '(no message provided)',
+      '',
+      `Vendor user id: ${vendorUserId || 'unknown'}`,
+      `Created at: ${data?.created_at || new Date().toISOString()}`,
+    ].join('\n');
+    const html = `
+      <p><strong>Vendor:</strong> ${resolvedUsername || vendorUserId || ''}</p>
+      <p><strong>Rating:</strong> ${rating || 'N/A'}</p>
+      <p><strong>Message:</strong><br/>${(message || '(no message provided)').replace(/\n/g, '<br/>')}</p>
+      <p><strong>Vendor user id:</strong> ${vendorUserId || 'unknown'}</p>
+      <p><strong>Created at:</strong> ${data?.created_at || new Date().toISOString()}</p>
+    `;
+    resend.emails.send({ from, to, subject, text: plain, html }).catch((err) => {
+      console.error('Failed to send feedback email via Resend', err);
+    });
   }
 
   return NextResponse.json(data);

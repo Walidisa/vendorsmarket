@@ -10,6 +10,7 @@ export default function Footer() {
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [adminTarget, setAdminTarget] = useState({ userId: null, username: "admin" });
+  const [sentToast, setSentToast] = useState(false);
 
   const close = useCallback(() => setOpen(false), []);
 
@@ -103,6 +104,8 @@ export default function Footer() {
                 setName("");
                 setEmail("");
                 close();
+                setSentToast(true);
+                setTimeout(() => setSentToast(false), 2200);
               } catch (err) {
                 console.error("Failed to submit feedback", err);
               } finally {
@@ -181,6 +184,60 @@ export default function Footer() {
 
         <p className="footer-copy">© 2025 Vendors Market</p>
       </footer>
+      {sentToast ? (
+        <div
+          role="status"
+          aria-live="polite"
+          style={{
+            position: "fixed",
+            bottom: "24px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            background: "var(--card-bg)",
+            color: "var(--color-text)",
+            border: "1px solid rgba(0,0,0,0.08)",
+            boxShadow: "0 8px 24px rgba(0,0,0,0.18)",
+            borderRadius: "12px",
+            padding: "12px 16px",
+            zIndex: 12000,
+            maxWidth: "520px",
+            width: "calc(100% - 24px)",
+            textAlign: "center",
+            fontWeight: 600,
+            fontSize: "0.95rem"
+          }}
+        >
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
+              justifyContent: "center",
+              width: "100%"
+            }}
+          >
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: 20,
+                height: 20,
+                borderRadius: "50%",
+                background: "#16a34a",
+                color: "#fff",
+                fontSize: "12px",
+                fontWeight: 800,
+                lineHeight: 1
+              }}
+              aria-hidden="true"
+            >
+              ✓
+            </span>
+            <span>Message sent! We received your feedback.</span>
+          </span>
+        </div>
+      ) : null}
     </div>
   );
 }

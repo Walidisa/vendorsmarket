@@ -113,6 +113,12 @@ export default function LoginPage() {
             }}
           />
 
+          <div style={{ width: "100%", textAlign: "left", marginTop: 6, marginBottom: 8 }}>
+            <Link href="/forgot" style={{ fontSize: "0.95rem", fontWeight: 600, color: "var(--color-primary)" }}>
+              Forgot password?
+            </Link>
+          </div>
+
           <button type="submit" className="btn-primary auth-button">
             Log In
           </button>

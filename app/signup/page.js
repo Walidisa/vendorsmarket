@@ -91,11 +91,13 @@ export default function SignupPage() {
   const [usernameError, setUsernameError] = useState(false);
   const [instagramError, setInstagramError] = useState(false);
   const [stateError, setStateError] = useState(false);
+  const [whatsappError, setWhatsappError] = useState(false);
   const [termsError, setTermsError] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const usernameRef = useRef(null);
   const instagramRef = useRef(null);
   const stateRef = useRef(null);
+  const whatsappRef = useRef(null);
   const CropperModal = dynamic(() => import('../components/ImageCropper').then(mod => mod.ImageCropper), { ssr: false });
 
   const formatWhatsApp = (val) => {
@@ -150,6 +152,7 @@ export default function SignupPage() {
     if (name === 'username') setUsernameError(false);
     if (name === 'state') setStateError(false);
     if (name === 'instagram') setInstagramError(false);
+    if (name === 'whatsapp') setWhatsappError(false);
     if (status) setStatus('');
     if (name === 'whatsapp') {
       const formatted = formatWhatsApp(value);
@@ -245,10 +248,14 @@ export default function SignupPage() {
     const whatsappDigits = formattedWhatsApp.replace(/\D/g, '');
     if (!whatsappDigits) {
       setStatus('WhatsApp number is required.');
+      setWhatsappError(true);
+      whatsappRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
     if (whatsappDigits.length < 10) {
       setStatus('Enter a valid WhatsApp number in the format +234 000 000 0000.');
+      setWhatsappError(true);
+      whatsappRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
 
@@ -460,6 +467,7 @@ export default function SignupPage() {
           WhatsApp
           <input
             name="whatsapp"
+            ref={whatsappRef}
             value={form.whatsapp}
             onChange={handleChange}
             required
@@ -467,6 +475,7 @@ export default function SignupPage() {
             placeholder="+234 000 000 0000"
             onFocus={handleWhatsAppFocus}
             title="Format: +234 000 000 0000"
+            className={whatsappError ? 'input-error' : ''}
           />
         </label>
         <label>

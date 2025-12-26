@@ -120,7 +120,16 @@ export default function InstallPrompt() {
           <span className="install-prompt-sub" style={{ fontSize: "0.95rem", color: "var(--color-muted)" }}>
             {deferredPrompt
               ? "Add the app to your home screen for quick access."
-              : "Open menu (⋮) or Share button and tap \"Add to Home screen\" to install."}
+              : (
+                <span style={{ display: "inline-flex", alignItems: "center", gap: "5px", flexWrap: "wrap", lineHeight: 1.35 }}>
+                  <span>Open menu (⋮) or</span>
+                  <span className="install-share-wrap">
+                    <span>Share button</span>
+                    <img src="/icons/share.png" alt="Share" className="install-share-icon" />
+                  </span>
+                  <span>and tap <b>"Add to Home screen"</b> to install.</span>
+                </span>
+              )}
           </span>
         </div>
         <div
@@ -182,3 +191,4 @@ export default function InstallPrompt() {
     </div>
   );
 }
+

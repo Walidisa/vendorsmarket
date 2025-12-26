@@ -458,6 +458,7 @@ export default function EditProfilePage() {
                   type="password"
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
+                  autoComplete="new-password"
                   className={passwordError ? "input-error" : ""}
                 />
               </label>
@@ -467,6 +468,7 @@ export default function EditProfilePage() {
                   type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
+                  autoComplete="new-password"
                   className={passwordError ? "input-error" : ""}
                 />
               </label>
@@ -476,6 +478,7 @@ export default function EditProfilePage() {
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
+                  autoComplete="new-password"
                   className={passwordError ? "input-error" : ""}
                 />
               </label>
