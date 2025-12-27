@@ -5,12 +5,6 @@
       "has": [{ "type": "host", "value": "www.vendorsmarket.com.ng" }],
       "destination": "https://vendorsmarket.com.ng/:path*",
       "permanent": true
-    },
-    {
-      "source": "/:path*",
-      "has": [{ "type": "host", "value": "vendorsmarket.vercel.app" }],
-      "destination": "https://vendorsmarket.vercel.app/:path*",
-      "permanent": false
     }
   ]
 }
