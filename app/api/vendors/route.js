@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
-import { supabaseServer } from '../../../lib/supabaseServer.js';
 import crypto from 'crypto';
+import { supabaseServer } from '../../../lib/supabaseServer.js';
+import { resend } from '../../../lib/resendClient.js';
 
 export const revalidate = 0;
 export const dynamic = 'force-dynamic';
@@ -91,6 +92,45 @@ export async function POST(request) {
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  // Fire-and-forget welcome email; do not block signup
+  if (resend && email) {
+    const from = process.env.RESEND_FROM || 'VendorsMarket <support@vendorsmarket.com.ng>';
+    const displayName = fullName || username || 'there';
+    resend.emails
+      .send({
+        from,
+        to: email,
+        subject: 'Welcome to Vendors Market',
+        html: `
+          <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #1d1d1d; max-width: 560px; margin: 0 auto; padding: 16px;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
+              <div style="width: 42px; height: 42px; border-radius: 12px; background: #0d3b66; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                <img src="https://vendorsmarket.com.ng/icons/app-icon.png" alt="Vendors Market" width="42" height="42" style="display:block; width: 100%; height: 100%; object-fit: cover; border-radius: 12px;">
+              </div>
+              <div style="font-size: 18px; font-weight: 700; color: #0d3b66;">Vendors Market</div>
+            </div>
+            <h2 style="margin: 0 0 12px; color: #0d3b66;">Welcome, ${displayName}!</h2>
+            <p style="margin: 0 0 10px;">Your vendor account is ready. You can log in and start adding products right away.</p>
+            <p style="margin: 0 0 10px;">Thank you for choosing Vendors Market. We’re excited to make great sales together.</p>
+            <div style="margin: 14px 0; padding: 12px 14px; background: #f5f8fc; border: 1px solid rgba(13,59,102,0.08); border-radius: 12px;">
+              <p style="margin: 0 0 8px; font-weight: 700; color: #0d3b66;">What you can do:</p>
+              <ul style="margin: 0; padding-left: 18px; color: #1d1d1d;">
+                <li style="margin: 4px 0;">Create and showcase your listings with photos and details.</li>
+                <li style="margin: 4px 0;">Share your vendor profile and grow your audience.</li>
+                <li style="margin: 4px 0;">Receive and respond to buyer messages/feedback.</li>
+                <li style="margin: 4px 0;">Track ratings to build trust with shoppers.</li>
+              </ul>
+            </div>
+            <p style="margin: 12px 0;">Need help? Reply to this email and we&apos;ll assist.</p>
+            <p style="margin: 16px 0 0; font-weight: 600; color: #0d3b66;">– The Vendors Market Team</p>
+          </div>
+        `,
+      })
+      .catch(() => {
+        // ignore email failures to avoid blocking signup
+      });
   }
 
   return NextResponse.json(data, { status: 201 });

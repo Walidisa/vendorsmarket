@@ -10,7 +10,6 @@ export default function ResetPasswordPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [tokenParams, setTokenParams] = useState({ code: null, parsed: false, email: null });
   const { theme } = useThemeIcons("clothing");
   const initialPrefs = useMemo(
     () =>
@@ -27,113 +26,55 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [sessionReady, setSessionReady] = useState(false);
   const [resetToast, setResetToast] = useState(false);
-  const [manualCode, setManualCode] = useState("");
   const [storedEmail, setStoredEmail] = useState("");
 
+  // Capture email from query/local storage for messaging
   useEffect(() => {
     if (typeof window === "undefined") return;
+    const emailParam = searchParams.get("email");
     const savedEmail = localStorage.getItem("vm-reset-email");
-    if (savedEmail) setStoredEmail(savedEmail);
-  }, []);
-
-  // Parse query + hash for recovery code
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const url = new URL(window.location.href);
-    const allParams = new URLSearchParams(url.search);
-    const hashParams = new URLSearchParams(url.hash?.replace(/^#/, "") || "");
-    const email = allParams.get("email") || hashParams.get("email");
-    if (email) {
-      setStoredEmail(email);
+    const nextEmail = emailParam || savedEmail || "";
+    if (nextEmail) {
+      setStoredEmail(nextEmail);
       try {
-        localStorage.setItem("vm-reset-email", email);
-      } catch (_) { /* ignore */ }
+        localStorage.setItem("vm-reset-email", nextEmail);
+      } catch {
+        // ignore
+      }
     }
-
-    setTokenParams({
-      code: allParams.get("code") || hashParams.get("code") || null,
-      email: email || null,
-      parsed: true
-    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
-  const exchangeResetCode = async (code) => {
-    const token = (code || "").trim();
-    if (!token) throw new Error("Enter the code from your email.");
-
-    // If we remember the email (same device), prefer verifyOtp to avoid PKCE errors
-    if (storedEmail) {
-      const { error: verifyErr } = await supabase.auth.verifyOtp({
-        type: "recovery",
-        token,
-        email: storedEmail
-      });
-      if (!verifyErr) {
-        setSessionReady(true);
-        setStatus("");
-        return;
-      }
-      // If verify fails, fall through to exchangeCodeForSession for hash/link cases
-    }
-
-    const { error } = await supabase.auth.exchangeCodeForSession(token);
-    if (error) throw error;
-    setSessionReady(true);
-    setStatus("");
-  };
-
-  // Exchange code for a session
+  // Ensure a recovery session exists (code-auth should have set it)
   useEffect(() => {
-    if (!tokenParams.parsed) return;
-    let cancelled = false;
-
-    async function bootstrap() {
+    const loadSession = async () => {
       try {
-        if (tokenParams.code) {
-          await exchangeResetCode(tokenParams.code);
-        } else if (!cancelled) {
-          setStatus("Reset link is missing or expired. Please request a new one.");
+        const { data, error } = await supabase.auth.getUser();
+        if (!error && data?.user) {
+          setSessionReady(true);
+          if (data.user.email) {
+            setStoredEmail(data.user.email);
+            try {
+              localStorage.setItem("vm-reset-email", data.user.email);
+            } catch {
+              // ignore
+            }
+          }
+          return;
         }
+        setStatus("Please verify your reset code on the code-auth page before updating your password.");
       } catch (err) {
-        if (!cancelled) setStatus(err.message || "This reset link is invalid or expired.");
+        setStatus(err.message || "Please verify your reset code on the code-auth page first.");
       }
-    }
-
-    bootstrap();
-    return () => {
-      cancelled = true;
     };
-  }, [tokenParams]);
-
-  const handleManualCode = async () => {
-    const code = manualCode.trim();
-    if (!code) {
-      setStatus("Enter the code from your email.");
-      return;
-    }
-    setStatus("Verifying code");
-    try {
-      await exchangeResetCode(code);
-    } catch (err) {
-      setStatus(err.message || "Invalid or expired code.");
-    }
-  };
+    loadSession();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!sessionReady) {
-      const code = manualCode.trim() || tokenParams.code;
-      if (!code) {
-        setStatus("Waiting for reset link...");
-        return;
-      }
-      setStatus("Verifying code");
-      try {
-        await exchangeResetCode(code);
-      } catch (err) {
-        setStatus(err.message || "Invalid or expired code.");
-        return;
-      }
+      setStatus("Please verify your reset code on the code-auth page before updating your password.");
+      return;
     }
     if (!newPassword || newPassword.length < 6) {
       setStatus("Password must be at least 6 characters.");
@@ -178,7 +119,8 @@ export default function ResetPasswordPage() {
         <form className="auth-form" onSubmit={handleSubmit}>
           <h1 style={{ margin: "0 0 12px", fontSize: "1.35rem" }}>Choose a new password</h1>
           <p className="profile-feedback-empty" style={{ marginTop: -4, marginBottom: 12 }}>
-            Enter your new password below. The reset link must be opened from your email.
+            Enter your new password below.  
+            {storedEmail ? ` (${storedEmail})` : ""}
           </p>
 
           <label className="input-label" htmlFor="reset-password">
@@ -189,6 +131,7 @@ export default function ResetPasswordPage() {
             id="reset-password"
             className="input-field"
             placeholder="********"
+            autoComplete="new-password"
             required
             minLength={6}
             value={newPassword}
@@ -206,6 +149,7 @@ export default function ResetPasswordPage() {
             id="reset-password-confirm"
             className="input-field"
             placeholder="********"
+            autoComplete="new-password"
             required
             minLength={6}
             value={confirmPassword}
@@ -221,12 +165,7 @@ export default function ResetPasswordPage() {
           {status ? (() => {
             const s = status.trim().toLowerCase();
             const isPositive = s.startsWith("password updated");
-            const isNeutral =
-              s.startsWith("updating password") ||
-              s.startsWith("waiting for reset link") ||
-              s.startsWith("saving") ||
-              s.startsWith("verifying code") ||
-              s.startsWith("enter the code");
+            const isNeutral = s.startsWith("updating password") || s.startsWith("saving");
             return (
               <p className={`form-status${isPositive || isNeutral ? "" : " is-error"}`}>
                 {status}
@@ -236,36 +175,6 @@ export default function ResetPasswordPage() {
           })() : null}
         </form>
       </section>
-
-      {!sessionReady ? (
-        <section className="auth-card" style={{ marginTop: 12 }}>
-          <h2 style={{ margin: "0 0 8px", fontSize: "1.1rem" }}>Having trouble?</h2>
-          <p className="profile-feedback-empty" style={{ marginTop: 0, marginBottom: 10 }}>
-            Paste the reset code from your email if the link didn&apos;t work.
-          </p>
-          <div style={{ display: "flex", gap: "8px", width: "100%", flexWrap: "wrap" }}>
-            <input
-              type="text"
-              value={manualCode}
-              onChange={(e) => {
-                setManualCode(e.target.value);
-                if (status) setStatus("");
-              }}
-              placeholder="Reset code"
-              className="reset-code-input"
-              autoComplete="off"
-            />
-            <button
-              type="button"
-              className="btn-primary"
-              style={{ flex: "0 0 auto", padding: "10px 16px", minWidth: "140px" }}
-              onClick={handleManualCode}
-            >
-              Verify code
-            </button>
-          </div>
-        </section>
-      ) : null}
 
       {resetToast ? (
         <div
@@ -315,7 +224,7 @@ export default function ResetPasswordPage() {
               }}
               aria-hidden="true"
             >
-              {"✓"}
+              {"\u2713"}
             </span>
             <span>Password updated. You can log in now.</span>
           </span>

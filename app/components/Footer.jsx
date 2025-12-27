@@ -193,7 +193,7 @@ export default function Footer() {
             bottom: "24px",
             left: "50%",
             transform: "translateX(-50%)",
-            background: "var(--card-bg)",
+            background: "#ffffff",
             color: "var(--color-text)",
             border: "1px solid rgba(0,0,0,0.08)",
             boxShadow: "0 8px 24px rgba(0,0,0,0.18)",

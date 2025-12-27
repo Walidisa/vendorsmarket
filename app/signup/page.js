@@ -89,6 +89,7 @@ export default function SignupPage() {
   const [passwordError, setPasswordError] = useState(false);
   const [passwordErrorMsg, setPasswordErrorMsg] = useState('');
   const [usernameError, setUsernameError] = useState(false);
+  const [emailError, setEmailError] = useState(false);
   const [instagramError, setInstagramError] = useState(false);
   const [stateError, setStateError] = useState(false);
   const [whatsappError, setWhatsappError] = useState(false);
@@ -98,6 +99,7 @@ export default function SignupPage() {
   const instagramRef = useRef(null);
   const stateRef = useRef(null);
   const whatsappRef = useRef(null);
+  const emailRef = useRef(null);
   const CropperModal = dynamic(() => import('../components/ImageCropper').then(mod => mod.ImageCropper), { ssr: false });
 
   const formatWhatsApp = (val) => {
@@ -154,6 +156,7 @@ export default function SignupPage() {
     if (name === 'instagram') setInstagramError(false);
     if (name === 'whatsapp') setWhatsappError(false);
     if (status) setStatus('');
+    if (name === 'email') setEmailError(false);
     if (name === 'whatsapp') {
       const formatted = formatWhatsApp(value);
       setForm((prev) => ({ ...prev, [name]: formatted }));
@@ -233,6 +236,8 @@ export default function SignupPage() {
     const emailOk = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email.trim());
     if (!emailOk) {
       setStatus('Please enter a valid email address.');
+      setEmailError(true);
+      emailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
 
@@ -346,7 +351,13 @@ export default function SignupPage() {
 
     if (!res.ok) {
       const body = await res.json().catch(() => ({}));
-      setStatus(body.error || 'Signup failed');
+      const errMsg = body.error || 'Signup failed';
+      setStatus(errMsg);
+      const lower = (errMsg || '').toLowerCase();
+      if (lower.includes('email') && (lower.includes('already') || lower.includes('registered') || lower.includes('exists'))) {
+        setEmailError(true);
+        emailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
       return;
     }
 
@@ -404,13 +415,16 @@ export default function SignupPage() {
         <label>
           Email
           <input
+            ref={emailRef}
             name="email"
             type="email"
             value={form.email}
             onChange={handleChange}
             onKeyDown={preventSpaceKey}
             required
+            className={emailError ? 'input-error' : ''}
           />
+          {emailError ? <div className="input-error-text">A user with this email address has already been registered.</div> : null}
         </label>
         <label>
           Password

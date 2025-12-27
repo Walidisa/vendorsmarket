@@ -23,7 +23,7 @@ export default function ForgotPasswordPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setStatus("Sending reset link");
+    setStatus("Sending code");
 
     const emailVal = email.trim();
     const emailOk = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(emailVal);
@@ -54,7 +54,7 @@ export default function ForgotPasswordPage() {
         typeof window !== "undefined"
           ? window.location.origin
           : (process.env.NEXT_PUBLIC_SITE_URL || "").replace(/\/$/, "");
-      const redirectTo = `${baseUrl}/reset?email=${encodeURIComponent(emailVal)}`;
+      const redirectTo = `${baseUrl}/code-auth?email=${encodeURIComponent(emailVal)}`;
 
       const { error } = await supabase.auth.resetPasswordForEmail(emailVal, {
         redirectTo
@@ -65,7 +65,7 @@ export default function ForgotPasswordPage() {
         localStorage.setItem("vm-reset-email", emailVal);
       }
 
-      setStatus("Check your email for a reset link. \u2713");
+      router.replace(`/code-auth?email=${encodeURIComponent(emailVal)}`);
     } catch (err) {
       setStatus(err.message || "Failed to send reset link.");
     }
@@ -90,7 +90,7 @@ export default function ForgotPasswordPage() {
         <form className="auth-form" onSubmit={handleSubmit}>
           <h1 style={{ margin: "0 0 12px", fontSize: "1.35rem" }}>Reset your password</h1>
           <p className="profile-feedback-empty" style={{ marginTop: -4, marginBottom: 12 }}>
-            Enter the email tied to your account and we&apos;ll send a reset link.
+            Enter the email tied to your account and we&apos;ll send a reset code.
           </p>
 
           <label className="input-label" htmlFor="forgot-email">
@@ -110,12 +110,12 @@ export default function ForgotPasswordPage() {
           />
 
           <button type="submit" className="btn-primary auth-button">
-            Send reset link
+            Send Code
           </button>
           {status ? (() => {
             const s = status.trim().toLowerCase();
             const isPositive = s.startsWith("check your email");
-            const isNeutral = s.startsWith("sending reset link");
+            const isNeutral = s.startsWith("sending code");
             return (
               <p className={`form-status${isPositive || isNeutral ? "" : " is-error"}`}>
                 {status}

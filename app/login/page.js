@@ -135,7 +135,7 @@ export default function LoginPage() {
         </form>
 
         <p className="auth-switch">
-          New here? <Link href="/signup">Create an account</Link>
+          Want to become a Vendor? <Link href="/signup">Create an account</Link>
         </p>
       </section>
     </div>
