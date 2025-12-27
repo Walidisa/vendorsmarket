@@ -96,7 +96,7 @@ export async function POST(request) {
 
   // Fire-and-forget welcome email; do not block signup
   if (resend && email) {
-    const from = process.env.RESEND_FROM || "VendorsMarket <support@vendorsmarket.com.ng>";
+    const from = '"VendorsMarket" <support@vendorsmarket.com.ng>';
     const displayName = fullName || username || "there";
     resend.emails
       .send({
@@ -109,7 +109,7 @@ export async function POST(request) {
               <div style="width: 42px; height: 42px; border-radius: 12px; background: #0d3b66; overflow: hidden; display: flex; align-items: center; justify-content: center;">
                 <img src="https://vendorsmarket.com.ng/icons/app-icon.png" alt="VendorsMarket" width="42" height="42" style="display:block; width: 100%; height: 100%; object-fit: cover; border-radius: 12px;">
               </div>
-              <div style="font-size: 18px; font-weight: 700; color: #0d3b66;">VendorsMarket</div>
+              <div style="font-size: 18px; font-weight: 700; color: #0d3b66; margin-top: 6px;">VendorsMarket</div>
             </div>
             <h2 style="margin: 0 0 12px; color: #0d3b66;">Welcome, ${displayName}!</h2>
             <p style="margin: 0 0 10px;">Your vendor account is ready. You can log in and start adding products right away.</p>
