@@ -170,7 +170,9 @@ export default function Footer() {
           <a href="/about">About</a>
           <a href="/terms">Terms</a>
           <a href="/privacy">Privacy</a>
-          <ThemeToggle />
+          <div style={{ display: "flex", alignItems: "center", marginTop: -6 }}>
+            <ThemeToggle />
+          </div>
         </div>
 
         <button

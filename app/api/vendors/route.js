@@ -102,18 +102,18 @@ export async function POST(request) {
       .send({
         from,
         to: email,
-        subject: "Welcome to Vendors Market",
+        subject: "Welcome to VendorsMarket",
         html: `
           <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #1d1d1d; max-width: 560px; margin: 0 auto; padding: 16px;">
             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
               <div style="width: 42px; height: 42px; border-radius: 12px; background: #0d3b66; overflow: hidden; display: flex; align-items: center; justify-content: center;">
-                <img src="https://vendorsmarket.com.ng/icons/app-icon.png" alt="Vendors Market" width="42" height="42" style="display:block; width: 100%; height: 100%; object-fit: cover; border-radius: 12px;">
+                <img src="https://vendorsmarket.com.ng/icons/app-icon.png" alt="VendorsMarket" width="42" height="42" style="display:block; width: 100%; height: 100%; object-fit: cover; border-radius: 12px;">
               </div>
-              <div style="font-size: 18px; font-weight: 700; color: #0d3b66;">Vendors Market</div>
+              <div style="font-size: 18px; font-weight: 700; color: #0d3b66;">VendorsMarket</div>
             </div>
             <h2 style="margin: 0 0 12px; color: #0d3b66;">Welcome, ${displayName}!</h2>
             <p style="margin: 0 0 10px;">Your vendor account is ready. You can log in and start adding products right away.</p>
-            <p style="margin: 0 0 10px;">Thank you for choosing Vendors Market. We’re excited to accomplish great things together.</p>
+            <p style="margin: 0 0 10px;">Thank you for choosing VendorsMarket. We're excited to accomplish great things together.</p>
             <div style="margin: 14px 0; padding: 12px 14px; background: #f5f8fc; border: 1px solid rgba(13,59,102,0.08); border-radius: 12px;">
               <p style="margin: 0 0 8px; font-weight: 700; color: #0d3b66;">What you can do:</p>
               <ul style="margin: 0; padding-left: 18px; color: #1d1d1d;">
@@ -123,8 +123,8 @@ export async function POST(request) {
                 <li style="margin: 4px 0;">Track ratings to build trust with shoppers.</li>
               </ul>
             </div>
-            <p style="margin: 12px 0;">Need help? Reply to this email and we&apos;ll assist.</p>
-            <p style="margin: 16px 0 0; font-weight: 600; color: #0d3b66;">– The Vendors Market Team</p>
+            <p style="margin: 12px 0;">Need help? Reply to this email and we'll assist.</p>
+            <p style="margin: 16px 0 0; font-weight: 600; color: #0d3b66;">- The VendorsMarket Team</p>
           </div>
         `
       })

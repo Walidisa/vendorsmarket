@@ -5,7 +5,7 @@ export default function manifest() {
   return {
     id: "/",
     name: "Vendors Market",
-    short_name: "Vendors Market",
+    short_name: "VendorsMarket",
     description: "Browse and buy from local vendors in one simple marketplace.",
     start_url: "/",
     scope: "/",

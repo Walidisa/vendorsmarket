@@ -55,8 +55,18 @@ export default function ThemeToggle() {
   };
 
   return (
-    <button onClick={toggleDarkMode} className="theme-toggle-btn" suppressHydrationWarning>
-      {darkMode ? "Light Mode" : "Dark Mode"}
+    <button
+      type="button"
+      onClick={toggleDarkMode}
+      className={`theme-toggle-slider${darkMode ? " is-dark" : ""}`}
+      suppressHydrationWarning
+      aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
+    >
+      <span className="theme-toggle-track">
+        <span className="theme-toggle-thumb" aria-hidden="true">
+          {darkMode ? "🌙" : "☀️"}
+        </span>
+      </span>
     </button>
   );
 }
