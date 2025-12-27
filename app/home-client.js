@@ -10,6 +10,7 @@ import {
   getStoredDarkMode,
   persistTheme
 } from "../lib/themeUtils";
+import { SeoJsonLd } from "./components/SeoJsonLd";
 
 export default function HomeClient() {
   const slides = [
@@ -27,6 +28,26 @@ export default function HomeClient() {
   const [cardsVisible, setCardsVisible] = useState(true);
   const [productsLoading, setProductsLoading] = useState(true);
   const [vendorsLoading, setVendorsLoading] = useState(true);
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://vendorsmarket.com.ng";
+  const orgLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "Vendors Market",
+    url: siteUrl,
+    logo: `${siteUrl}/icons/app-icon.png`,
+    sameAs: []
+  };
+  const siteLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Vendors Market",
+    url: siteUrl,
+    potentialAction: {
+      "@type": "SearchAction",
+      target: `${siteUrl}/search?q={query}`,
+      "query-input": "required name=query"
+    }
+  };
 
   const applyTheme = (theme) => {
     setLandingCategory(theme);
@@ -153,6 +174,8 @@ export default function HomeClient() {
   if (productsLoading || vendorsLoading) {
     return (
       <>
+        <SeoJsonLd data={orgLd} />
+        <SeoJsonLd data={siteLd} />
         <HomeSkeleton />
         <Script src="/scripts/main.js" strategy="afterInteractive" />
       </>
@@ -161,6 +184,8 @@ export default function HomeClient() {
 
   return (
     <>
+      <SeoJsonLd data={orgLd} />
+      <SeoJsonLd data={siteLd} />
       <div className="page">
         <div ref={heroRef} className={`hero-shell theme-${heroTheme} fade-section${heroVisible ? " visible" : ""}`}>
           <header className="site-header">
