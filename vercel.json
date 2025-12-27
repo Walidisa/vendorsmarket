@@ -9,8 +9,8 @@
     {
       "source": "/:path*",
       "has": [{ "type": "host", "value": "vendorsmarket.vercel.app" }],
-      "destination": "https://vendorsmarket.com.ng/:path*",
-      "permanent": true
+      "destination": "https://vendorsmarket.vercel.app/:path*",
+      "permanent": false
     }
   ]
 }
