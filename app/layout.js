@@ -10,6 +10,7 @@ import PwaProvider from "./components/PwaProvider";
 import InstallPrompt from "./components/InstallPrompt";
 import { Suspense } from "react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import CanonicalHead from "./components/CanonicalHead";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://vendorsmarket.com.ng";
 const defaultTitle = "Vendors Market | Local vendors, great products";
@@ -23,9 +24,6 @@ export const metadata = {
   },
   description: defaultDescription,
   manifest: "/manifest.webmanifest",
-  alternates: {
-    canonical: SITE_URL
-  },
   openGraph: {
     type: "website",
     url: SITE_URL,
@@ -82,10 +80,11 @@ export default function RootLayout({ children }) {
       <head>
         <link rel="manifest" href="/manifest.webmanifest" crossOrigin="use-credentials" />
         {process.env.NEXT_PUBLIC_GSC_VERIFICATION ? (
-          <meta name="google-site-verification" content={process.env.NEXT_PUBLIC_GSC_VERIFICATION} />
+      <meta name="google-site-verification" content={process.env.NEXT_PUBLIC_GSC_VERIFICATION} />
         ) : null}
       </head>
       <body className={`${inter.className} dark theme-clothing`} suppressHydrationWarning={true}>
+        <CanonicalHead />
         <PwaProvider />
         <InstallPrompt />
         <RouteLoader />
