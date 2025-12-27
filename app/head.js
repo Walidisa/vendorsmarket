@@ -65,6 +65,7 @@ export default function Head() {
       />
       <script dangerouslySetInnerHTML={{ __html: bootstrapThemeScript }} />
       <script dangerouslySetInnerHTML={{ __html: bootstrapThemeClassesScript }} />
+      <link rel="canonical" href={process.env.NEXT_PUBLIC_SITE_URL || "https://vendorsmarket.com.ng"} />
     </>
   );
 }
