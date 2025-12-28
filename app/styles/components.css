@@ -1276,10 +1276,11 @@
   }
 
   .product-grid {
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(105px, 1fr));
     grid-auto-flow: row dense;
     gap: 0.16rem;
     justify-content: start;
+    justify-items: start;
   }
 
   #profileProductsGrid,
@@ -1289,13 +1290,10 @@
 
   /* Allow search results to fit more cards per row on mobile */
   .search-grid {
-    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(105px, 1fr));
     gap: 0.12rem;
     justify-content: start;
-  }
-
-  .search-grid .product-card {
-    max-width: none;
+    justify-items: start;
   }
 
   /* Allow vendor grid to fit more cards per row on mobile */
@@ -1309,7 +1307,15 @@
 
   .product-card,
   .vendor-card {
-    max-width: 100%;
+    width: 100%;
+    min-width: 105px;
+    max-width: 170px;
+  }
+
+  .search-grid .product-card {
+    min-width: 105px;
+    max-width: 170px;
+    width: 100%;
   }
 }
 
