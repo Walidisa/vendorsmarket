@@ -176,10 +176,26 @@ export default function EditProductPage() {
   const handleGalleryFiles = (e) => {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
-    setGalleryFiles((prev) => [...prev, ...files]);
-    if (files.some((f) => f.size > 400 * 1024)) {
+
+    const valid = files.filter((f) => f.type.startsWith('image/') && f.size <= 5 * 1024 * 1024);
+    if (valid.length !== files.length) {
+      alert('Only image files up to 5MB are allowed.');
+    }
+    if (valid.some((f) => f.size > 400 * 1024)) {
       setStatus('Some gallery images are large and will be compressed; quality may be reduced.');
     }
+    if (!valid.length) return;
+
+    const existingCount = Array.isArray(form.images) ? form.images.length : 0;
+    const currentTotal = existingCount + galleryFiles.length;
+    const available = Math.max(0, 3 - currentTotal);
+    if (available <= 0) {
+      setStatus('You can only attach up to 3 images. Remove one to add another.');
+      return;
+    }
+    const toAdd = valid.slice(0, available);
+    if (!toAdd.length) return;
+    setGalleryFiles((prev) => [...prev, ...toAdd]);
   };
 
   const handleRemoveExistingImage = (idx) => {
@@ -225,6 +241,10 @@ export default function EditProductPage() {
       if (galleryFiles.length) {
         const uploads = await Promise.all(galleryFiles.map((f, idx) => uploadImage(f, 'products', `Image ${idx + 1}`)));
         galleryPaths = [...galleryPaths, ...uploads.map((u) => u.path)];
+      }
+      if (galleryPaths.length > 3) {
+        setStatus('You can only attach up to 3 images. Remove one to add another.');
+        return;
       }
       const keysToDelete = [];
       if (coverFile && originalCover) {
@@ -402,7 +422,7 @@ export default function EditProductPage() {
           </label>
 
           <label>
-            Gallery Images (comma-separated)
+            Gallery Images (Maximum 3 images)
             <input
               ref={galleryInputRef}
               className="file-input-hidden"
