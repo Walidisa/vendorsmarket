@@ -25,7 +25,9 @@ export default function HomeClient() {
   const [landingCategory, setLandingCategory] = useState("clothing");
   const [featuredVendors, setFeaturedVendors] = useState([]);
   const [heroVisible, setHeroVisible] = useState(true);
-  const [cardsVisible, setCardsVisible] = useState(true);
+  const [cardsVisible, setCardsVisible] = useState(false);
+  const [heroFade, setHeroFade] = useState(1);
+  const [heroLift, setHeroLift] = useState(0);
   const [productsLoading, setProductsLoading] = useState(true);
   const [vendorsLoading, setVendorsLoading] = useState(true);
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://vendorsmarket.com.ng";
@@ -63,13 +65,32 @@ export default function HomeClient() {
 
   useEffect(() => {
     const onScroll = () => {
-      if (window.scrollY > 50) {
+      const y = window.scrollY || 0;
+      const fadeStart = 280;
+      const fadeEnd = 330;
+      const progress = Math.min(Math.max((y - fadeStart) / (fadeEnd - fadeStart), 0), 1);
+      const nextOpacity = 1 - progress;
+      setHeroFade((prev) => {
+        const roundedPrev = Math.round(prev * 100) / 100;
+        const roundedNext = Math.round(nextOpacity * 100) / 100;
+        return roundedPrev === roundedNext ? prev : nextOpacity;
+      });
+
+      const lift = Math.min(Math.max(progress * 24, 0), 24); // move up to 24px
+      setHeroLift((prev) => {
+        const roundedPrev = Math.round(prev * 100) / 100;
+        const roundedNext = Math.round(lift * 100) / 100;
+        return roundedPrev === roundedNext ? prev : lift;
+      });
+
+      if (y > 50) {
         document.body.classList.add("scrolled");
       } else {
         document.body.classList.remove("scrolled");
       }
     };
     window.addEventListener("scroll", onScroll);
+    onScroll(); // initialize on mount
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
@@ -151,13 +172,24 @@ export default function HomeClient() {
   }, [vendors, landingProducts]);
 
   useEffect(() => {
+    // Wait until real content is rendered so refs are defined
+    const heroEl = heroRef.current;
+    const cardsEl = cardsRef.current;
+    if (!heroEl && !cardsEl) return;
+
+    if (typeof window !== "undefined" && !("IntersectionObserver" in window)) {
+      setHeroVisible(true);
+      setCardsVisible(true);
+      return;
+    }
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.target === heroRef.current) {
+          if (heroEl && entry.target === heroEl) {
             setHeroVisible(entry.isIntersecting);
           }
-          if (entry.target === cardsRef.current) {
+          if (cardsEl && entry.target === cardsEl) {
             setCardsVisible(entry.isIntersecting);
           }
         });
@@ -165,11 +197,11 @@ export default function HomeClient() {
       { threshold: [0, 0.25, 0.5, 0.75, 1] }
     );
 
-    if (heroRef.current) observer.observe(heroRef.current);
-    if (cardsRef.current) observer.observe(cardsRef.current);
+    if (heroEl) observer.observe(heroEl);
+    if (cardsEl) observer.observe(cardsEl);
 
     return () => observer.disconnect();
-  }, []);
+  }, [productsLoading, vendorsLoading]);
 
   if (productsLoading || vendorsLoading) {
     return (
@@ -187,7 +219,14 @@ export default function HomeClient() {
       <SeoJsonLd data={orgLd} />
       <SeoJsonLd data={siteLd} />
       <div className="page">
-        <div ref={heroRef} className={`hero-shell theme-${heroTheme} fade-section${heroVisible ? " visible" : ""}`}>
+        <div
+          ref={heroRef}
+          className={`hero-shell theme-${heroTheme} fade-section${heroVisible ? " visible" : ""}`}
+          style={{
+            opacity: heroVisible ? heroFade : 0,
+            transform: heroVisible ? `translateY(-${heroLift}px)` : undefined,
+          }}
+        >
           <header className="site-header">
             <div className="site-logo">vendorsmarket.com.ng</div>
           </header>
@@ -335,7 +374,10 @@ export default function HomeClient() {
           </section>
         )}
 
-        <section ref={cardsRef} className={`card-grid fade-section${cardsVisible ? " visible" : ""}`}>
+        <section
+          ref={cardsRef}
+          className={`card-grid fade-section${cardsVisible ? " visible" : ""}`}
+        >
           <article className={`card theme-${heroTheme}`}>
             <h2>One home for your favourite vendors</h2>
             <p>

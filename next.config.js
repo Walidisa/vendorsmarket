@@ -7,7 +7,7 @@ const __dirname = path.dirname(__filename);
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  allowedDevOrigins: ["10.9.5.48", "127.0.0.1", "10.9.5.17"],
+  allowedDevOrigins: ["10.9.5.203", "127.0.0.1", "10.9.5.17"],
   turbopack: {
     // Silence workspace root warning when multiple lockfiles are present.
     root: __dirname

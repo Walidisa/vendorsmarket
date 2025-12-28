@@ -1,5 +1,5 @@
 // Bump this version on each deployment to bust old caches.
-const CACHE_NAME = "vm-static-v119";
+const CACHE_NAME = "vm-static-v134";
 const APP_SHELL = [
   "/offline.html",
   "/icons/icon-192x192.png",
