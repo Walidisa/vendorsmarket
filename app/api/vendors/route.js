@@ -107,7 +107,7 @@ export async function POST(request) {
           <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #1d1d1d; max-width: 560px; margin: 0 auto; padding: 16px;">
             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
               <div style="width: 42px; height: 42px; border-radius: 12px; background: #ffffff; border: 1px solid rgba(0,0,0,0.06); overflow: hidden; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.08);">
-                <img src="https://vendorsmarket.com.ng/icons/app-icon.png" alt="VendorsMarket" width="42" height="42" style="display:block; width: 100%; height: 100%; object-fit: cover; border-radius: 10px; background: #ffffff; filter: none !important;">
+                <img src="https://vendorsmarket.com.ng/icons/app-icon-light.png" alt="VendorsMarket" width="42" height="42" style="display:block; width: 100%; height: 100%; object-fit: cover; border-radius: 10px; background: #ffffff; filter: none !important;">
               </div>
               <div style="font-size: 18px; font-weight: 700; color: #0d3b66; margin-top: 6px;">VendorsMarket</div>
             </div>
