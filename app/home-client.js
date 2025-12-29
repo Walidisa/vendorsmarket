@@ -248,10 +248,10 @@ export default function HomeClient() {
 
             <div className="hero-actions">
               <Link href="/homepage">
-                <button className="btn-primary">Explore all products</button>
+                <button className="btn-primary hero-cta">Explore all products</button>
               </Link>
               <Link href="/signup">
-                <button className="btn-primary">Become a vendor</button>
+                <button className="btn-primary hero-cta">Become a vendor</button>
               </Link>
             </div>
           </header>

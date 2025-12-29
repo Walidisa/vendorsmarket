@@ -448,6 +448,15 @@ body.dark.theme-clothing .subcategory-row-scroll .product-card .price {
   text-align: center;
 }
 
+.hero-cta {
+  border: 2px solid rgba(255, 255, 255, 0.82);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.28), 0 12px 28px rgba(0, 0, 0, 0.16);
+}
+
+.hero-cta:hover {
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.4), 0 14px 32px rgba(0, 0, 0, 0.2);
+}
+
 /* ACCESSIBILITY + TAP FEEL */
 button:focus-visible {
   outline: 3px solid rgba(13, 59, 102, 0.35);

@@ -109,6 +109,20 @@
   background: #F8EBD6;
 }
 
+.hero-cta {
+  border: 2px solid rgba(255, 255, 255, 0.82) !important;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.28), 0 12px 28px rgba(0, 0, 0, 0.16) !important;
+}
+
+.hero-cta:hover,
+.hero-cta:focus-visible {
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.4), 0 14px 32px rgba(0, 0, 0, 0.2) !important;
+}
+
+.hero-cta:active {
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.28), 0 10px 24px rgba(0, 0, 0, 0.18) !important;
+}
+
 /* FOOTER */
 .footer {
   width: 100%;
